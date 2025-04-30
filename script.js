@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     */
 
-    // --- Modal Functions (open, close - unchanged, save, delete - updated selector) ---
+    // --- Modal Functions ---
     function openNoteModal(dateString) {
         // Don't allow adding notes if not signed in
         if (!firebase.auth().currentUser) {
@@ -557,10 +557,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const [year, month, day] = dateString.split('-');
         const dateObj = new Date(year, month - 1, day);
         modalDateElement.textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        const noteData = notes[selectedDateString] || { text: '', time: '', checklist: [] }; // Default to empty checklist
-        noteInputElement.value = noteData.text || '';
-        noteTimeElement.value = noteData.time || '';
-        renderChecklistInModal(noteData.checklist || []); // Render checklist
+        
+        // Get the array of events for the day, default to empty array
+        const eventsForDay = notes[selectedDateString] || [];
+        
+        // Use the first event to populate the modal (or defaults if no events)
+        const eventData = eventsForDay.length > 0 ? eventsForDay[0] : { text: '', time: '', checklist: [] };
+        
+        noteInputElement.value = eventData.text || '';
+        noteTimeElement.value = eventData.time || '';
+        renderChecklistInModal(eventData.checklist || []); // Render checklist from the first event
         noteModal.style.display = 'block';
     }
 
@@ -657,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Note: Actual deletion from data happens on Save Note
     }
 
-    // UPDATED: Save note including checklist data and syncing to Firebase
+    // UPDATED: Save note (temporarily saves as first/only event in array)
     function saveNote() {
         // Don't save if not signed in
         if (!firebase.auth().currentUser) {
@@ -681,21 +687,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            if (noteText || checklist.length > 0) { // Save if there's text OR checklist items
-                notes[selectedDateString] = { text: noteText, time: noteTime, checklist: checklist };
+            // Create the event object
+            const eventData = {
+                id: Date.now(), // Simple unique ID for now
+                text: noteText,
+                time: noteTime,
+                checklist: checklist
+            };
+
+            // If there's text OR checklist items, save as an array with this single event
+            // This will overwrite any previous events for this day until multi-event modal is implemented
+            if (noteText || checklist.length > 0) { 
+                notes[selectedDateString] = [eventData]; // Store as an array
             } else {
-                delete notes[selectedDateString]; // Delete only if everything is empty
+                // If everything is empty, delete the entry for this date
+                delete notes[selectedDateString]; 
             }
             
-            // Save to Firebase if user is logged in
+            // Save the entire updated notes object to Firebase
             const user = firebase.auth().currentUser;
             if (user) {
-                console.log('Saving note to Firestore for user:', user.uid);
-                db.collection('userNotes').doc(user.uid).set({
-                    notes: notes
-                })
+                console.log('Saving notes object to Firestore for user:', user.uid);
+                db.collection('userNotes').doc(user.uid).set({ notes: notes })
                 .then(() => {
-                    console.log('Note saved successfully to Firestore');
+                    console.log('Notes saved successfully to Firestore');
                 })
                 .catch(error => {
                     console.error("Error saving notes:", error);
