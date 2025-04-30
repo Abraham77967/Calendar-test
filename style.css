@@ -481,25 +481,42 @@ body {
     background-color: white;
 }
 
-#add-item-button {
+#add-item-button, #edit-add-item-button {
     padding: 8px 15px;
-    background-color: #077A7D; /* Teal (was blue) */
+    background-color: #077A7D;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 0 4px 4px 0;
     cursor: pointer;
-    font-size: 1.4em;
-    transition: all 0.25s ease;
+    font-size: 0.95em;
 }
 
-#add-item-button:hover {
-    background-color: #06202B; /* Dark navy on hover (was navy) */
+#add-item-button:hover, #edit-add-item-button:hover {
+    background-color: #06202B;
     transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
-#add-item-button:active {
-    transform: translateY(1px);
+#add-event-button {
+    display: block;
+    width: 80%;
+    max-width: 300px;
+    margin: 20px auto 5px;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    text-align: center;
+    background-color: #077A7D;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: bold;
+}
+
+#add-event-button:hover {
+    background-color: #056163;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Animation Keyframes */
@@ -916,16 +933,6 @@ body {
     font-size: 0.95em;
 }
 
-#add-item-button, #edit-add-item-button {
-    padding: 8px 15px;
-    background-color: #077A7D;
-    color: white;
-    border: none;
-    border-radius: 0 4px 4px 0;
-    cursor: pointer;
-    font-size: 0.95em;
-}
-
 /* Buttons */
 .action-button, .secondary-button, .delete-button {
     padding: 10px 20px;
@@ -984,4 +991,16 @@ body {
         padding: 8px 15px;
         font-size: 0.9em;
     }
+}
+
+.modal-instructions {
+    color: #555;
+    text-align: center;
+    font-size: 0.9em;
+    margin: -10px 0 15px 0;
+    padding: 0 10px;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    padding: 10px;
+    border-left: 3px solid #077A7D;
 } 
