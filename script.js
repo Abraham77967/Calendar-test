@@ -53,15 +53,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const noteModal = document.getElementById('note-modal');
     const modalDateElement = document.getElementById('modal-date');
-    const noteInputElement = document.getElementById('note-input');
-    const noteTimeElement = document.getElementById('note-time');
-    const saveNoteButton = document.getElementById('save-note');
-    const deleteNoteButton = document.getElementById('delete-note');
     const closeButton = document.querySelector('.close-button');
-    const checklistItemsElement = document.getElementById('checklist-items');
-    const newItemInputElement = document.getElementById('new-checklist-item');
+    
+    // New modal elements for multi-event support
+    const eventsListElement = document.getElementById('events-list');
+    
+    // Add new event section elements
+    const newEventTimeElement = document.getElementById('new-event-time');
+    const newEventTextElement = document.getElementById('new-event-text');
+    const newEventChecklistElement = document.getElementById('new-event-checklist');
+    const newChecklistItemElement = document.getElementById('new-checklist-item');
     const addItemButton = document.getElementById('add-item-button');
-    // const eventProgressPanel = document.getElementById('event-progress-panel'); // Removed
+    const addEventButton = document.getElementById('add-event-button');
+    
+    // Edit event section elements
+    const editEventSection = document.getElementById('edit-event-section');
+    const editEventTimeElement = document.getElementById('edit-event-time');
+    const editEventTextElement = document.getElementById('edit-event-text');
+    const editEventChecklistElement = document.getElementById('edit-event-checklist');
+    const editChecklistItemElement = document.getElementById('edit-checklist-item');
+    const editAddItemButton = document.getElementById('edit-add-item-button');
+    const saveEditedEventButton = document.getElementById('save-edited-event');
+    const cancelEditButton = document.getElementById('cancel-edit');
+    const deleteEventButton = document.getElementById('delete-event');
     
     // Authentication elements
     const loginForm = document.getElementById('login-form');
@@ -81,6 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedDateString = null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    // Add variable to track current event being edited
+    let currentEditingEventId = null;
 
     // --- Firebase Authentication Logic ---
     
@@ -558,204 +575,411 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateObj = new Date(year, month - 1, day);
         modalDateElement.textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         
-        // Get the array of events for the day, default to empty array
-        const eventsForDay = notes[selectedDateString] || [];
+        // Reset any editing state
+        hideEditEventSection();
         
-        // Use the first event to populate the modal (or defaults if no events)
-        const eventData = eventsForDay.length > 0 ? eventsForDay[0] : { text: '', time: '', checklist: [] };
+        // Reset new event form
+        newEventTimeElement.value = '';
+        newEventTextElement.value = '';
+        newEventChecklistElement.innerHTML = '';
+        newChecklistItemElement.value = '';
         
-        noteInputElement.value = eventData.text || '';
-        noteTimeElement.value = eventData.time || '';
-        renderChecklistInModal(eventData.checklist || []); // Render checklist from the first event
+        // Display events for this date
+        displayEventsInModal();
+        
         noteModal.style.display = 'block';
     }
 
     function closeNoteModal() {
         noteModal.style.display = 'none';
         selectedDateString = null;
-        checklistItemsElement.innerHTML = ''; // Clear checklist on close
-        newItemInputElement.value = ''; // Clear add item input
+        currentEditingEventId = null;
     }
-
-    // NEW: Render checklist items in the modal
-    function renderChecklistInModal(checklist) {
-        checklistItemsElement.innerHTML = ''; // Clear existing items
-        checklist = checklist || []; // Ensure checklist is an array
+    
+    // Display all events for the selected date
+    function displayEventsInModal() {
+        // Get events for the selected date
+        const eventsForDay = notes[selectedDateString] || [];
+        
+        // Clear the events list
+        eventsListElement.innerHTML = '';
+        
+        if (eventsForDay.length === 0) {
+            // Show "no events" message
+            const noEventsMessage = document.createElement('div');
+            noEventsMessage.classList.add('no-events-message');
+            noEventsMessage.textContent = 'No events for this day. Add one below.';
+            eventsListElement.appendChild(noEventsMessage);
+        } else {
+            // Create and display each event in the list
+            eventsForDay.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.classList.add('event-item');
+                eventItem.dataset.eventId = event.id; // Store event ID for editing
+                
+                // Time section (if exists)
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('event-time');
+                timeElement.textContent = event.time || '-';
+                
+                // Text section (description)
+                const textElement = document.createElement('div');
+                textElement.classList.add('event-text');
+                textElement.textContent = event.text || '(No description)';
+                
+                // Checklist indicator (if has checklist)
+                if (event.checklist && event.checklist.length > 0) {
+                    const completedItems = event.checklist.filter(item => item.done).length;
+                    const checklistIndicator = document.createElement('div');
+                    checklistIndicator.classList.add('event-checklist-indicator');
+                    checklistIndicator.textContent = `✓ ${completedItems}/${event.checklist.length}`;
+                    eventItem.appendChild(timeElement);
+                    eventItem.appendChild(textElement);
+                    eventItem.appendChild(checklistIndicator);
+                } else {
+                    eventItem.appendChild(timeElement);
+                    eventItem.appendChild(textElement);
+                }
+                
+                // Add click handler to edit this event
+                eventItem.addEventListener('click', () => {
+                    handleEditEvent(event);
+                });
+                
+                eventsListElement.appendChild(eventItem);
+            });
+        }
+    }
+    
+    // Render checklist for new event
+    function renderChecklistForNewEvent(checklist = []) {
+        newEventChecklistElement.innerHTML = '';
+        
         checklist.forEach((item, index) => {
             const li = document.createElement('li');
-            li.dataset.index = index; // Store index for deletion
-
+            
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = item.done;
-            checkbox.id = `item-${index}`;
-            checkbox.addEventListener('change', () => {
-                label.classList.toggle('completed', checkbox.checked);
-            });
-
+            checkbox.id = `new-item-${index}`;
+            
             const label = document.createElement('label');
-            label.htmlFor = `item-${index}`;
+            label.htmlFor = `new-item-${index}`;
             label.textContent = item.task;
             if (item.done) {
                 label.classList.add('completed');
             }
-
-            const deleteButton = document.createElement('button');
-            deleteButton.classList.add('delete-item-button');
-            deleteButton.innerHTML = '&times;'; // Multiplication sign X
-            deleteButton.type = 'button'; // Prevent form submission
-            deleteButton.addEventListener('click', () => {
-                 deleteChecklistItem(index);
-            });
-
-            li.appendChild(checkbox);
-            li.appendChild(label);
-            li.appendChild(deleteButton);
-            checklistItemsElement.appendChild(li);
-        });
-    }
-
-    // NEW: Add item to modal checklist UI
-    function addChecklistItem() {
-        const taskText = newItemInputElement.value.trim();
-        if (taskText) {
-            const newItem = { task: taskText, done: false };
-            // Create elements without saving yet - save happens on main Save Note button
-            const index = checklistItemsElement.children.length;
-            const li = document.createElement('li');
-             li.dataset.index = index; // Store index for deletion
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `item-${index}`;
-            checkbox.addEventListener('change', () => {
-                label.classList.toggle('completed', checkbox.checked);
-            });
-
-            const label = document.createElement('label');
-            label.htmlFor = `item-${index}`;
-            label.textContent = newItem.task;
-
+            
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
             deleteButton.innerHTML = '&times;';
-            deleteButton.type = 'button';
-            deleteButton.addEventListener('click', () => {
-                 // This delete needs to remove the item from the UI immediately
-                 li.remove();
-                 // Re-index remaining items if necessary (or handle deletion during save)
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up
+                li.remove();
             });
-
+            
+            checkbox.addEventListener('change', () => {
+                label.classList.toggle('completed', checkbox.checked);
+            });
+            
             li.appendChild(checkbox);
             li.appendChild(label);
             li.appendChild(deleteButton);
-            checklistItemsElement.appendChild(li);
-            newItemInputElement.value = ''; // Clear input
+            newEventChecklistElement.appendChild(li);
+        });
+    }
+    
+    // Render checklist for edit section
+    function renderChecklistForEditEvent(checklist = []) {
+        editEventChecklistElement.innerHTML = '';
+        
+        checklist.forEach((item, index) => {
+            const li = document.createElement('li');
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.done;
+            checkbox.id = `edit-item-${index}`;
+            
+            const label = document.createElement('label');
+            label.htmlFor = `edit-item-${index}`;
+            label.textContent = item.task;
+            if (item.done) {
+                label.classList.add('completed');
+            }
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-item-button');
+            deleteButton.innerHTML = '&times;';
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up
+                li.remove();
+            });
+            
+            checkbox.addEventListener('change', () => {
+                label.classList.toggle('completed', checkbox.checked);
+            });
+            
+            li.appendChild(checkbox);
+            li.appendChild(label);
+            li.appendChild(deleteButton);
+            editEventChecklistElement.appendChild(li);
+        });
+    }
+    
+    // Function to add checklist item to new event form
+    function addNewEventChecklistItem() {
+        const taskText = newChecklistItemElement.value.trim();
+        if (taskText) {
+            const item = { task: taskText, done: false };
+            
+            const li = document.createElement('li');
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `new-item-${Date.now()}`; // Use timestamp for unique ID
+            
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = item.task;
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-item-button');
+            deleteButton.innerHTML = '&times;';
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                li.remove();
+            });
+            
+            checkbox.addEventListener('change', () => {
+                label.classList.toggle('completed', checkbox.checked);
+            });
+            
+            li.appendChild(checkbox);
+            li.appendChild(label);
+            li.appendChild(deleteButton);
+            newEventChecklistElement.appendChild(li);
+            
+            newChecklistItemElement.value = '';
         }
     }
-
-     // NEW: Delete item from modal checklist UI (called by item's delete button)
-    function deleteChecklistItem(indexToDelete) {
-        const itemElement = checklistItemsElement.querySelector(`li[data-index="${indexToDelete}"]`);
-        if (itemElement) {
-            itemElement.remove();
+    
+    // Function to add checklist item to edit event form
+    function addEditEventChecklistItem() {
+        const taskText = editChecklistItemElement.value.trim();
+        if (taskText) {
+            const item = { task: taskText, done: false };
+            
+            const li = document.createElement('li');
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `edit-item-${Date.now()}`; // Use timestamp for unique ID
+            
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = item.task;
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-item-button');
+            deleteButton.innerHTML = '&times;';
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                li.remove();
+            });
+            
+            checkbox.addEventListener('change', () => {
+                label.classList.toggle('completed', checkbox.checked);
+            });
+            
+            li.appendChild(checkbox);
+            li.appendChild(label);
+            li.appendChild(deleteButton);
+            editEventChecklistElement.appendChild(li);
+            
+            editChecklistItemElement.value = '';
         }
-        // Note: Actual deletion from data happens on Save Note
     }
-
-    // UPDATED: Save note (temporarily saves as first/only event in array)
-    function saveNote() {
-        // Don't save if not signed in
-        if (!firebase.auth().currentUser) {
-            alert("Please sign in to save notes");
-            closeNoteModal();
+    
+    // Function to gather checklist data from UI
+    function getChecklistFromUI(checklistElement) {
+        const checklist = [];
+        const items = checklistElement.querySelectorAll('li');
+        
+        items.forEach(li => {
+            const checkbox = li.querySelector('input[type="checkbox"]');
+            const label = li.querySelector('label');
+            
+            if (checkbox && label) {
+                checklist.push({
+                    task: label.textContent,
+                    done: checkbox.checked
+                });
+            }
+        });
+        
+        return checklist;
+    }
+    
+    // Add a new event
+    function addEvent() {
+        if (!firebase.auth().currentUser || !selectedDateString) {
             return;
         }
         
-        if (selectedDateString) {
-            const noteText = noteInputElement.value.trim();
-            const noteTime = noteTimeElement.value;
-
-            // Gather checklist data from the modal UI
-            const checklist = [];
-            const items = checklistItemsElement.querySelectorAll('li');
-            items.forEach(li => {
-                const checkbox = li.querySelector('input[type="checkbox"]');
-                const label = li.querySelector('label');
-                if (checkbox && label) {
-                    checklist.push({ task: label.textContent, done: checkbox.checked });
-                }
-            });
-
-            // Create the event object
-            const eventData = {
-                id: Date.now(), // Simple unique ID for now
-                text: noteText,
-                time: noteTime,
+        const eventText = newEventTextElement.value.trim();
+        const eventTime = newEventTimeElement.value;
+        const checklist = getChecklistFromUI(newEventChecklistElement);
+        
+        // Only save if there's content
+        if (eventText || checklist.length > 0) {
+            // Create new event object with unique ID
+            const newEvent = {
+                id: Date.now(),
+                text: eventText,
+                time: eventTime,
                 checklist: checklist
             };
-
-            // If there's text OR checklist items, save as an array with this single event
-            // This will overwrite any previous events for this day until multi-event modal is implemented
-            if (noteText || checklist.length > 0) { 
-                notes[selectedDateString] = [eventData]; // Store as an array
-            } else {
-                // If everything is empty, delete the entry for this date
-                delete notes[selectedDateString]; 
+            
+            // Initialize array if needed
+            if (!notes[selectedDateString]) {
+                notes[selectedDateString] = [];
             }
             
-            // Save the entire updated notes object to Firebase
+            // Add new event to array
+            notes[selectedDateString].push(newEvent);
+            
+            // Save to Firebase
+            saveNotesToFirebase().then(() => {
+                // Reset the form
+                newEventTextElement.value = '';
+                newEventTimeElement.value = '';
+                newEventChecklistElement.innerHTML = '';
+                
+                // Refresh the events list
+                displayEventsInModal();
+                
+                // Update calendar view
+                renderCalendarView();
+            });
+        }
+    }
+    
+    // Show edit event section for selected event
+    function handleEditEvent(event) {
+        currentEditingEventId = event.id;
+        
+        // Fill the edit form with event data
+        editEventTimeElement.value = event.time || '';
+        editEventTextElement.value = event.text || '';
+        renderChecklistForEditEvent(event.checklist || []);
+        
+        // Show edit section, hide add section
+        editEventSection.style.display = 'block';
+    }
+    
+    // Hide the edit event section
+    function hideEditEventSection() {
+        editEventSection.style.display = 'none';
+        currentEditingEventId = null;
+        editEventTimeElement.value = '';
+        editEventTextElement.value = '';
+        editEventChecklistElement.innerHTML = '';
+    }
+    
+    // Save edited event
+    function saveEditedEvent() {
+        if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
+            return;
+        }
+        
+        const eventText = editEventTextElement.value.trim();
+        const eventTime = editEventTimeElement.value;
+        const checklist = getChecklistFromUI(editEventChecklistElement);
+        
+        // Find the event in the array
+        const eventsForDay = notes[selectedDateString] || [];
+        const eventIndex = eventsForDay.findIndex(e => e.id === currentEditingEventId);
+        
+        if (eventIndex !== -1) {
+            // Update event data
+            eventsForDay[eventIndex] = {
+                id: currentEditingEventId,
+                text: eventText,
+                time: eventTime,
+                checklist: checklist
+            };
+            
+            // Save to Firebase
+            saveNotesToFirebase().then(() => {
+                // Hide edit section
+                hideEditEventSection();
+                
+                // Refresh the events list
+                displayEventsInModal();
+                
+                // Update calendar view
+                renderCalendarView();
+            });
+        }
+    }
+    
+    // Delete an event
+    function handleDeleteEvent() {
+        if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
+            return;
+        }
+        
+        // Find the event in the array
+        const eventsForDay = notes[selectedDateString] || [];
+        const eventIndex = eventsForDay.findIndex(e => e.id === currentEditingEventId);
+        
+        if (eventIndex !== -1) {
+            // Remove the event from the array
+            eventsForDay.splice(eventIndex, 1);
+            
+            // If no events left, delete the date entry
+            if (eventsForDay.length === 0) {
+                delete notes[selectedDateString];
+            } else {
+                notes[selectedDateString] = eventsForDay;
+            }
+            
+            // Save to Firebase
+            saveNotesToFirebase().then(() => {
+                // Hide edit section
+                hideEditEventSection();
+                
+                // Refresh the events list
+                displayEventsInModal();
+                
+                // Update calendar view
+                renderCalendarView();
+            });
+        }
+    }
+    
+    // Save notes to Firebase
+    function saveNotesToFirebase() {
+        return new Promise((resolve, reject) => {
             const user = firebase.auth().currentUser;
-            if (user) {
-                console.log('Saving notes object to Firestore for user:', user.uid);
-                db.collection('userNotes').doc(user.uid).set({ notes: notes })
+            if (!user) {
+                reject(new Error('User not logged in'));
+                return;
+            }
+            
+            db.collection('userNotes').doc(user.uid).set({ notes: notes })
                 .then(() => {
                     console.log('Notes saved successfully to Firestore');
+                    resolve();
                 })
                 .catch(error => {
                     console.error("Error saving notes:", error);
                     alert("Error saving to cloud: " + error.message);
+                    reject(error);
                 });
-            }
-            
-            closeNoteModal();
-            renderCalendarView(); // Re-render to show changes immediately
-        }
+        });
     }
-
-    // UPDATED: Delete note (also removes checklist) and syncs with Firebase
-    function deleteNote() {
-        // Don't delete if not signed in
-        if (!firebase.auth().currentUser) {
-            alert("Please sign in to delete notes");
-            closeNoteModal();
-            return;
-        }
-        
-        if (selectedDateString) {
-            delete notes[selectedDateString];
-            
-            // Save to Firebase if user is logged in
-            const user = firebase.auth().currentUser;
-            if (user) {
-                console.log('Deleting note from Firestore for user:', user.uid);
-                db.collection('userNotes').doc(user.uid).set({
-                    notes: notes
-                })
-                .then(() => {
-                    console.log('Note deleted successfully from Firestore');
-                })
-                .catch(error => {
-                    console.error("Error deleting note:", error);
-                    alert("Error syncing deletion to cloud: " + error.message);
-                });
-            }
-            
-            closeNoteModal();
-            renderCalendarView(); // Re-render to remove the note visually
-        }
-    }
-    // --- End Modal Functions ---
 
     // --- Event Listeners ---
     prevButton.addEventListener('click', () => {
@@ -801,18 +1025,34 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendarView(); // Re-render mobile view
     });
 
+    // Modal event listeners
     closeButton.addEventListener('click', closeNoteModal);
-    saveNoteButton.addEventListener('click', saveNote);
-    deleteNoteButton.addEventListener('click', deleteNote);
-
-    // Listener for adding checklist item
-    addItemButton.addEventListener('click', addChecklistItem);
-    newItemInputElement.addEventListener('keypress', (event) => {
+    
+    // Add new event
+    addEventButton.addEventListener('click', addEvent);
+    
+    // Add checklist item to new event
+    addItemButton.addEventListener('click', addNewEventChecklistItem);
+    newChecklistItemElement.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
-            addChecklistItem();
+            addNewEventChecklistItem();
         }
     });
+    
+    // Add checklist item to edit event
+    editAddItemButton.addEventListener('click', addEditEventChecklistItem);
+    editChecklistItemElement.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            addEditEventChecklistItem();
+        }
+    });
+    
+    // Edit event actions
+    saveEditedEventButton.addEventListener('click', saveEditedEvent);
+    cancelEditButton.addEventListener('click', hideEditEventSection);
+    deleteEventButton.addEventListener('click', handleDeleteEvent);
 
+    // Close modal on outside click
     window.addEventListener('click', (event) => {
         if (event.target == noteModal) {
             closeNoteModal();

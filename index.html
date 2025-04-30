@@ -71,25 +71,64 @@
         </div>
     </div>
 
+    <!-- Note Modal for Events -->
     <div id="note-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h3 id="modal-date"></h3>
-            <label for="note-time">Time (optional):</label>
-            <input type="time" id="note-time" name="note-time">
-            <textarea id="note-input" placeholder="Write your notes here..."></textarea>
-
-            <div class="checklist-container">
-                <h4>Checklist</h4>
-                <ul id="checklist-items"></ul>
-                <div class="add-checklist-item">
-                    <input type="text" id="new-checklist-item" placeholder="Add new task...">
-                    <button type="button" id="add-item-button">+</button>
+            <h3 id="modal-date">Date</h3>
+            
+            <!-- Events List Section -->
+            <div id="events-list-container">
+                <h4>Events</h4>
+                <div id="events-list">
+                    <!-- Events will be added here dynamically -->
+                    <div class="no-events-message">No events for this day. Add one below.</div>
                 </div>
             </div>
-
-            <button id="save-note">Save Note</button>
-            <button id="delete-note">Delete Note</button>
+            
+            <!-- Add New Event Section -->
+            <div id="add-event-section">
+                <h4>Add New Event</h4>
+                <input type="time" id="new-event-time" placeholder="Time">
+                <textarea id="new-event-text" placeholder="Event description"></textarea>
+                
+                <div class="checklist-section">
+                    <h5>Checklist</h5>
+                    <ul id="new-event-checklist">
+                        <!-- Checklist items will be added here -->
+                    </ul>
+                    <div class="add-checklist-item">
+                        <input type="text" id="new-checklist-item" placeholder="Add checklist item...">
+                        <button type="button" id="add-item-button">Add</button>
+                    </div>
+                </div>
+                
+                <button type="button" id="add-event-button" class="action-button">Add Event</button>
+            </div>
+            
+            <!-- Event View/Edit Section (initially hidden) -->
+            <div id="edit-event-section" style="display:none;">
+                <h4>Edit Event</h4>
+                <input type="time" id="edit-event-time" placeholder="Time">
+                <textarea id="edit-event-text" placeholder="Event description"></textarea>
+                
+                <div class="checklist-section">
+                    <h5>Checklist</h5>
+                    <ul id="edit-event-checklist">
+                        <!-- Checklist items will be added here -->
+                    </ul>
+                    <div class="add-checklist-item">
+                        <input type="text" id="edit-checklist-item" placeholder="Add checklist item...">
+                        <button type="button" id="edit-add-item-button">Add</button>
+                    </div>
+                </div>
+                
+                <div class="edit-actions">
+                    <button type="button" id="save-edited-event" class="action-button">Save Changes</button>
+                    <button type="button" id="cancel-edit" class="secondary-button">Cancel</button>
+                    <button type="button" id="delete-event" class="delete-button">Delete Event</button>
+                </div>
+            </div>
         </div>
     </div>
 

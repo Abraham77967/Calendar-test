@@ -248,18 +248,15 @@ body {
 }
 
 .modal-content {
-    background-color: #F5EEDD; /* Light beige (was pink) */
+    width: 80%;
+    max-width: 600px;
     margin: 5% auto;
     padding: 20px;
-    border: 1px solid #06202B; /* Dark navy (was navy) */
-    width: 80%;
-    max-width: 500px;
+    background-color: white;
     border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
     position: relative;
-    font-size: 1.0em;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    animation: slideInUp 0.4s ease-out;
-    transform-origin: top center;
+    animation: slideInUp 0.3s ease-out;
 }
 
 .close-button {
@@ -280,9 +277,12 @@ body {
 
 #modal-date {
     margin-top: 0;
-    font-size: 1.2em;
-    margin-bottom: 15px;
-    color: #06202B; /* Dark navy (was navy) */
+    margin-bottom: 20px;
+    color: #06202B;
+    font-size: 1.4em;
+    text-align: center;
+    border-bottom: 2px solid #077A7D;
+    padding-bottom: 10px;
 }
 
 .modal-content label {
@@ -753,4 +753,235 @@ body {
 .day .note-text:hover {
     transform: scale(1.03);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Events List */
+#events-list-container {
+    margin-bottom: 25px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    padding: 15px;
+}
+
+#events-list-container h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #077A7D;
+}
+
+.no-events-message {
+    text-align: center;
+    color: #777;
+    padding: 10px;
+    font-style: italic;
+}
+
+.event-item {
+    background-color: white;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    border-left: 4px solid #077A7D;
+}
+
+.event-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.event-time {
+    font-weight: bold;
+    color: #077A7D;
+    margin-right: 10px;
+    min-width: 60px;
+}
+
+.event-text {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-checklist-indicator {
+    color: #888;
+    font-size: 0.85em;
+    margin-left: 10px;
+}
+
+/* Add/Edit Event Sections */
+#add-event-section, #edit-event-section {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+#add-event-section h4, #edit-event-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #077A7D;
+}
+
+#new-event-time, #edit-event-time {
+    width: 120px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+#new-event-text, #edit-event-text {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 1em;
+    font-family: inherit;
+    resize: vertical;
+}
+
+/* Checklist Styling */
+.checklist-section {
+    margin-bottom: 15px;
+}
+
+.checklist-section h5 {
+    margin: 10px 0;
+    color: #555;
+}
+
+#new-event-checklist, #edit-event-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: white;
+}
+
+#new-event-checklist li, #edit-event-checklist li {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+#new-event-checklist li:last-child, #edit-event-checklist li:last-child {
+    border-bottom: none;
+}
+
+.checklist-section input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.checklist-section label {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.checklist-section label.completed {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.delete-item-button {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 5px;
+}
+
+.add-checklist-item {
+    display: flex;
+    margin-top: 10px;
+}
+
+#new-checklist-item, #edit-checklist-item {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px 0 0 4px;
+    font-size: 0.95em;
+}
+
+#add-item-button, #edit-add-item-button {
+    padding: 8px 15px;
+    background-color: #077A7D;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+/* Buttons */
+.action-button, .secondary-button, .delete-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-right: 10px;
+}
+
+.action-button {
+    background-color: #077A7D;
+    color: white;
+}
+
+.secondary-button {
+    background-color: #e0e0e0;
+    color: #444;
+}
+
+.delete-button {
+    background-color: #ff6b6b;
+    color: white;
+}
+
+.action-button:hover {
+    background-color: #066264;
+}
+
+.secondary-button:hover {
+    background-color: #d0d0d0;
+}
+
+.delete-button:hover {
+    background-color: #e55c5c;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 90%;
+        padding: 15px;
+    }
+    
+    .event-item {
+        padding: 10px;
+    }
+    
+    .action-button, .secondary-button, .delete-button {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
 } 
