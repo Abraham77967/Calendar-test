@@ -502,201 +502,6 @@ body {
     transform: translateY(1px);
 }
 
-/* --- REDESIGNED PROGRESS PANEL with NEW COLOR PALETTE --- */
-#event-progress-panel {
-    background-color: #F5EEDD;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.12);
-    width: 100%;
-    max-width: 800px; /* Match calendar wrapper width when stacked */
-    margin-top: 0; /* Reset margin */
-    max-height: none;
-    overflow-y: auto;
-    font-size: 1.05em;
-    animation: slideInUp 0.8s ease-out;
-    animation-delay: 0.4s;
-    opacity: 0;
-    animation-fill-mode: forwards;
-    transition: box-shadow 0.3s;
-}
-
-#event-progress-panel:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-#event-progress-panel h3 {
-    margin: 0 0 20px 0;
-    text-align: center;
-    font-size: 1.5em;
-    color: #06202B; /* Dark navy (was navy) */
-    padding-bottom: 15px;
-    border-bottom: 2px solid #077A7D; /* Teal (was blue) */
-}
-
-/* Card-style progress items */
-.progress-item {
-    background-color: white;
-    margin-bottom: 25px;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    border: 1px solid #eaeaea;
-    transition: all 0.3s ease;
-    animation: fadeIn 0.5s ease-out;
-    animation-fill-mode: both;
-}
-
-/* Stagger card animations */
-.progress-item:nth-child(3n+1) { animation-delay: 0.2s; }
-.progress-item:nth-child(3n+2) { animation-delay: 0.3s; }
-.progress-item:nth-child(3n+3) { animation-delay: 0.4s; }
-
-.progress-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
-}
-
-/* Item header with date and text */
-.progress-item-header {
-    background-color: #077A7D; /* Teal (was blue) */
-    padding: 15px;
-    border-bottom: 1px solid #06202B; /* Dark navy (was navy) */
-}
-
-.progress-item .item-date {
-    font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.9); /* Light text on blue (was #666) */
-    margin-bottom: 5px;
-    display: block;
-}
-
-.progress-item .item-text {
-    font-size: 1.15em;
-    font-weight: bold;
-    color: white; /* White text on blue (was #333) */
-    margin: 0;
-    word-wrap: break-word;
-    line-height: 1.3;
-}
-
-/* Progress bar with better visibility */
-.progress-item .progress-container {
-    padding: 0 15px;
-    margin: 15px 0;
-}
-
-.progress-item .progress-bar-container {
-    height: 14px;
-    background-color: #f0f0f0; /* Light gray (was #e9ecef) */
-    border-radius: 7px;
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.progress-item .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #7AE2CF, #5dd1bd); /* Mint gradient (was salmon) */
-    border-radius: 7px;
-    transition: width 0.8s cubic-bezier(0.1, 0.8, 0.2, 1);
-    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
-}
-
-.progress-item .progress-summary {
-    font-size: 0.85em;
-    color: #06202B; /* Dark navy (was navy) */
-    text-align: right;
-    margin: 5px 0 0 0;
-    font-weight: 500;
-}
-
-/* Checklist container */
-.progress-item .checklist-container {
-    padding: 15px;
-    background-color: #fff;
-}
-
-/* Redesigned checklist */
-.progress-item .panel-checklist {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.progress-item .panel-checklist li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 8px 10px;
-    border-radius: 5px;
-    background-color: #F5EEDD; /* Light beige (was pink) */
-    transition: all 0.25s ease;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.progress-item .panel-checklist li:hover {
-    background-color: #f0ebe0; /* Slightly darker beige (was darker pink) */
-    transform: translateX(3px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.progress-item .panel-checklist li:last-child {
-    margin-bottom: 0;
-}
-
-/* Custom checkbox styling */
-.progress-item .panel-checklist input[type="checkbox"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 22px;
-    height: 22px;
-    border: 2px solid #077A7D; /* Teal (was blue) */
-    border-radius: 5px;
-    margin-right: 12px;
-    position: relative;
-    cursor: pointer;
-    flex-shrink: 0;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-.progress-item .panel-checklist input[type="checkbox"]:hover {
-    transform: scale(1.1);
-    border-color: #7AE2CF; /* Mint (was salmon) */
-}
-
-.progress-item .panel-checklist input[type="checkbox"]:checked {
-    background-color: #7AE2CF; /* Mint (was salmon) */
-    border-color: #7AE2CF; /* Mint (was salmon) */
-}
-
-.progress-item .panel-checklist input[type="checkbox"]:checked::after {
-    content: "✓";
-    position: absolute;
-    color: white;
-    font-size: 15px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: checkmarkPop 0.3s ease-out;
-}
-
-.progress-item .panel-checklist label {
-    font-size: 1.05em;
-    color: #06202B; /* Dark navy (was navy) */
-    font-weight: 400;
-    cursor: pointer;
-    flex-grow: 1;
-    padding: 3px 0;
-    transition: all 0.2s ease;
-}
-
-.progress-item .panel-checklist label.completed {
-    text-decoration: line-through;
-    color: #077A7D; /* Teal (was blue) */
-    transition: all 0.3s ease;
-}
-
 /* Animation Keyframes */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -916,19 +721,36 @@ body {
     }
 }
 
-/* Indicator for days with notes */
-.note-indicator {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: 8px;
-    height: 8px;
-    background-color: #077A7D; /* Teal */
-    border-radius: 50%;
-    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+/* New container for events within a day cell */
+.day-events {
+    margin-top: auto; /* Push to bottom */
+    width: 100%;
 }
 
-/* Style for week view days (to show day name) */
-.day.week-view .day-name {
+/* Style for the event count indicator */
+.event-count {
+    font-weight: bold;
+    text-align: center;
+    background-color: #7AE2CF !important; /* Use !important cautiously */
+    color: #06202B !important;
+    padding: 3px 5px !important;
+    border-radius: 4px;
+    font-size: 0.85em !important;
+}
+
+/* Style for single event display (can reuse note-text styles mostly) */
+.single-event {
+    /* Inherits from .note-text, can add specific overrides if needed */
+    background-color: #077A7D !important; 
+    color: white !important;
+    /* Ensure it takes full width and handles overflow */
     display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.day .note-text:hover {
+    transform: scale(1.03);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 } 

@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checklistItemsElement = document.getElementById('checklist-items');
     const newItemInputElement = document.getElementById('new-checklist-item');
     const addItemButton = document.getElementById('add-item-button');
-    const eventProgressPanel = document.getElementById('event-progress-panel'); // Get panel element
+    // const eventProgressPanel = document.getElementById('event-progress-panel'); // Removed
     
     // Authentication elements
     const loginForm = document.getElementById('login-form');
@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let mobileWeekStartDate = new Date(); // For mobile week view navigation
     mobileWeekStartDate.setHours(0, 0, 0, 0);
     let selectedDateString = null;
-    let currentEditingEventId = null; // Track which event ID is being edited in the modal
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -144,23 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(doc => {
                     console.log('Firestore response:', doc.exists ? 'Document exists' : 'No document found');
                     if (doc.exists && doc.data().notes) {
-                        // Ensure loaded data conforms to new structure (arrays per date)
-                        const loadedNotes = doc.data().notes;
-                        notes = {}; // Start fresh
-                        for (const dateKey in loadedNotes) {
-                            if (Array.isArray(loadedNotes[dateKey])) {
-                                // Already an array (good)
-                                notes[dateKey] = loadedNotes[dateKey];
-                            } else if (typeof loadedNotes[dateKey] === 'object' && loadedNotes[dateKey] !== null) {
-                                // Old format (single object), convert to array with one item
-                                // Assign a simple ID for migration (timestamp for uniqueness)
-                                notes[dateKey] = [{ id: `migrated_${Date.now()}`, ...loadedNotes[dateKey] }];
-                            }
-                            // Ignore if it's not an array or object (shouldn't happen)
-                        }
-                        console.log('Loaded and potentially migrated notes from cloud');
+                        // Use cloud data only when signed in
+                        notes = doc.data().notes;
+                        console.log('Loaded notes from cloud');
                         renderCalendarView();
                     } else {
+                        // No cloud data, start with empty notes
                         notes = {};
                         console.log('No existing notes found in cloud, starting fresh');
                         renderCalendarView();
@@ -256,19 +244,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 dayElement.classList.add('today');
             }
 
-            // Check if ANY notes exist for this day
-            const eventsForDay = notes[dateString];
-            if (firebase.auth().currentUser && eventsForDay && eventsForDay.length > 0) {
-                // Just add a visual indicator - maybe a generic note element or a dot
-                // Simplified: Add the note text class which gives background color
-                // For simplicity, we won't show text from a specific note here
-                if (!dayElement.querySelector('.note-indicator')) { // Prevent multiple indicators
-                    const noteIndicator = document.createElement('div');
-                    noteIndicator.classList.add('note-indicator'); // Use this class for styling (e.g., a colored dot)
-                 //   noteIndicator.classList.add('note-text'); // Or reuse note-text for background
-                    dayElement.appendChild(noteIndicator);
-                 }
+            // --- Display Events --- 
+            const eventsForDay = notes[dateString] || [];
+            const eventsContainer = document.createElement('div');
+            eventsContainer.classList.add('day-events');
+
+            if (eventsForDay.length === 1) {
+                // Show single event text (truncated)
+                const eventTextElement = document.createElement('div');
+                eventTextElement.classList.add('note-text', 'single-event');
+                let displayText = eventsForDay[0].text || '(No description)';
+                if (eventsForDay[0].time) displayText = `${eventsForDay[0].time} - ${displayText}`; 
+                eventTextElement.textContent = displayText;
+                eventsContainer.appendChild(eventTextElement);
+            } else if (eventsForDay.length > 1) {
+                // Show event count
+                const eventCountElement = document.createElement('div');
+                eventCountElement.classList.add('note-text', 'event-count');
+                eventCountElement.textContent = `${eventsForDay.length} Events`;
+                eventsContainer.appendChild(eventCountElement);
             }
+            dayElement.appendChild(eventsContainer);
+            // --- End Display Events ---
 
             dayElement.addEventListener('click', () => openNoteModal(dateString));
             gridElement.appendChild(dayElement);
@@ -295,7 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Renders the mobile month view (uses renderCalendar)
     function renderMobileMonthView() {
         renderCalendar(mobileMonthDate, calendarGrid1, monthYearElement1);
-        // Update the main control header for mobile month view
         monthYearDisplayElement.textContent = mobileMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
     }
 
@@ -345,19 +341,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 dayElement.classList.add('today');
             }
 
-            // Add class for specific view styling if needed
-            dayElement.classList.add('week-view'); 
-            
-            // Check if ANY notes exist for this day
-            const eventsForDay = notes[dateString];
-            if (firebase.auth().currentUser && eventsForDay && eventsForDay.length > 0) {
-                // Add indicator
-                if (!dayElement.querySelector('.note-indicator')) { 
-                    const noteIndicator = document.createElement('div');
-                    noteIndicator.classList.add('note-indicator');
-                    dayElement.appendChild(noteIndicator);
-                 }
+            // --- Display Events --- 
+            const eventsForDay = notes[dateString] || [];
+            const eventsContainer = document.createElement('div');
+            eventsContainer.classList.add('day-events');
+
+            if (eventsForDay.length === 1) {
+                // Show single event text (truncated)
+                const eventTextElement = document.createElement('div');
+                eventTextElement.classList.add('note-text', 'single-event');
+                let displayText = eventsForDay[0].text || '(No description)';
+                if (eventsForDay[0].time) displayText = `${eventsForDay[0].time} - ${displayText}`; 
+                eventTextElement.textContent = displayText;
+                eventsContainer.appendChild(eventTextElement);
+            } else if (eventsForDay.length > 1) {
+                // Show event count
+                const eventCountElement = document.createElement('div');
+                eventCountElement.classList.add('note-text', 'event-count');
+                eventCountElement.textContent = `${eventsForDay.length} Events`;
+                eventsContainer.appendChild(eventCountElement);
             }
+            dayElement.appendChild(eventsContainer);
+            // --- End Display Events ---
 
             dayElement.addEventListener('click', () => openNoteModal(dateString));
             calendarGrid1.appendChild(dayElement);
@@ -383,11 +388,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleViewButton.textContent = 'Week View';
             }
         }
-        // Always render progress panel
-        renderEventProgressPanel();
+        // Always render progress panel REMOVED
+        // renderEventProgressPanel();
     }
 
-    // --- Event Progress Panel Rendering ---
+    // --- Event Progress Panel Rendering REMOVED ---
+    /*
     function renderEventProgressPanel() {
         // Skip rendering if not logged in
         if (!firebase.auth().currentUser) {
@@ -537,31 +543,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const progressSummary = itemContainer.querySelector('.progress-summary');
         if (progressSummary) progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
     }
-    // --- End Event Progress Panel Rendering ---
+    */
 
     // --- Modal Functions (open, close - unchanged, save, delete - updated selector) ---
     function openNoteModal(dateString) {
-        selectedDateString = dateString;
-        currentEditingEventId = null; // Reset editing ID when opening modal
-        const date = new Date(dateString + 'T00:00:00'); // Ensure correct date parsing
-        modalDateElement.textContent = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-        const eventsForDay = notes[selectedDateString] || [];
-
-        // *** TODO: Update modal UI to show list of events ***
-        // For now, just load the *first* event if it exists, or clear the form
-        if (eventsForDay.length > 0) {
-            const firstEvent = eventsForDay[0];
-            currentEditingEventId = firstEvent.id; // Set ID for potential save/delete
-            noteInputElement.value = firstEvent.text || '';
-            noteTimeElement.value = firstEvent.time || '';
-            renderChecklistInModal(firstEvent.checklist || []);
-        } else {
-            noteInputElement.value = '';
-            noteTimeElement.value = '';
-            renderChecklistInModal([]);
+        // Don't allow adding notes if not signed in
+        if (!firebase.auth().currentUser) {
+            alert("Please sign in to add or view notes");
+            return;
         }
-
+        
+        selectedDateString = dateString;
+        const [year, month, day] = dateString.split('-');
+        const dateObj = new Date(year, month - 1, day);
+        modalDateElement.textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const noteData = notes[selectedDateString] || { text: '', time: '', checklist: [] }; // Default to empty checklist
+        noteInputElement.value = noteData.text || '';
+        noteTimeElement.value = noteData.time || '';
+        renderChecklistInModal(noteData.checklist || []); // Render checklist
         noteModal.style.display = 'block';
     }
 
@@ -660,92 +659,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // UPDATED: Save note including checklist data and syncing to Firebase
     function saveNote() {
-        if (!selectedDateString) return;
-        const user = firebase.auth().currentUser;
-        if (!user) return; // Should not happen if modal is open, but safety check
-
-        const noteText = noteInputElement.value.trim();
-        const noteTime = noteTimeElement.value.trim();
-        const checklistItems = Array.from(checklistItemsElement.querySelectorAll('li')).map(li => {
-            const checkbox = li.querySelector('input[type="checkbox"]');
-            const label = li.querySelector('label');
-            return { text: label.textContent, done: checkbox.checked };
-        });
-
-        // Ensure the date key exists in notes object
-        if (!notes[selectedDateString]) {
-            notes[selectedDateString] = [];
+        // Don't save if not signed in
+        if (!firebase.auth().currentUser) {
+            alert("Please sign in to save notes");
+            closeNoteModal();
+            return;
         }
         
-        const eventData = {
-            text: noteText,
-            time: noteTime,
-            checklist: checklistItems
-        };
+        if (selectedDateString) {
+            const noteText = noteInputElement.value.trim();
+            const noteTime = noteTimeElement.value;
 
-        if (currentEditingEventId) {
-            // Update existing event
-            const eventIndex = notes[selectedDateString].findIndex(event => event.id === currentEditingEventId);
-            if (eventIndex > -1) {
-                // Preserve the ID, update the rest
-                notes[selectedDateString][eventIndex] = { ...notes[selectedDateString][eventIndex], ...eventData };
-            } else {
-                // ID existed but event not found? Fallback to create new (or handle error)
-                console.warn('Event ID to update not found, creating new instead');
-                eventData.id = `evt_${Date.now()}`;
-                notes[selectedDateString].push(eventData);
-            }
-        } else {
-            // Create new event
-            eventData.id = `evt_${Date.now()}`; // Simple unique ID
-            notes[selectedDateString].push(eventData);
-        }
-        
-        // Save the entire notes object to Firebase
-        db.collection('userNotes').doc(user.uid).set({ notes: notes })
-            .then(() => {
-                console.log('Note saved successfully for date:', selectedDateString);
-                closeNoteModal();
-                renderCalendarView(); // Re-render to reflect changes
-            })
-            .catch(error => {
-                console.error("Error saving note:", error);
-                alert("Failed to save note: " + error.message);
+            // Gather checklist data from the modal UI
+            const checklist = [];
+            const items = checklistItemsElement.querySelectorAll('li');
+            items.forEach(li => {
+                const checkbox = li.querySelector('input[type="checkbox"]');
+                const label = li.querySelector('label');
+                if (checkbox && label) {
+                    checklist.push({ task: label.textContent, done: checkbox.checked });
+                }
             });
+
+            if (noteText || checklist.length > 0) { // Save if there's text OR checklist items
+                notes[selectedDateString] = { text: noteText, time: noteTime, checklist: checklist };
+            } else {
+                delete notes[selectedDateString]; // Delete only if everything is empty
+            }
+            
+            // Save to Firebase if user is logged in
+            const user = firebase.auth().currentUser;
+            if (user) {
+                console.log('Saving note to Firestore for user:', user.uid);
+                db.collection('userNotes').doc(user.uid).set({
+                    notes: notes
+                })
+                .then(() => {
+                    console.log('Note saved successfully to Firestore');
+                })
+                .catch(error => {
+                    console.error("Error saving notes:", error);
+                    alert("Error saving to cloud: " + error.message);
+                });
+            }
+            
+            closeNoteModal();
+            renderCalendarView(); // Re-render to show changes immediately
+        }
     }
 
     // UPDATED: Delete note (also removes checklist) and syncs with Firebase
     function deleteNote() {
-        if (!selectedDateString || !currentEditingEventId) return;
-        const user = firebase.auth().currentUser;
-        if (!user) return;
-
-        if (notes[selectedDateString]) {
-            const initialLength = notes[selectedDateString].length;
-            notes[selectedDateString] = notes[selectedDateString].filter(event => event.id !== currentEditingEventId);
+        // Don't delete if not signed in
+        if (!firebase.auth().currentUser) {
+            alert("Please sign in to delete notes");
+            closeNoteModal();
+            return;
+        }
+        
+        if (selectedDateString) {
+            delete notes[selectedDateString];
             
-            if (notes[selectedDateString].length === 0) {
-                 delete notes[selectedDateString]; // Remove date key if no events left
+            // Save to Firebase if user is logged in
+            const user = firebase.auth().currentUser;
+            if (user) {
+                console.log('Deleting note from Firestore for user:', user.uid);
+                db.collection('userNotes').doc(user.uid).set({
+                    notes: notes
+                })
+                .then(() => {
+                    console.log('Note deleted successfully from Firestore');
+                })
+                .catch(error => {
+                    console.error("Error deleting note:", error);
+                    alert("Error syncing deletion to cloud: " + error.message);
+                });
             }
-
-            if (notes[selectedDateString] && notes[selectedDateString].length < initialLength || !notes[selectedDateString]) {
-                // Save updated notes object to Firebase
-                db.collection('userNotes').doc(user.uid).set({ notes: notes })
-                    .then(() => {
-                        console.log('Note deleted successfully for event ID:', currentEditingEventId);
-                        closeNoteModal();
-                        renderCalendarView();
-                    })
-                    .catch(error => {
-                        console.error("Error deleting note:", error);
-                        alert("Failed to delete note: " + error.message);
-                        // Potentially revert local change if save fails
-                    });
-            } else {
-                 console.warn('Event ID to delete not found:', currentEditingEventId);
-            }
-        } else {
-            console.warn('No notes found for date to delete from:', selectedDateString);
+            
+            closeNoteModal();
+            renderCalendarView(); // Re-render to remove the note visually
         }
     }
     // --- End Modal Functions ---
