@@ -1019,10 +1019,8 @@ body {
     max-height: none;
     overflow-y: auto;
     font-size: 1.05em;
-    animation: slideInUp 0.8s ease-out;
-    animation-delay: 0.4s;
-    opacity: 0;
-    animation-fill-mode: forwards;
+    opacity: 1; /* Force visibility */
+    display: block; /* Ensure it's displayed */
     transition: box-shadow 0.3s;
 }
 

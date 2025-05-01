@@ -423,20 +423,29 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        console.log('Starting to render progress panel');
+        
         // Clear existing panel content
         progressItemsContainer.innerHTML = '';
         
         // Get all dates with events
         const datesWithEvents = Object.entries(notes);
+        console.log('All dates with events:', datesWithEvents);
         
         // Filter to include only events with checklists and sort by date
         let eventsWithChecklists = [];
         
         datesWithEvents.forEach(([dateString, eventsArray]) => {
+            console.log(`Processing date ${dateString} with ${eventsArray.length} events`);
+            
             // For each date, filter to events with checklists
-            const dateEvents = eventsArray.filter(event => 
-                event.checklist && event.checklist.length > 0
-            );
+            const dateEvents = eventsArray.filter(event => {
+                const hasChecklist = event.checklist && event.checklist.length > 0;
+                console.log(`Event ${event.id}: has checklist = ${hasChecklist}, items: ${event.checklist ? event.checklist.length : 0}`);
+                return hasChecklist;
+            });
+            
+            console.log(`Found ${dateEvents.length} events with checklists for ${dateString}`);
             
             // Add date and event details to our array
             dateEvents.forEach(event => {
@@ -446,6 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         });
+        
+        console.log('Total events with checklists:', eventsWithChecklists.length);
         
         // Sort by date
         eventsWithChecklists.sort((a, b) => new Date(a.dateString) - new Date(b.dateString));
@@ -744,6 +755,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Function to gather checklist data from UI
+    function getChecklistFromUI(checklistElement) {
+        const checklist = [];
+        const items = checklistElement.querySelectorAll('li');
+        
+        console.log(`Getting checklist from UI, found ${items.length} items`);
+        
+        items.forEach((li, index) => {
+            const checkbox = li.querySelector('input[type="checkbox"]');
+            const label = li.querySelector('label');
+            
+            if (checkbox && label) {
+                const item = {
+                    task: label.textContent,
+                    done: checkbox.checked
+                };
+                console.log(`Checklist item ${index}: "${item.task}", done: ${item.done}`);
+                checklist.push(item);
+            } else {
+                console.log(`Checklist item ${index}: missing checkbox or label elements`);
+            }
+        });
+        
+        console.log('Final checklist items:', checklist);
+        return checklist;
+    }
+    
     // Function to add checklist item to new event form
     function addNewEventChecklistItem() {
         const taskText = newChecklistItemElement.value.trim();
@@ -818,26 +856,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Function to gather checklist data from UI
-    function getChecklistFromUI(checklistElement) {
-        const checklist = [];
-        const items = checklistElement.querySelectorAll('li');
-        
-        items.forEach(li => {
-            const checkbox = li.querySelector('input[type="checkbox"]');
-            const label = li.querySelector('label');
-            
-            if (checkbox && label) {
-                checklist.push({
-                    task: label.textContent,
-                    done: checkbox.checked
-                });
-            }
-        });
-        
-        return checklist;
-    }
-    
     // Add a new event
     function addEvent() {
         if (!firebase.auth().currentUser || !selectedDateString) {
@@ -847,6 +865,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventText = newEventTextElement.value.trim();
         const eventTime = newEventTimeElement.value;
         const checklist = getChecklistFromUI(newEventChecklistElement);
+        
+        console.log('Adding new event with checklist:', checklist);
         
         // Only save if there's content
         if (eventText || checklist.length > 0) {
@@ -858,6 +878,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 checklist: checklist
             };
             
+            console.log('New event object:', newEvent);
+            
             // Initialize array if needed
             if (!notes[selectedDateString]) {
                 notes[selectedDateString] = [];
@@ -865,6 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add new event to array
             notes[selectedDateString].push(newEvent);
+            console.log('Updated notes for date:', notes[selectedDateString]);
             
             // Save to Firebase
             saveNotesToFirebase().then(() => {
@@ -914,6 +937,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventTime = editEventTimeElement.value;
         const checklist = getChecklistFromUI(editEventChecklistElement);
         
+        console.log('Saving edited event with checklist:', checklist);
+        
         // Find the event in the array
         const eventsForDay = notes[selectedDateString] || [];
         const eventIndex = eventsForDay.findIndex(e => e.id === currentEditingEventId);
@@ -926,6 +951,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 time: eventTime,
                 checklist: checklist
             };
+            
+            console.log('Updated event:', eventsForDay[eventIndex]);
             
             // Save to Firebase
             saveNotesToFirebase().then(() => {
