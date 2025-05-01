@@ -77,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelEditButton = document.getElementById('cancel-edit');
     const deleteEventButton = document.getElementById('delete-event');
     
+    // Progress panel elements
+    const eventProgressPanel = document.getElementById('event-progress-panel');
+    const progressItemsContainer = document.getElementById('progress-items-container');
+    
     // Authentication elements
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
@@ -405,40 +409,73 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleViewButton.textContent = 'Week View';
             }
         }
-        // Always render progress panel REMOVED
-        // renderEventProgressPanel();
+        
+        // Always render progress panel
+        renderEventProgressPanel();
     }
 
-    // --- Event Progress Panel Rendering REMOVED ---
-    /*
+    // --- Event Progress Panel for Multiple Events ---
     function renderEventProgressPanel() {
         // Skip rendering if not logged in
         if (!firebase.auth().currentUser) {
-            // Clear panel except title
-            const existingItems = eventProgressPanel.querySelectorAll('.progress-item');
-            existingItems.forEach(item => item.remove());
+            // Clear panel
+            progressItemsContainer.innerHTML = '';
             return;
         }
         
-        // Clear existing panel content except the H3 title
-        const existingItems = eventProgressPanel.querySelectorAll('.progress-item');
-        existingItems.forEach(item => item.remove());
-
-        // Get all notes with checklists and sort them by date
-        const notesWithChecklists = Object.entries(notes)
-            .filter(([dateString, noteData]) => noteData.checklist && noteData.checklist.length > 0)
-            .map(([dateString, noteData]) => ({ dateString, ...noteData }))
-            .sort((a, b) => new Date(a.dateString) - new Date(b.dateString));
-
-        // Create and append elements for each note
-        notesWithChecklists.forEach(noteData => {
-            const dateString = noteData.dateString;
+        // Clear existing panel content
+        progressItemsContainer.innerHTML = '';
+        
+        // Get all dates with events
+        const datesWithEvents = Object.entries(notes);
+        
+        // Filter to include only events with checklists and sort by date
+        let eventsWithChecklists = [];
+        
+        datesWithEvents.forEach(([dateString, eventsArray]) => {
+            // For each date, filter to events with checklists
+            const dateEvents = eventsArray.filter(event => 
+                event.checklist && event.checklist.length > 0
+            );
             
+            // Add date and event details to our array
+            dateEvents.forEach(event => {
+                eventsWithChecklists.push({
+                    dateString,
+                    event
+                });
+            });
+        });
+        
+        // Sort by date
+        eventsWithChecklists.sort((a, b) => new Date(a.dateString) - new Date(b.dateString));
+        
+        // If no events with checklists, show message
+        if (eventsWithChecklists.length === 0) {
+            const noEventsMessage = document.createElement('div');
+            noEventsMessage.classList.add('no-events-message-panel');
+            noEventsMessage.textContent = 'No upcoming events with checklists. Add some checklists to your events!';
+            progressItemsContainer.appendChild(noEventsMessage);
+            return;
+        }
+        
+        // Group events by date for the panel
+        const groupedByDate = {};
+        
+        eventsWithChecklists.forEach(item => {
+            if (!groupedByDate[item.dateString]) {
+                groupedByDate[item.dateString] = [];
+            }
+            groupedByDate[item.dateString].push(item.event);
+        });
+        
+        // Create and append elements for each date
+        Object.entries(groupedByDate).forEach(([dateString, events]) => {
             // Create the card container
             const itemContainer = document.createElement('div');
             itemContainer.classList.add('progress-item');
-
-            // Create header section with date and title
+            
+            // Create header section with date
             const headerSection = document.createElement('div');
             headerSection.classList.add('progress-item-header');
             
@@ -446,121 +483,101 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemDate = document.createElement('span');
             itemDate.classList.add('item-date');
             const [year, month, day] = dateString.split('-');
-            itemDate.textContent = new Date(year, month-1, day).toLocaleDateString('en-US', { 
+            const dateObj = new Date(year, month-1, day);
+            
+            // Format date with day of week and relative time indicator
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const relativeTimeStr = formatTimeDifference(dateObj, today);
+            
+            itemDate.textContent = `${dateObj.toLocaleDateString('en-US', { 
                 weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
-            });
+            })} ${relativeTimeStr}`;
+            
             headerSection.appendChild(itemDate);
-
-            // Add Text (with Time)
+            
+            // Add Date Text
             const itemText = document.createElement('div');
             itemText.classList.add('item-text');
-            let displayText = noteData.text;
-            if (noteData.time) displayText = `${noteData.time} - ${displayText}`;
-            itemText.textContent = displayText || '(No description)';
+            itemText.textContent = `${events.length} event${events.length > 1 ? 's' : ''}`;
             headerSection.appendChild(itemText);
             
             itemContainer.appendChild(headerSection);
-
-            // Add Progress Bar Section
-            const totalItems = noteData.checklist.length;
-            const completedItems = noteData.checklist.filter(item => item.done).length;
-            const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
-
-            const progressContainer = document.createElement('div');
-            progressContainer.classList.add('progress-container');
             
-            const progressBarContainer = document.createElement('div');
-            progressBarContainer.classList.add('progress-bar-container');
+            // Add Events Container
+            const eventsContainer = document.createElement('div');
+            eventsContainer.classList.add('events-container');
             
-            const progressBar = document.createElement('div');
-            progressBar.classList.add('progress-bar');
-            progressBar.style.width = `${progress}%`;
-            
-            progressBarContainer.appendChild(progressBar);
-            progressContainer.appendChild(progressBarContainer);
-
-            const progressSummary = document.createElement('div');
-            progressSummary.classList.add('progress-summary');
-            progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
-            progressContainer.appendChild(progressSummary);
-            
-            itemContainer.appendChild(progressContainer);
-            
-            // Add Checklist Section
-            const checklistContainer = document.createElement('div');
-            checklistContainer.classList.add('checklist-container');
-            
-            const checklistElement = document.createElement('ul');
-            checklistElement.classList.add('panel-checklist');
-
-            noteData.checklist.forEach((item, index) => {
-                const li = document.createElement('li');
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = item.done;
-                const checkboxId = `panel-${dateString}-item-${index}`;
-                checkbox.id = checkboxId;
-
-                // Add event listener to update data on change
-                checkbox.addEventListener('change', () => {
-                    // Update the underlying data
-                    notes[dateString].checklist[index].done = checkbox.checked;
-                    
-                    // Save to Firebase if user is logged in
-                    const user = firebase.auth().currentUser;
-                    if (user) {
-                        db.collection('userNotes').doc(user.uid).set({
-                            notes: notes
-                        })
-                        .catch(error => {
-                            console.error("Error updating checklist:", error);
-                        });
-                    }
-                    
-                    // Toggle the completed class on the label
-                    label.classList.toggle('completed', checkbox.checked);
-                    // Update progress bar and summary
-                    updateProgressForItem(dateString, itemContainer);
-                });
-
-                const label = document.createElement('label');
-                label.htmlFor = checkboxId;
-                label.textContent = item.task;
-                if (item.done) {
-                    label.classList.add('completed');
+            // Add each event
+            events.forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.classList.add('panel-event');
+                
+                // Add event time and text
+                const eventDetails = document.createElement('div');
+                
+                if (event.time) {
+                    const timeElement = document.createElement('span');
+                    timeElement.classList.add('panel-event-time');
+                    timeElement.textContent = event.time;
+                    eventDetails.appendChild(timeElement);
                 }
-
-                li.appendChild(checkbox);
-                li.appendChild(label);
-                checklistElement.appendChild(li);
+                
+                const textElement = document.createElement('span');
+                textElement.classList.add('panel-event-text');
+                textElement.textContent = event.text || '(No description)';
+                eventDetails.appendChild(textElement);
+                
+                eventElement.appendChild(eventDetails);
+                
+                // Add checklist progress for this event
+                if (event.checklist && event.checklist.length > 0) {
+                    const totalItems = event.checklist.length;
+                    const completedItems = event.checklist.filter(item => item.done).length;
+                    const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+                    
+                    const progressContainer = document.createElement('div');
+                    progressContainer.classList.add('progress-container');
+                    
+                    const progressBarContainer = document.createElement('div');
+                    progressBarContainer.classList.add('progress-bar-container');
+                    
+                    const progressBar = document.createElement('div');
+                    progressBar.classList.add('progress-bar');
+                    progressBar.style.width = `${progress}%`;
+                    
+                    progressBarContainer.appendChild(progressBar);
+                    progressContainer.appendChild(progressBarContainer);
+                    
+                    const progressSummary = document.createElement('div');
+                    progressSummary.classList.add('progress-summary');
+                    progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
+                    progressContainer.appendChild(progressSummary);
+                    
+                    eventElement.appendChild(progressContainer);
+                }
+                
+                // Add click handler to open the modal for this date and select this event
+                eventElement.addEventListener('click', () => {
+                    openNoteModal(dateString);
+                    // Find and click the event in the modal to edit it
+                    setTimeout(() => {
+                        const eventItems = eventsListElement.querySelectorAll('.event-item');
+                        eventItems.forEach(item => {
+                            if (item.dataset.eventId == event.id) {
+                                item.click();
+                            }
+                        });
+                    }, 100);
+                });
+                
+                eventsContainer.appendChild(eventElement);
             });
             
-            checklistContainer.appendChild(checklistElement);
-            itemContainer.appendChild(checklistContainer);
-
-            eventProgressPanel.appendChild(itemContainer);
+            itemContainer.appendChild(eventsContainer);
+            progressItemsContainer.appendChild(itemContainer);
         });
     }
-    
-    // Helper function to update progress bar and text when checkbox changes
-    function updateProgressForItem(dateString, itemContainer) {
-        const noteData = notes[dateString];
-        if (!noteData || !noteData.checklist) return;
-        
-        const totalItems = noteData.checklist.length;
-        const completedItems = noteData.checklist.filter(item => item.done).length;
-        const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
-        
-        // Update progress bar width
-        const progressBar = itemContainer.querySelector('.progress-bar');
-        if (progressBar) progressBar.style.width = `${progress}%`;
-        
-        // Update progress text
-        const progressSummary = itemContainer.querySelector('.progress-summary');
-        if (progressSummary) progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
-    }
-    */
 
     // --- Modal Functions ---
     function openNoteModal(dateString) {
