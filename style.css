@@ -1462,12 +1462,29 @@ body {
     opacity: 0.8;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    position: relative;
 }
 
 .promote-goal-button:hover {
     transform: scale(1.2);
     opacity: 1;
     color: #E6B12E;
+}
+
+.promote-goal-button:active {
+    transform: scale(1.5);
+    opacity: 1;
+    color: #FF9500;
+}
+
+.promote-goal-button:active::after {
+    content: "✓";
+    position: absolute;
+    color: #077A7D;
+    font-size: 1em;
+    top: -8px;
+    right: -2px;
+    animation: checkmarkPop 0.3s ease-out;
 }
 
 .promote-icon {
@@ -1478,6 +1495,11 @@ body {
 .promote-goal-button:hover .promote-icon {
     transform: rotate(72deg);
     animation: starPulse 1s infinite alternate;
+}
+
+.promote-goal-button:active .promote-icon {
+    transform: rotate(360deg);
+    animation: starPulse 0.3s infinite;
 }
 
 @keyframes starPulse {

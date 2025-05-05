@@ -15,6 +15,9 @@ firebase.initializeApp(firebaseConfig);
 // Initialize Firestore
 const db = firebase.firestore();
 
+// Global temporary storage for task promotion data
+let tempPromotionData = null;
+
 // Function to completely clear all calendar data
 function clearAllCalendarData() {
     // Clear localStorage
@@ -1420,71 +1423,91 @@ document.addEventListener('DOMContentLoaded', () => {
     goalsCloseButton.addEventListener('click', closeGoalsModal);
     saveGoalsButton.addEventListener('click', saveMainGoals);
 
+    // Function to handle promotion of tasks to main goals (inside scope)
+    function handleTaskPromotion() {
+        if (!tempPromotionData) return;
+        
+        const { taskText, dateString } = tempPromotionData;
+        
+        // Get date in readable format
+        const [year, month, day] = dateString.split('-');
+        const dateObj = new Date(year, month - 1, day);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            month: 'short', day: 'numeric'
+        });
+        
+        // Find the event that contains this task
+        let eventText = "";
+        if (notes[dateString]) {
+            for (const event of notes[dateString]) {
+                if (event.checklist) {
+                    for (const item of event.checklist) {
+                        if (item.task === taskText) {
+                            eventText = event.text || "(No description)";
+                            break;
+                        }
+                    }
+                    if (eventText) break;
+                }
+            }
+        }
+        
+        // Create goal text with date and event reference
+        const goalText = eventText 
+            ? `${taskText} (from "${eventText}" on ${formattedDate})`
+            : `${taskText} (from ${formattedDate})`;
+        
+        // Add to main goals (limit to 3)
+        if (mainGoals.length >= 3) {
+            if (confirm("You already have 3 main goals. Replace the last one with this task?")) {
+                mainGoals[2] = goalText;
+            } else {
+                tempPromotionData = null;
+                return; // User cancelled
+            }
+        } else {
+            mainGoals.push(goalText);
+        }
+        
+        // Save goals to localStorage
+        localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
+        
+        // If logged in, also save to Firebase
+        if (firebase.auth().currentUser) {
+            db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
+                mainGoals: mainGoals
+            }).then(() => {
+                console.log('Main goals saved to Firebase');
+            }).catch(error => {
+                console.error('Error saving main goals:', error);
+            });
+        }
+        
+        // Update goals display
+        renderMainGoals();
+        
+        // Show confirmation
+        alert(`Task promoted to main goals: "${taskText}"`);
+        
+        // Clear the temporary data
+        tempPromotionData = null;
+    }
+    
+    // Listen for promote task events
+    document.addEventListener('promoteTask', handleTaskPromotion);
+
     // Add resize listener
     window.addEventListener('resize', renderCalendarView);
 
     // Initial Render
     renderCalendarView();
-}); 
+});
 
-// Function to promote a task to main goals
+// Function that stores promotion data and is called by the star buttons
 function promoteTaskToMainGoal(taskText, dateString) {
-    // Get date in readable format
-    const [year, month, day] = dateString.split('-');
-    const dateObj = new Date(year, month - 1, day);
-    const formattedDate = dateObj.toLocaleDateString('en-US', { 
-        month: 'short', day: 'numeric'
-    });
+    tempPromotionData = { taskText, dateString };
     
-    // Find the event that contains this task
-    let eventText = "";
-    if (notes[dateString]) {
-        for (const event of notes[dateString]) {
-            if (event.checklist) {
-                for (const item of event.checklist) {
-                    if (item.task === taskText) {
-                        eventText = event.text || "(No description)";
-                        break;
-                    }
-                }
-                if (eventText) break;
-            }
-        }
-    }
-    
-    // Create goal text with date and event reference
-    const goalText = eventText 
-        ? `${taskText} (from "${eventText}" on ${formattedDate})`
-        : `${taskText} (from ${formattedDate})`;
-    
-    // Add to main goals (limit to 3)
-    if (mainGoals.length >= 3) {
-        if (confirm("You already have 3 main goals. Replace the last one with this task?")) {
-            mainGoals[2] = goalText;
-        } else {
-            return; // User cancelled
-        }
-    } else {
-        mainGoals.push(goalText);
-    }
-    
-    // Save goals to localStorage
-    localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
-    
-    // If logged in, also save to Firebase
-    if (firebase.auth().currentUser) {
-        db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
-            mainGoals: mainGoals
-        }).then(() => {
-            console.log('Main goals saved to Firebase');
-        }).catch(error => {
-            console.error('Error saving main goals:', error);
-        });
-    }
-    
-    // Update goals display
-    renderMainGoals();
-    
-    // Show confirmation
-    alert(`Task promoted to main goals: "${taskText}"`);
+    // Create a custom event to trigger the internal promotion function
+    const event = new CustomEvent('promoteTask');
+    document.dispatchEvent(event);
 } 
