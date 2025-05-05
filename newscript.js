@@ -1611,10 +1611,13 @@ function celebrateTaskCompletion(element, isChecked) {
     pulse.className = 'task-complete-animation';
     listItem.appendChild(pulse);
     
-    // Remove pulse element after animation completes
-    setTimeout(() => {
-        if (pulse.parentNode === listItem) {
-            listItem.removeChild(pulse);
-        }
-    }, 800);
-} 
+    // Get the position for the fireworks
+    const rect = listItem.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    
+    // Create fireworks
+    createFireworks(x, y);
+    
+    // Play a subtle completion sound if available
+    try {

@@ -3,185 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>May 2025 Calendar</title>
+    <title>Interactive Calendar</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Calendar Script - Loaded after DOM -->
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="main-container">
-        <div class="calendar-controls">
-            <button id="prev-month">&lt;</button>
-            <h2 id="month-year-display">Date/Month Display</h2>
-            <button id="next-month">&gt;</button>
-            <button id="toggle-view-button">Month View</button>
+    <!-- Auth Container -->
+    <div id="auth-container">
+        <div id="login-form">
+            <h3>Sign in to access your calendar</h3>
+            <button id="google-signin-button" class="auth-button">
+                <span class="button-icon">G</span>
+                Sign in with Google
+            </button>
+            <div class="test-mode-indicator">
+                <p>Test mode enabled</p>
+                <p>You can add and view events without signing in</p>
+                <p>Data will be stored in browser memory only</p>
+            </div>
         </div>
+        <div id="user-info">
+            <span id="user-email"></span>
+            <button id="logout-button" class="auth-button">Sign Out</button>
+        </div>
+    </div>
 
+    <!-- Main Calendar Container -->
+    <div id="calendar-container">
         <!-- Main Goals Section -->
-        <div id="main-goals-section" class="main-goals-section">
-            <h3>My 3 Main Goals</h3>
-            <div id="goals-container" class="goals-container">
+        <div id="goals-section">
+            <div class="section-header">
+                <h3>Main Goals</h3>
+                <button id="edit-goals-button">Edit</button>
+            </div>
+            <div id="goals-container">
                 <!-- Goals will be added here dynamically -->
             </div>
-            <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
+        </div>
+        
+        <!-- Event Progress Panel -->
+        <div id="event-progress-panel">
+            <div class="panel-header">
+                <h3>Upcoming Tasks</h3>
+            </div>
+            <div id="progress-items-container">
+                <!-- Progress items will be added here dynamically -->
+            </div>
         </div>
 
-        <!-- Authentication UI moved to top -->
-        <div id="auth-container" class="auth-container">
-          <div id="login-form">
-            <h3>Sign in to sync your calendar</h3>
-            <div class="test-mode-indicator">
-              <p>🧪 TEST MODE ENABLED 🧪</p>
-              <p>You can add and view events without signing in.</p>
-              <p>Data will be stored in your browser memory only.</p>
-            </div>
-            <button id="google-signin-button" class="google-button">
-              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
-              Sign in with Google
-            </button>
-          </div>
-          <div id="user-info" style="display:none;">
-            <p>Signed in as: <span id="user-email"></span></p>
-            <button id="logout-button">Sign Out</button>
-          </div>
+        <!-- Calendar Controls -->
+        <div id="calendar-controls">
+            <button id="prev-month" class="control-button">&lt;</button>
+            <h2 id="month-year-display"></h2>
+            <button id="next-month" class="control-button">&gt;</button>
+            <button id="toggle-view-button" class="view-button">Month View</button>
         </div>
 
-        <div class="content-area">
-            <div class="calendars-wrapper">
-                <!-- First Calendar -->
-                <div class="calendar-container" id="calendar-1">
-                    <div class="calendar-header">
-                        <h3 id="month-year-1">Month 1</h3>
-                    </div>
-                    <div class="calendar-grid" id="calendar-grid-1">
-                        <div class="day-header">Sun</div>
-                        <div class="day-header">Mon</div>
-                        <div class="day-header">Tue</div>
-                        <div class="day-header">Wed</div>
-                        <div class="day-header">Thu</div>
-                        <div class="day-header">Fri</div>
-                        <div class="day-header">Sat</div>
-                    </div>
-                </div>
-                <!-- Second Calendar (for desktop) -->
-                <div class="calendar-container" id="calendar-2">
-                    <div class="calendar-header">
-                        <h3 id="month-year-2">Month 2</h3>
-                    </div>
-                    <div class="calendar-grid" id="calendar-grid-2">
-                        <div class="day-header">Sun</div>
-                        <div class="day-header">Mon</div>
-                        <div class="day-header">Tue</div>
-                        <div class="day-header">Wed</div>
-                        <div class="day-header">Thu</div>
-                        <div class="day-header">Fri</div>
-                        <div class="day-header">Sat</div>
-                    </div>
-                </div>
+        <!-- Calendar 1 - Main Calendar -->
+        <div id="calendar-1" class="calendar-widget">
+            <h3 id="month-year-1" class="calendar-header"></h3>
+            <div id="calendar-grid-1" class="calendar-grid">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+                <!-- Calendar days will be added here dynamically -->
             </div>
+        </div>
 
-            <!-- Event Progress Panel - Restored -->
-            <div id="event-progress-panel">
-                <h3>Upcoming Events with Checklists</h3>
-                <div id="progress-items-container">
-                    <!-- Progress items will be dynamically added here -->
-                </div>
+        <!-- Calendar 2 - Second Month (Desktop Only) -->
+        <div id="calendar-2" class="calendar-widget">
+            <h3 id="month-year-2" class="calendar-header"></h3>
+            <div id="calendar-grid-2" class="calendar-grid">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+                <!-- Calendar days will be added here dynamically -->
             </div>
         </div>
     </div>
 
-    <!-- Note Modal for Events -->
+    <!-- Note Modal -->
     <div id="note-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h3 id="modal-date">Date</h3>
-            <p class="modal-instructions">You can add multiple events for this day. First, enter details in the "Add New Event" section below, then click "Add Event". Repeat to add more events.</p>
+            <h2 id="modal-date"></h2>
             
-            <!-- Events List Section -->
-            <div id="events-list-container">
-                <h4>Events</h4>
+            <!-- Existing Events Section -->
+            <div id="events-list-section">
+                <h3>Events</h3>
                 <div id="events-list">
-                    <!-- Events will be added here dynamically -->
-                    <div class="no-events-message">No events for this day. Add one below.</div>
+                    <!-- Events will be listed here dynamically -->
                 </div>
             </div>
             
-            <!-- Add New Event Section -->
+            <!-- Add Event Section -->
             <div id="add-event-section">
-                <h4>Add New Event</h4>
-                <input type="time" id="new-event-time" placeholder="Time">
-                <textarea id="new-event-text" placeholder="Event description"></textarea>
-                
-                <div class="checklist-section">
-                    <h5>Checklist</h5>
-                    <ul id="new-event-checklist">
-                        <!-- Checklist items will be added here -->
-                    </ul>
-                    <div class="add-checklist-item">
-                        <input type="text" id="new-checklist-item" placeholder="Add checklist item...">
-                        <button type="button" id="add-item-button">Add</button>
+                <h3>Add New Event</h3>
+                <div class="event-form">
+                    <div class="form-row">
+                        <label for="new-event-time">Time (optional):</label>
+                        <input type="time" id="new-event-time">
                     </div>
+                    <div class="form-row">
+                        <label for="new-event-text">Description:</label>
+                        <input type="text" id="new-event-text" placeholder="Event description">
+                    </div>
+                    <div class="form-row checklist-section">
+                        <label>Checklist (optional):</label>
+                        <ul id="new-event-checklist" class="checklist"></ul>
+                        <div class="add-checklist-item">
+                            <input type="text" id="new-checklist-item" placeholder="Add checklist item">
+                            <button id="add-item-button">+</button>
+                        </div>
+                    </div>
+                    <button id="add-event-button" class="action-button">Add Event</button>
                 </div>
-                
-                <button type="button" id="add-event-button" class="action-button">Add Event</button>
             </div>
             
-            <!-- Event View/Edit Section (initially hidden) -->
-            <div id="edit-event-section" style="display:none;">
-                <h4>Edit Event</h4>
-                <input type="time" id="edit-event-time" placeholder="Time">
-                <textarea id="edit-event-text" placeholder="Event description"></textarea>
-                
-                <div class="checklist-section">
-                    <h5>Checklist</h5>
-                    <ul id="edit-event-checklist">
-                        <!-- Checklist items will be added here -->
-                    </ul>
-                    <div class="add-checklist-item">
-                        <input type="text" id="edit-checklist-item" placeholder="Add checklist item...">
-                        <button type="button" id="edit-add-item-button">Add</button>
+            <!-- Edit Event Section (Initially Hidden) -->
+            <div id="edit-event-section" style="display: none;">
+                <h3>Edit Event</h3>
+                <div class="event-form">
+                    <div class="form-row">
+                        <label for="edit-event-time">Time (optional):</label>
+                        <input type="time" id="edit-event-time">
                     </div>
-                </div>
-                
-                <div class="edit-actions">
-                    <button type="button" id="save-edited-event" class="action-button">Save Changes</button>
-                    <button type="button" id="cancel-edit" class="secondary-button">Cancel</button>
-                    <button type="button" id="delete-event" class="delete-button">Delete Event</button>
+                    <div class="form-row">
+                        <label for="edit-event-text">Description:</label>
+                        <input type="text" id="edit-event-text" placeholder="Event description">
+                    </div>
+                    <div class="form-row checklist-section">
+                        <label>Checklist (optional):</label>
+                        <ul id="edit-event-checklist" class="checklist"></ul>
+                        <div class="add-checklist-item">
+                            <input type="text" id="edit-checklist-item" placeholder="Add checklist item">
+                            <button id="edit-add-item-button">+</button>
+                        </div>
+                    </div>
+                    <div class="edit-buttons">
+                        <button id="save-edited-event" class="action-button">Save Changes</button>
+                        <button id="cancel-edit" class="secondary-button">Cancel</button>
+                        <button id="delete-event" class="delete-button">Delete Event</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Goals Editor Modal -->
+    
+    <!-- Goals Modal -->
     <div id="goals-modal" class="modal">
         <div class="modal-content goals-modal-content">
-            <span class="close-button goals-close-button">&times;</span>
-            <h3>Set Your 3 Main Goals</h3>
-            <p class="modal-instructions">Define up to three main goals you're currently working on. These will be displayed prominently on your calendar.</p>
+            <span class="goals-close-button">&times;</span>
+            <h2>Set Your Main Goals</h2>
+            <p class="goals-instruction">Enter up to 3 main goals that you want to focus on:</p>
             
-            <div id="goals-editor">
-                <div class="goal-input-container">
+            <div class="goals-form">
+                <div class="form-row">
                     <label for="goal-1">Goal 1:</label>
-                    <input type="text" id="goal-1" class="goal-input" placeholder="Enter your first main goal">
+                    <input type="text" id="goal-1" placeholder="Enter your most important goal">
                 </div>
-                <div class="goal-input-container">
+                <div class="form-row">
                     <label for="goal-2">Goal 2:</label>
-                    <input type="text" id="goal-2" class="goal-input" placeholder="Enter your second main goal">
+                    <input type="text" id="goal-2" placeholder="Enter your second goal">
                 </div>
-                <div class="goal-input-container">
+                <div class="form-row">
                     <label for="goal-3">Goal 3:</label>
-                    <input type="text" id="goal-3" class="goal-input" placeholder="Enter your third main goal">
+                    <input type="text" id="goal-3" placeholder="Enter your third goal">
                 </div>
-                
-                <button type="button" id="save-goals-button" class="action-button">Save Goals</button>
+                <button id="save-goals-button" class="action-button">Save Goals</button>
             </div>
         </div>
     </div>
-
-    <!-- Add Firebase SDK scripts first -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Then load our app script -->
-    <script src="script.js"></script>
 </body>
 </html> 

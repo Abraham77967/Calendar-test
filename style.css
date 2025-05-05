@@ -1507,4 +1507,157 @@ body {
     to { text-shadow: 0 0 8px rgba(242, 192, 55, 0.8); }
 }
 
-/* Auth Container */ 
+/* Toast notification styles */
+#toast-notification {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #077A7D;
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1001;
+    left: 50%;
+    bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+    transform: translateY(30px);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+#toast-notification.show {
+    visibility: visible;
+    transform: translateY(0);
+    opacity: 1;
+    animation: fadeInUp 0.3s, fadeOutDown 0.3s 2.7s;
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOutDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+}
+
+/* Firework Animation */
+.firework-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2000;
+    overflow: hidden;
+}
+
+.firework {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    animation: firework-explode 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+.particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    animation: particle-fly 1s ease-out forwards;
+    transform-origin: center;
+}
+
+@keyframes firework-explode {
+    0% {
+        transform: translate(-50%, -50%) scale(0.1);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes particle-fly {
+    0% {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(var(--x)) translateY(var(--y));
+        opacity: 0;
+    }
+}
+
+/* Task completion animation */
+.task-complete-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    background-color: rgba(88, 204, 2, 0.3);
+    pointer-events: none;
+    animation: pulse-animation 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    z-index: 1;
+    box-shadow: 0 0 10px rgba(88, 204, 2, 0.5);
+}
+
+@keyframes pulse-animation {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.9;
+        background-color: rgba(88, 204, 2, 0.6);
+        box-shadow: 0 0 15px rgba(88, 204, 2, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+/* Auth Container */
+
+/* Fireworks animation styles */
+.fireworks-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.firework-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+} 
