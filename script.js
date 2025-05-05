@@ -535,11 +535,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add each event
             events.forEach(event => {
-                const eventElement = document.createElement('div');
-                eventElement.classList.add('panel-event');
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'panel-event';
+                
+                // Create event header with time, text and edit button
+                const eventHeader = document.createElement('div');
+                eventHeader.classList.add('panel-event-header');
                 
                 // Add event time and text
                 const eventDetails = document.createElement('div');
+                eventDetails.classList.add('panel-event-details');
                 
                 if (event.time) {
                     const timeElement = document.createElement('span');
@@ -553,13 +558,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 textElement.textContent = event.text || '(No description)';
                 eventDetails.appendChild(textElement);
                 
-                eventElement.appendChild(eventDetails);
+                eventHeader.appendChild(eventDetails);
+                
+                // Create edit button
+                const editButton = document.createElement('button');
+                editButton.className = 'panel-event-edit';
+                editButton.innerHTML = '<span class="edit-icon">✎</span> Edit';
+                editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openNoteModal(dateString);
+                    // Find and click the event in the modal to edit it
+                    setTimeout(() => {
+                        const eventItems = eventsListElement.querySelectorAll('.event-item');
+                        eventItems.forEach(item => {
+                            if (item.dataset.eventId == event.id) {
+                                item.click();
+                            }
+                        });
+                    }, 100);
+                });
+                
+                eventHeader.appendChild(editButton);
+                eventDiv.appendChild(eventHeader);
                 
                 // Add checklist progress for this event
                 if (event.checklist && event.checklist.length > 0) {
                     const totalItems = event.checklist.length;
                     const completedItems = event.checklist.filter(item => item.done).length;
-                    const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+                    const percent = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
                     const progressContainer = document.createElement('div');
                     progressContainer.classList.add('progress-container');
@@ -569,14 +595,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const progressBar = document.createElement('div');
                     progressBar.classList.add('progress-bar');
-                    progressBar.style.width = `${progress}%`;
+                    progressBar.style.width = `${percent}%`;
                     
                     progressBarContainer.appendChild(progressBar);
                     progressContainer.appendChild(progressBarContainer);
 
                     const progressSummary = document.createElement('div');
                     progressSummary.classList.add('progress-summary');
-                    progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
+                    progressSummary.textContent = `${completedItems}/${totalItems} Tasks`;
                     
                     // Add toggle button
                     const toggleButton = document.createElement('button');
@@ -603,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const checklistUl = document.createElement('ul');
                     checklistUl.classList.add('panel-checklist');
                     
+                    // Add clickable checklist items
                     event.checklist.forEach((item, index) => {
                         const li = document.createElement('li');
                         
@@ -611,45 +638,59 @@ document.addEventListener('DOMContentLoaded', () => {
                         checkbox.checked = item.done;
                         checkbox.id = `panel-${dateString}-${event.id}-item-${index}`;
                         
-                        // Add event listener to update checklist item
-                        checkbox.addEventListener('change', (e) => {
-                            e.stopPropagation(); // Prevent event bubble
-                            
-                            // Update the checklist item in the notes data
-                            const events = notes[dateString];
-                            const eventIndex = events.findIndex(e => e.id === event.id);
-                            if (eventIndex !== -1) {
-                                events[eventIndex].checklist[index].done = checkbox.checked;
-                                
-                                // Update UI elements immediately
-                                label.classList.toggle('completed', checkbox.checked);
-                                
-                                // Update completed count and progress bar
-                                const newCompletedItems = events[eventIndex].checklist.filter(item => item.done).length;
-                                const newProgress = (newCompletedItems / totalItems) * 100;
-                                
-                                progressBar.style.width = `${newProgress}%`;
-                                progressSummary.textContent = `${newCompletedItems}/${totalItems} Tasks Completed`;
-                                
-                                // Save to Firebase only if signed in
-                                if (firebase.auth().currentUser) {
-                                    saveNotesToFirebase().then(() => {
-                                        console.log('Checklist item updated in Firebase');
-                                    }).catch(error => {
-                                        console.error('Error saving checklist update:', error);
-                                    });
-                                } else {
-                                    console.log('Test mode: Checklist change saved to memory only');
-                                }
-                            }
-                        });
-                        
+                        // Create label once
                         const label = document.createElement('label');
                         label.htmlFor = checkbox.id;
                         label.textContent = item.task;
                         if (item.done) {
                             label.classList.add('completed');
                         }
+                        
+                        // Prevent clicks on checkbox from opening modal
+                        checkbox.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                        
+                        // Prevent clicks on label from opening modal
+                        label.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                        
+                        // Handle checkbox change
+                        checkbox.addEventListener('change', (e) => {
+                            e.stopPropagation(); // Prevent event bubble
+                            
+                            // Update the item in the checklist array
+                            event.checklist[index].done = checkbox.checked;
+                            
+                            // Update the label class
+                            if (checkbox.checked) {
+                                label.classList.add('completed');
+                            } else {
+                                label.classList.remove('completed');
+                            }
+                            
+                            // Update the progress bar and summary
+                            const completedCount = event.checklist.filter(item => item.done).length;
+                            const total = event.checklist.length;
+                            const percent = total > 0 ? (completedCount / total) * 100 : 0;
+                            progressBar.style.width = `${percent}%`;
+                            progressBar.setAttribute('aria-valuenow', percent);
+                            
+                            // Update the progress summary
+                            progressSummary.textContent = `${completedCount}/${total} Tasks`;
+                            
+                            // Save to Firebase if user is signed in
+                            if (firebase.auth().currentUser) {
+                                console.log("Saving checklist item change to Firebase");
+                                const userRef = firebase.database().ref('users/' + firebase.auth().currentUser.uid);
+                                userRef.child(`notes/${dateString}/${event.id}`).update({
+                                    checklist: event.checklist
+                                });
+                            } else {
+                                console.log("Test mode: Saving checklist item change to memory only");
+                            }
+                        });
                         
                         li.appendChild(checkbox);
                         li.appendChild(label);
@@ -659,26 +700,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     checklistContainer.appendChild(checklistUl);
                     progressContainer.appendChild(progressSummary);
                     
-                    eventElement.appendChild(progressContainer);
-                    eventElement.appendChild(toggleButton);
-                    eventElement.appendChild(checklistContainer);
+                    eventDiv.appendChild(progressContainer);
+                    eventDiv.appendChild(toggleButton);
+                    eventDiv.appendChild(checklistContainer);
                 }
                 
-                // Add click handler to open the modal for this date and select this event
-                eventElement.addEventListener('click', () => {
-                    openNoteModal(dateString);
-                    // Find and click the event in the modal to edit it
-                    setTimeout(() => {
-                        const eventItems = eventsListElement.querySelectorAll('.event-item');
-                        eventItems.forEach(item => {
-                            if (item.dataset.eventId == event.id) {
-                                item.click();
-                            }
-                        });
-                    }, 100);
-                });
-                
-                eventsContainer.appendChild(eventElement);
+                eventsContainer.appendChild(eventDiv);
             });
             
             itemContainer.appendChild(eventsContainer);

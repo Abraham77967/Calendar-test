@@ -1100,6 +1100,19 @@ body {
     border-bottom: none;
 }
 
+/* New styles for panel event header */
+.panel-event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.panel-event-details {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
 .panel-event-time {
     font-weight: 600;
     color: #077A7D;
@@ -1111,7 +1124,37 @@ body {
 .panel-event-text {
     font-weight: 500;
     color: #333;
-    margin-bottom: 8px;
+    display: inline-block;
+}
+
+/* Edit button styles */
+.panel-event-edit {
+    background-color: transparent;
+    border: 1px solid #077A7D;
+    color: #077A7D;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75em;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    opacity: 0.7;
+    flex-shrink: 0;
+    min-width: 45px;
+    justify-content: center;
+}
+
+.panel-event-edit:hover {
+    background-color: #077A7D;
+    color: white;
+    opacity: 1;
+}
+
+.edit-icon {
+    margin-right: 4px;
+    font-size: 0.9em;
 }
 
 /* Progress bar with better visibility */
@@ -1135,11 +1178,12 @@ body {
     box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
-.panel-event .progress-summary {
-    font-size: 0.8em;
-    color: #06202B;
+.progress-summary {
+    font-size: 0.85em;
+    color: #666;
     text-align: right;
-    margin: 5px 0 0 0;
+    margin-top: 4px;
+    font-weight: 500;
 }
 
 .no-events-message-panel {
