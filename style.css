@@ -5,7 +5,7 @@
 body {
     font-family: sans-serif;
     min-height: 100vh;
-    background-color: #F5EEDD; /* Light beige (was pink) */
+    background-color: #FAEDF0; /* Light pink background (was beige) */
     padding: 20px;
     font-size: 16px;
     animation: fadeIn 0.8s ease-out;
@@ -45,7 +45,7 @@ body {
     align-items: center;
     margin-bottom: 20px;
     padding: 12px 20px;
-    background-color: #077A7D; /* Teal (was blue) */
+    background-color: #161853; /* Dark blue (was teal) */
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     color: white;
@@ -88,7 +88,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 100%; /* Full width within wrapper */
-    border: 1px solid #06202B;
+    border: 1px solid #161853; /* Dark blue */
     transition: box-shadow 0.3s, transform 0.2s;
 }
 
@@ -119,9 +119,9 @@ body {
     font-weight: bold;
     text-align: center;
     padding-bottom: 8px;
-    border-bottom: 1px solid #077A7D;
+    border-bottom: 1px solid #292C6D; /* Medium blue (was teal) */
     font-size: 0.9em; /* Adjusted size */
-    color: #06202B;
+    color: #161853; /* Dark blue */
 }
 
 .day {
@@ -149,22 +149,22 @@ body {
 .day:nth-child(7n+7) { animation-delay: 0.4s; }
 
 .day:hover {
-    background-color: #f0ebe0; /* Slightly darker beige (was darker pink) */
+    background-color: #fef9fa; /* Very light pink (was darker beige) */
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     z-index: 2;
 }
 
 .day.today {
-    background-color: #F5EEDD; /* Light beige (was pink) */
-    border: 2px solid #7AE2CF; /* Mint (was salmon) */
+    background-color: #FAEDF0; /* Light pink (was beige) */
+    border: 2px solid #EC255A; /* Accent red (was mint) */
     animation: pulseScale 2s ease-in-out;
     animation-delay: 1s;
 }
 
 .day.today .day-number {
     font-weight: 900;
-    color: #077A7D; /* Teal (was blue) */
+    color: #EC255A; /* Accent red (was teal) */
 }
 
 .day .day-number {
@@ -202,7 +202,7 @@ body {
     font-weight: normal;
     margin-top: auto; /* Push note to bottom */
     padding: 4px 6px;
-    background-color: #077A7D;
+    background-color: #292C6D; /* Medium blue (was teal) */
     border-radius: 3px;
     max-height: 55px; /* Limit height */
     overflow: hidden;
@@ -250,40 +250,40 @@ body {
 }
 
 .modal-content {
-    width: 80%;
-    max-width: 600px;
-    margin: 5% auto;
-    padding: 20px;
     background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 8px;
+    width: 70%;
+    max-width: 700px;
+    margin: auto;
+    border: 1px solid #292C6D; /* Medium blue (was dark teal) */
     position: relative;
-    animation: slideInUp 0.3s ease-out;
+    animation: modalFadeIn 0.3s ease-out;
 }
 
 .close-button {
-    color: #06202B; /* Dark navy (was navy) */
     position: absolute;
     top: 10px;
-    right: 15px;
-    font-size: 32px;
+    right: 10px;
+    font-size: 24px;
     font-weight: bold;
-    line-height: 1;
+    color: #161853; /* Dark blue */
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .close-button:hover {
-    transform: rotate(90deg);
-    color: #077A7D; /* Teal (was blue) */
+    color: #EC255A; /* Accent red */
 }
 
 #modal-date {
     margin-top: 0;
-    margin-bottom: 20px;
-    color: #06202B;
-    font-size: 1.4em;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #161853; /* Dark blue (was dark teal) */
+    font-size: 1.3em;
     text-align: center;
-    border-bottom: 2px solid #077A7D;
+    border-bottom: 2px solid #FAEDF0; /* Light pink (was beige) */
     padding-bottom: 10px;
 }
 
@@ -879,30 +879,31 @@ body {
 }
 
 .action-button {
-    background-color: #077A7D;
+    background-color: #292C6D; /* Medium blue (was teal) */
     color: white;
 }
 
 .secondary-button {
-    background-color: #e0e0e0;
-    color: #444;
+    background-color: #e7e7e7;
+    color: #292C6D; /* Medium blue */
 }
 
 .delete-button {
-    background-color: #ff6b6b;
+    background-color: #EC255A; /* Accent red (was red) */
     color: white;
 }
 
 .action-button:hover {
-    background-color: #066264;
+    background-color: #161853; /* Dark blue (was dark teal) */
 }
 
 .secondary-button:hover {
-    background-color: #d0d0d0;
+    background-color: #d5d5d5;
+    color: #161853; /* Dark blue */
 }
 
 .delete-button:hover {
-    background-color: #e55c5c;
+    background-color: #c91e49; /* Darker accent red */
 }
 
 .edit-actions {
@@ -942,19 +943,17 @@ body {
 
 /* Restored Progress Panel Styles */
 #event-progress-panel {
-    background-color: #F5EEDD;
+    background-color: white;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.12);
-    width: 100%;
-    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-top: 30px;
-    max-height: none;
-    overflow-y: auto;
-    font-size: 1.05em;
-    opacity: 1; /* Force visibility */
-    display: block; /* Ensure it's displayed */
-    transition: box-shadow 0.3s;
+    max-width: 1200px;
+    width: 100%;
+    opacity: 1; /* Make panel visible */
+    display: block; /* Make sure it's displayed */
+    border: 1px solid #161853; /* Dark blue (was dark teal) */
+    transition: all 0.3s ease;
 }
 
 #event-progress-panel:hover {
@@ -962,58 +961,50 @@ body {
 }
 
 #event-progress-panel h3 {
-    margin: 0 0 20px 0;
+    color: #292C6D; /* Medium blue (was teal) */
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3em;
     text-align: center;
-    font-size: 1.5em;
-    color: #06202B;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #077A7D;
+    border-bottom: 2px solid #FAEDF0; /* Light pink (was beige) */
+    padding-bottom: 10px;
 }
 
 /* Card-style progress items */
 .progress-item {
-    background-color: white;
-    margin-bottom: 25px;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    border: 1px solid #eaeaea;
-    transition: all 0.3s ease;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #FAEDF0; /* Light pink (was light gray) */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
     animation: fadeIn 0.5s ease-out;
     animation-fill-mode: both;
 }
 
-/* Stagger card animations */
-.progress-item:nth-child(3n+1) { animation-delay: 0.2s; }
-.progress-item:nth-child(3n+2) { animation-delay: 0.3s; }
-.progress-item:nth-child(3n+3) { animation-delay: 0.4s; }
-
 .progress-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
-}
-
-/* Item header with date and text */
-.progress-item-header {
-    background-color: #077A7D;
-    padding: 15px;
-    border-bottom: 1px solid #06202B;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #EC255A; /* Accent red (was teal) */
+    transform: translateY(-2px);
 }
 
 .progress-item .item-date {
-    font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 1em;
+    color: #161853; /* Dark blue (was dark teal) */
     display: block;
+    margin-bottom: 3px;
 }
 
 .progress-item .item-text {
-    font-size: 1.15em;
-    font-weight: bold;
-    color: white;
-    margin: 0;
-    word-wrap: break-word;
-    line-height: 1.3;
+    color: #292C6D; /* Medium blue (was teal) */
+    font-size: 0.9em;
+    opacity: 0.9;
+    font-weight: normal;
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: inline-block;
 }
 
 /* Event container for multiple events */
@@ -1048,7 +1039,7 @@ body {
 
 .panel-event-time {
     font-weight: 600;
-    color: #077A7D;
+    color: #EC255A; /* Accent red (was teal) */
     margin-right: 8px;
     display: inline-block;
     min-width: 60px;
@@ -1063,8 +1054,8 @@ body {
 /* Edit button styles */
 .panel-event-edit {
     background-color: transparent;
-    border: 1px solid #077A7D;
-    color: #077A7D;
+    border: 1px solid #292C6D; /* Medium blue (was teal) */
+    color: #292C6D; /* Medium blue (was teal) */
     padding: 3px 8px;
     border-radius: 4px;
     cursor: pointer;
@@ -1073,14 +1064,14 @@ body {
     display: flex;
     align-items: center;
     margin-left: 10px;
-    opacity: 0.7;
+    opacity: 0.8;
     flex-shrink: 0;
     min-width: 45px;
     justify-content: center;
 }
 
 .panel-event-edit:hover {
-    background-color: #077A7D;
+    background-color: #292C6D; /* Medium blue (was teal) */
     color: white;
     opacity: 1;
 }
@@ -1096,19 +1087,20 @@ body {
 }
 
 .panel-event .progress-bar-container {
-    height: 12px;
-    background-color: #f0f0f0;
-    border-radius: 6px;
+    width: 100%;
+    height: 6px;
+    background-color: #f1f1f1;
+    border-radius: 3px;
     overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    margin: 8px 0;
 }
 
 .panel-event .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #7AE2CF, #5dd1bd);
-    border-radius: 6px;
-    transition: width 0.8s cubic-bezier(0.1, 0.8, 0.2, 1);
-    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    height: 6px;
+    background-color: #EC255A; /* Accent red (was teal) */
+    border-radius: 3px;
+    width: 0; /* Will be set dynamically */
+    transition: width 0.3s ease;
 }
 
 .progress-summary {
@@ -1131,11 +1123,11 @@ body {
 
 /* Toggle button for checklist */
 .toggle-checklist-button {
-    background-color: #077A7D;
+    background-color: #292C6D; /* Medium blue (was teal) */
     color: white;
     border: none;
+    padding: 5px 10px;
     border-radius: 4px;
-    padding: 6px 10px;
     margin: 8px 0;
     font-size: 0.85em;
     cursor: pointer;
@@ -1143,17 +1135,19 @@ body {
 }
 
 .toggle-checklist-button:hover {
-    background-color: #066264;
+    background-color: #161853; /* Dark blue (was dark teal) */
     transform: translateY(-1px);
 }
 
 /* Panel checklist container */
 .panel-checklist-container {
-    background-color: #f9f9f9;
+    background-color: #FAEDF0; /* Light pink (was lighter teal) */
     border-radius: 6px;
-    margin: 5px 0 10px;
+    padding: 10px;
+    margin-top: 5px;
     overflow: hidden;
-    animation: fadeIn 0.3s ease-out;
+    max-height: 0;
+    animation: expandDown 0.3s ease forwards;
 }
 
 /* Panel checklist */
@@ -1177,8 +1171,9 @@ body {
 }
 
 .panel-checklist li:hover {
-    background-color: #f5f5f5;
-    transform: translateX(2px);
+    background-color: #fff9fa; /* Slightly lighter pink (was off-white) */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .panel-checklist input[type="checkbox"] {
@@ -1202,14 +1197,14 @@ body {
 }
 
 .panel-checklist input[type="checkbox"]:checked::after {
-    content: "✓";
+    content: '✓';
     position: absolute;
-    color: white;
-    font-size: 12px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: checkmarkPop 0.3s ease-out;
+    top: -2px;
+    left: 1px;
+    color: #EC255A; /* Accent red (was teal) */
+    font-size: 14px;
+    font-weight: bold;
+    animation: checkmarkPop 0.2s ease-out;
 }
 
 .panel-checklist label {
@@ -1221,8 +1216,7 @@ body {
 
 .panel-checklist label.completed {
     text-decoration: line-through;
-    color: #777;
-    transition: all 0.3s ease;
+    color: #888;
 }
 
 /* Main Goals Section Styles */
@@ -1234,7 +1228,7 @@ body {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto 20px;
-    border: 1px solid #06202B;
+    border: 1px solid #161853; /* Dark blue (was dark teal) */
     transition: box-shadow 0.3s, transform 0.2s;
     animation: slideInUp 0.7s ease-out forwards;
 }
@@ -1245,12 +1239,12 @@ body {
 }
 
 .main-goals-section h3 {
-    color: #077A7D;
+    color: #292C6D; /* Medium blue (was teal) */
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.3em;
     text-align: center;
-    border-bottom: 2px solid #F5EEDD;
+    border-bottom: 2px solid #FAEDF0; /* Light pink (was beige) */
     padding-bottom: 10px;
 }
 
@@ -1262,7 +1256,7 @@ body {
 }
 
 .goal-item {
-    background-color: #F5EEDD;
+    background-color: #FAEDF0; /* Light pink (was beige) */
     padding: 12px 15px;
     border-radius: 6px;
     display: flex;
@@ -1278,7 +1272,7 @@ body {
 }
 
 .goal-index {
-    color: #077A7D;
+    color: #EC255A; /* Accent red (was teal) */
     font-weight: bold;
     font-size: 1.2em;
     margin-right: 10px;
@@ -1302,7 +1296,7 @@ body {
 }
 
 .edit-goals-button {
-    background-color: #077A7D;
+    background-color: #292C6D; /* Medium blue (was teal) */
     color: white;
     border: none;
     padding: 10px 15px;
@@ -1315,7 +1309,7 @@ body {
 }
 
 .edit-goals-button:hover {
-    background-color: #06656b;
+    background-color: #161853; /* Dark blue (was dark teal) */
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
@@ -1347,7 +1341,7 @@ body {
 }
 
 .goal-input:focus {
-    border-color: #077A7D;
+    border-color: #292C6D; /* Medium blue (was teal) */
     outline: none;
 }
 
@@ -1364,8 +1358,8 @@ body {
 /* Promote to goal button */
 .promote-goal-button {
     background: none;
-    border: 1px solid #077A7D;
-    color: #077A7D;
+    border: 1px solid #292C6D; /* Medium blue (was teal) */
+    color: #292C6D; /* Medium blue (was teal) */
     cursor: pointer;
     font-size: 0.75em;
     padding: 2px 8px;
@@ -1379,13 +1373,13 @@ body {
 }
 
 .promote-goal-button:hover {
-    background-color: #077A7D;
+    background-color: #292C6D; /* Medium blue (was teal) */
     opacity: 1;
     color: white;
 }
 
 .promote-goal-button:active {
-    background-color: #066264;
+    background-color: #161853; /* Dark blue (was dark teal) */
     transform: translateY(1px);
 }
 
@@ -1428,7 +1422,7 @@ body {
     opacity: 0;
     transition: transform 0.3s ease, opacity 0.3s ease;
     max-width: 300px;
-    border-left: 3px solid #077A7D;
+    border-left: 3px solid #EC255A; /* Accent red (was teal) */
 }
 
 .promotion-toast.show {
@@ -1444,7 +1438,7 @@ body {
     font-weight: 600;
     margin-bottom: 3px;
     font-size: 0.95em;
-    color: #077A7D;
+    color: #EC255A; /* Accent red (was teal) */
 }
 
 .toast-text {
@@ -1524,12 +1518,12 @@ body {
 }
 
 .header-auth #logout-button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: #EC255A; /* Accent red */
 }
 
 .test-mode-badge {
-    background-color: #F2C037;
-    color: #06202B;
+    background-color: #EC255A; /* Accent red (was gold) */
+    color: white;
     font-size: 0.7em;
     padding: 2px 6px;
     border-radius: 4px;
@@ -1589,4 +1583,16 @@ body {
         font-size: 0.7em;
         padding: 3px 6px;
     }
+}
+
+/* Add animation for modal */
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Add animation for expanding checklist */
+@keyframes expandDown {
+    from { max-height: 0; padding-top: 0; padding-bottom: 0; }
+    to { max-height: 500px; padding: 10px; }
 } 

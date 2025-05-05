@@ -720,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Add toggle button
                     const toggleButton = document.createElement('button');
                     toggleButton.classList.add('toggle-checklist-button');
-                    toggleButton.textContent = 'Show Tasks';
+                    toggleButton.textContent = 'Hide Tasks';
                     toggleButton.addEventListener('click', (e) => {
                         e.stopPropagation(); // Prevent event bubble to parent
                         const checklistContainer = e.target.nextElementSibling;
@@ -733,10 +733,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                     
-                    // Create checklist container (initially hidden)
+                    // Create checklist container (initially visible)
             const checklistContainer = document.createElement('div');
                     checklistContainer.classList.add('panel-checklist-container');
-                    checklistContainer.style.display = 'none';
+                    checklistContainer.style.display = 'block';
             
                     // Add checklist items
                     const checklistUl = document.createElement('ul');
