@@ -794,9 +794,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Update the label class
                             if (checkbox.checked) {
                                 label.classList.add('completed');
-                                // Trigger celebration animation when task is completed
-                                const rect = checkbox.getBoundingClientRect();
-                                createCelebration(rect.left, rect.top);
                             } else {
                                 label.classList.remove('completed');
                             }
@@ -973,11 +970,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
-                if (checkbox.checked) {
-                    // Trigger celebration animation when checked
-                    const rect = checkbox.getBoundingClientRect();
-                    createCelebration(rect.left, rect.top);
-                }
             });
             
             li.appendChild(checkbox);
@@ -1027,11 +1019,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
-                if (checkbox.checked) {
-                    // Trigger celebration animation when checked
-                    const rect = checkbox.getBoundingClientRect();
-                    createCelebration(rect.left, rect.top);
-                }
             });
 
             li.appendChild(checkbox);
@@ -1105,11 +1092,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
-                if (checkbox.checked) {
-                    // Trigger celebration animation when checked
-                    const rect = checkbox.getBoundingClientRect();
-                    createCelebration(rect.left, rect.top);
-                }
             });
             
             li.appendChild(checkbox);
@@ -1158,11 +1140,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
-                if (checkbox.checked) {
-                    // Trigger celebration animation when checked
-                    const rect = checkbox.getBoundingClientRect();
-                    createCelebration(rect.left, rect.top);
-                }
             });
 
             li.appendChild(checkbox);
@@ -1509,8 +1486,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update goals display
         renderMainGoals();
         
-        // Show success toast notification rather than alert
-        showToastNotification(`Task added to main goals`);
+        // Show confirmation
+        alert(`Task promoted to main goals: "${taskText}"`);
         
         // Clear the temporary data
         tempPromotionData = null;
@@ -1533,115 +1510,4 @@ function promoteTaskToMainGoal(taskText, dateString) {
     // Create a custom event to trigger the internal promotion function
     const event = new CustomEvent('promoteTask');
     document.dispatchEvent(event);
-}
-
-// Function to show a toast notification
-function showToastNotification(message) {
-    // Create toast element if it doesn't exist
-    let toast = document.getElementById('toast-notification');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast-notification';
-        document.body.appendChild(toast);
-    }
-    
-    // Set message and show the toast
-    toast.textContent = message;
-    toast.className = 'show';
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        toast.className = toast.className.replace('show', '');
-    }, 3000);
-}
-
-// Function to create a celebration animation when task is completed
-function createCelebration(x, y, withSound = true) {
-    // Visual celebration effect
-    const container = document.createElement('div');
-    container.className = 'celebration-container';
-    container.style.position = 'fixed';
-    container.style.left = `${x}px`;
-    container.style.top = `${y}px`;
-    container.style.pointerEvents = 'none';
-    container.style.zIndex = '9999';
-    document.body.appendChild(container);
-    
-    // Create multiple particles for the celebration effect
-    const colors = ['#077A7D', '#7AE2CF', '#F2C037', '#FF9500', '#F5EEDD'];
-    const particleCount = 30;
-    
-    for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'celebration-particle';
-        const size = Math.random() * 8 + 4;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.position = 'absolute';
-        particle.style.borderRadius = '50%';
-        particle.style.left = '0';
-        particle.style.top = '0';
-        
-        // Set random animation values
-        const angle = Math.random() * Math.PI * 2;
-        const velocity = Math.random() * 6 + 2;
-        const xVelocity = Math.cos(angle) * velocity;
-        const yVelocity = Math.sin(angle) * velocity;
-        const duration = Math.random() * 1000 + 500;
-        
-        particle.style.transform = 'translate(0, 0)';
-        particle.style.opacity = '1';
-        
-        // Apply animation
-        particle.animate([
-            { transform: 'translate(0, 0)', opacity: 1 },
-            { transform: `translate(${xVelocity * 50}px, ${yVelocity * 50}px)`, opacity: 0 }
-        ], {
-            duration: duration,
-            easing: 'cubic-bezier(0, .9, .57, 1)'
-        });
-        
-        container.appendChild(particle);
-    }
-    
-    // Play sound effect if enabled
-    if (withSound) {
-        playCompletionSound();
-    }
-    
-    // Remove the container after animation
-    setTimeout(() => {
-        container.remove();
-    }, 2000);
-}
-
-// Function to play a completion sound
-function playCompletionSound() {
-    // Create a simple audio context for a short beep sound
-    try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Create an oscillator for a pleasant "ding" sound
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        
-        // Configure the sound
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-        
-        // Configure the volume envelope
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        
-        // Connect nodes and start/stop the sound
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.3);
-    } catch (e) {
-        console.log('Audio not supported or blocked by browser policy');
-    }
 } 
