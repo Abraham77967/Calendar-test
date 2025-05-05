@@ -1507,4 +1507,68 @@ body {
     to { text-shadow: 0 0 8px rgba(242, 192, 55, 0.8); }
 }
 
-/* Auth Container */ 
+/* Auth Container */
+
+/* Toast notification for goal promotion */
+.promotion-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #06202B;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-width: 300px;
+    border-left: 5px solid #F2C037;
+}
+
+.promotion-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    font-size: 2em;
+    margin-right: 12px;
+    color: #F2C037;
+    animation: starPulseToast 1.5s infinite alternate;
+}
+
+.toast-message {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+    font-size: 1.1em;
+}
+
+.toast-text {
+    font-size: 0.9em;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@keyframes starPulseToast {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); text-shadow: 0 0 10px rgba(242, 192, 55, 0.8); }
+}
+
+@media (max-width: 768px) {
+    .promotion-toast {
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+        max-width: none;
+    }
+} 

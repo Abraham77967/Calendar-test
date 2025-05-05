@@ -1486,11 +1486,39 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update goals display
         renderMainGoals();
         
-        // Show confirmation
-        alert(`Task promoted to main goals: "${taskText}"`);
+        // Show visual success indicator (instead of alert)
+        showPromotionSuccess(taskText);
         
         // Clear the temporary data
         tempPromotionData = null;
+    }
+    
+    // Function to show promotion success without using alert
+    function showPromotionSuccess(taskText) {
+        // Create a toast notification element
+        const toast = document.createElement('div');
+        toast.className = 'promotion-toast';
+        toast.innerHTML = `
+            <div class="toast-icon">⭐</div>
+            <div class="toast-message">
+                <div class="toast-title">Goal Added</div>
+                <div class="toast-text">"${taskText}" added to main goals</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300); // Wait for fade out animation
+        }, 3000);
     }
     
     // Listen for promote task events
