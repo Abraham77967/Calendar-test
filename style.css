@@ -1152,65 +1152,71 @@ body {
     margin: 10px 0;
 }
 
-/* Checklist dropdown styles */
-.checklist-dropdown-indicator {
-    text-align: center;
-    color: #077A7D;
+/* Toggle button for checklist */
+.toggle-checklist-button {
+    background-color: #077A7D;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin: 8px 0;
     font-size: 0.85em;
     cursor: pointer;
-    padding: 5px 0;
-    margin-top: 8px;
-    border-top: 1px dotted #e0e0e0;
     transition: all 0.2s ease;
 }
 
-.checklist-dropdown-indicator:hover {
-    color: #06202B;
-    background-color: rgba(122, 226, 207, 0.1);
+.toggle-checklist-button:hover {
+    background-color: #066264;
+    transform: translateY(-1px);
 }
 
+/* Panel checklist container */
 .panel-checklist-container {
     background-color: #f9f9f9;
-    border-top: 1px solid #eee;
-    padding: 5px 0;
+    border-radius: 6px;
+    margin: 5px 0 10px;
+    overflow: hidden;
     animation: fadeIn 0.3s ease-out;
 }
 
+/* Panel checklist */
 .panel-checklist {
     list-style: none;
-    padding: 0 12px;
-    margin: 5px 0;
+    padding: 10px;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .panel-checklist li {
     display: flex;
     align-items: center;
-    padding: 8px 10px;
+    padding: 6px 8px;
     margin-bottom: 5px;
     background-color: white;
     border-radius: 4px;
     border: 1px solid #eee;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
 }
 
 .panel-checklist li:hover {
-    background-color: #f0f8f8;
+    background-color: #f5f5f5;
     transform: translateX(2px);
 }
 
 .panel-checklist input[type="checkbox"] {
     margin-right: 10px;
     transform: scale(1.1);
+    -webkit-appearance: none;
+    appearance: none;
     width: 18px;
     height: 18px;
     border: 2px solid #077A7D;
-    border-radius: 4px;
+    border-radius: 3px;
     position: relative;
     cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
     background-color: white;
-    flex-shrink: 0;
+    transition: all 0.2s ease;
 }
 
 .panel-checklist input[type="checkbox"]:checked {
@@ -1226,16 +1232,18 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    animation: checkmarkPop 0.3s ease-out;
 }
 
 .panel-checklist label {
     flex-grow: 1;
-    font-size: 0.95em;
-    color: #333;
     cursor: pointer;
+    font-size: 0.9em;
+    color: #333;
 }
 
 .panel-checklist label.completed {
     text-decoration: line-through;
-    color: #888;
+    color: #777;
+    transition: all 0.3s ease;
 } 

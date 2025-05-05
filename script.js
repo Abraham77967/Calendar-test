@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create the card container
             const itemContainer = document.createElement('div');
             itemContainer.classList.add('progress-item');
-            
+
             // Create header section with date
             const headerSection = document.createElement('div');
             headerSection.classList.add('progress-item-header');
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })} ${relativeTimeStr}`;
             
             headerSection.appendChild(itemDate);
-            
+
             // Add Date Text
             const itemText = document.createElement('div');
             itemText.classList.add('item-text');
@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSection.appendChild(itemText);
             
             itemContainer.appendChild(headerSection);
-            
+
             // Add Events Container
             const eventsContainer = document.createElement('div');
             eventsContainer.classList.add('events-container');
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const totalItems = event.checklist.length;
                     const completedItems = event.checklist.filter(item => item.done).length;
                     const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
-                    
+
                     const progressContainer = document.createElement('div');
                     progressContainer.classList.add('progress-container');
                     
@@ -559,28 +559,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     progressBarContainer.appendChild(progressBar);
                     progressContainer.appendChild(progressBarContainer);
-                    
+
                     const progressSummary = document.createElement('div');
                     progressSummary.classList.add('progress-summary');
                     progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
-                    progressContainer.appendChild(progressSummary);
                     
-                    // Add dropdown indicator for checklist
-                    const dropdownIndicator = document.createElement('div');
-                    dropdownIndicator.classList.add('checklist-dropdown-indicator');
-                    dropdownIndicator.innerHTML = '▼ Show Checklist';
-                    progressContainer.appendChild(dropdownIndicator);
+                    // Add toggle button
+                    const toggleButton = document.createElement('button');
+                    toggleButton.classList.add('toggle-checklist-button');
+                    toggleButton.textContent = 'Show Tasks';
+                    toggleButton.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent event bubble to parent (which opens modal)
+                        const checklistContainer = e.target.nextElementSibling;
+                        if (checklistContainer.style.display === 'none' || !checklistContainer.style.display) {
+                            checklistContainer.style.display = 'block';
+                            e.target.textContent = 'Hide Tasks';
+                        } else {
+                            checklistContainer.style.display = 'none';
+                            e.target.textContent = 'Show Tasks';
+                        }
+                    });
                     
-                    // Create hidden checklist container
+                    // Create checklist container (initially hidden)
                     const checklistContainer = document.createElement('div');
                     checklistContainer.classList.add('panel-checklist-container');
                     checklistContainer.style.display = 'none';
                     
-                    // Create list of checklist items
+                    // Add checklist items
                     const checklistUl = document.createElement('ul');
                     checklistUl.classList.add('panel-checklist');
                     
-                    // Add each checklist item
                     event.checklist.forEach((item, index) => {
                         const li = document.createElement('li');
                         
@@ -589,28 +597,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         checkbox.checked = item.done;
                         checkbox.id = `panel-${dateString}-${event.id}-item-${index}`;
                         
-                        // Add event listener to update checklist item status
-                        checkbox.addEventListener('change', () => {
-                            // Find the event in notes and update the checklist item
-                            const eventsArray = notes[dateString];
-                            if (eventsArray) {
-                                const eventIndex = eventsArray.findIndex(e => e.id === event.id);
-                                if (eventIndex !== -1) {
-                                    // Update the done status
-                                    notes[dateString][eventIndex].checklist[index].done = checkbox.checked;
-                                    
-                                    // Update label class
+                        // Add event listener to update checklist item
+                        checkbox.addEventListener('change', (e) => {
+                            e.stopPropagation(); // Prevent event bubble
+                            
+                            // Update the checklist item in the notes data
+                            const events = notes[dateString];
+                            const eventIndex = events.findIndex(e => e.id === event.id);
+                            if (eventIndex !== -1) {
+                                events[eventIndex].checklist[index].done = checkbox.checked;
+                                
+                                // Save to Firebase
+                                saveNotesToFirebase().then(() => {
+                                    // Update UI elements
                                     label.classList.toggle('completed', checkbox.checked);
                                     
-                                    // Update progress bar and summary
-                                    const updatedCompletedItems = notes[dateString][eventIndex].checklist.filter(item => item.done).length;
-                                    const updatedProgress = (updatedCompletedItems / totalItems) * 100;
-                                    progressBar.style.width = `${updatedProgress}%`;
-                                    progressSummary.textContent = `${updatedCompletedItems}/${totalItems} Tasks Completed`;
+                                    // Update completed count and progress bar
+                                    const newCompletedItems = events[eventIndex].checklist.filter(item => item.done).length;
+                                    const newProgress = (newCompletedItems / totalItems) * 100;
                                     
-                                    // Save to Firebase
-                                    saveNotesToFirebase();
-                                }
+                                    progressBar.style.width = `${newProgress}%`;
+                                    progressSummary.textContent = `${newCompletedItems}/${totalItems} Tasks Completed`;
+                                });
                             }
                         });
                         
@@ -627,17 +635,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     
                     checklistContainer.appendChild(checklistUl);
-                    
-                    // Toggle checklist visibility when clicking the dropdown indicator
-                    dropdownIndicator.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent opening the modal
-                        
-                        const isHidden = checklistContainer.style.display === 'none';
-                        checklistContainer.style.display = isHidden ? 'block' : 'none';
-                        dropdownIndicator.innerHTML = isHidden ? '▲ Hide Checklist' : '▼ Show Checklist';
-                    });
+                    progressContainer.appendChild(progressSummary);
                     
                     eventElement.appendChild(progressContainer);
+                    eventElement.appendChild(toggleButton);
                     eventElement.appendChild(checklistContainer);
                 }
                 
@@ -758,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         checklist.forEach((item, index) => {
             const li = document.createElement('li');
-            
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = item.done;
@@ -801,14 +802,14 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.type = 'checkbox';
             checkbox.checked = item.done;
             checkbox.id = `edit-item-${index}`;
-            
+
             const label = document.createElement('label');
             label.htmlFor = `edit-item-${index}`;
             label.textContent = item.task;
             if (item.done) {
                 label.classList.add('completed');
             }
-            
+
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
             deleteButton.innerHTML = '&times;';
@@ -820,7 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
             });
-            
+
             li.appendChild(checkbox);
             li.appendChild(label);
             li.appendChild(deleteButton);
@@ -862,7 +863,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = { task: taskText, done: false };
             
             const li = document.createElement('li');
-            
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = `new-item-${Date.now()}`; // Use timestamp for unique ID
@@ -903,23 +904,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = `edit-item-${Date.now()}`; // Use timestamp for unique ID
-            
+
             const label = document.createElement('label');
             label.htmlFor = checkbox.id;
             label.textContent = item.task;
-            
+
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
             deleteButton.innerHTML = '&times;';
             deleteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
-                li.remove();
+                 li.remove();
             });
             
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
             });
-            
+
             li.appendChild(checkbox);
             li.appendChild(label);
             li.appendChild(deleteButton);
