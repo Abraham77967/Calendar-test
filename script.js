@@ -762,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Create promote to goal button
                         const promoteButton = document.createElement('button');
                         promoteButton.classList.add('promote-goal-button');
-                        promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+                        promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
                         promoteButton.title = 'Add to main goals';
                         promoteButton.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -953,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
             promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1010,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
             promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1075,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
             promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1131,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
             promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();

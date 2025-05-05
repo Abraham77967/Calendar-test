@@ -1453,55 +1453,51 @@ body {
 /* Promote to goal button */
 .promote-goal-button {
     background: none;
-    border: none;
+    border: 1px solid #077A7D;
     color: #077A7D;
     cursor: pointer;
-    font-size: 0.9em;
-    padding: 2px 6px;
+    font-size: 0.75em;
+    padding: 2px 8px;
     margin-right: 4px;
-    opacity: 0.75;
+    opacity: 0.8;
     transition: all 0.2s ease;
     flex-shrink: 0;
     position: relative;
     border-radius: 3px;
+    font-weight: 500;
 }
 
 .promote-goal-button:hover {
-    background-color: rgba(7, 122, 125, 0.1);
+    background-color: #077A7D;
     opacity: 1;
-    color: #077A7D;
+    color: white;
 }
 
 .promote-goal-button:active {
-    background-color: rgba(7, 122, 125, 0.2);
-    opacity: 1;
+    background-color: #066264;
+    transform: translateY(1px);
 }
 
 .promote-goal-button::after {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    bottom: -1px;
-    left: 0;
-    background-color: #077A7D;
-    transform: scaleX(0);
-    transition: transform 0.2s;
+    /* Remove underline animation */
+    display: none;
 }
 
 .promote-goal-button:hover::after {
-    transform: scaleX(1);
+    /* Remove underline animation */
+    display: none;
 }
 
 .promote-icon {
     display: inline-block;
     font-family: sans-serif;
-    font-weight: normal;
+    margin-right: 3px;
 }
 
 .promote-goal-button .promote-icon::before {
-    content: "↗"; /* Up-right arrow instead of star */
-    font-size: 1.1em;
+    content: "+";
+    font-size: 1.2em;
+    font-weight: bold;
 }
 
 /* Toast notification for goal promotion */
