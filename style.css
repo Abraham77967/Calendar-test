@@ -41,10 +41,10 @@ body {
 
 .calendar-controls {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 20px;
-    padding: 10px 20px;
+    padding: 12px 20px;
     background-color: #077A7D; /* Teal (was blue) */
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -52,6 +52,8 @@ body {
     opacity: 0;
     animation: slideInUp 0.6s ease-out forwards;
     transition: box-shadow 0.3s, transform 0.2s;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .calendar-controls:hover {
@@ -549,76 +551,7 @@ body {
 }
 
 /* Authentication Styles */
-.auth-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px auto;
-    max-width: 400px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    border: 1px solid #06202B;
-    animation: fadeIn 0.8s ease-out;
-}
-
-.auth-container h3 {
-    color: #06202B;
-    margin-top: 0;
-}
-
-.auth-container input {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1em;
-}
-
-.auth-container button {
-    background-color: #077A7D;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    margin: 5px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.auth-container button:hover {
-    background-color: #06656A;
-    transform: translateY(-2px);
-}
-
-.google-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: white !important;
-    color: #444 !important;
-    border: 1px solid #ddd !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: background-color 0.3s, box-shadow 0.3s;
-    width: 100%;
-    padding: 10px !important;
-}
-
-.google-button:hover {
-    background-color: #f8f8f8 !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.google-button img {
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-}
-
-#user-info {
-    animation: fadeIn 0.5s ease-out;
-}
+/* Remove auth-container styles */
 
 /* Large desktop screens - side-by-side layout */
 @media (min-width: 1400px) {
@@ -683,9 +616,9 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
     padding: 5px 10px;
     font-size: 0.8em; /* Smaller font */
-    margin-left: 15px; /* Space from other buttons */
     border-radius: 4px;
     display: none; /* Hide by default (for desktop) */
+    margin-left: 5px;
 }
 
 #toggle-view-button:hover {
@@ -1292,28 +1225,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Test Mode Indicator */
-.test-mode-indicator {
-    background-color: #fffaed;
-    border: 2px dashed #f2c037;
-    border-radius: 6px;
-    padding: 10px;
-    margin: 12px 0;
-    text-align: center;
-}
-
-.test-mode-indicator p {
-    margin: 5px 0;
-    color: #333;
-    font-size: 0.9em;
-}
-
-.test-mode-indicator p:first-child {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: #ad7b11;
-}
-
 /* Main Goals Section Styles */
 .main-goals-section {
     background-color: white;
@@ -1550,5 +1461,132 @@ body {
         right: 15px;
         bottom: 15px;
         max-width: none;
+    }
+}
+
+/* Header Authentication Styles */
+.header-auth {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.header-auth #login-form,
+.header-auth #user-info {
+    display: flex;
+    align-items: center;
+}
+
+.header-auth .google-button {
+    background-color: white !important;
+    color: #333 !important;
+    border: none !important;
+    font-size: 0.8em;
+    padding: 5px 10px !important;
+    border-radius: 4px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin: 0;
+}
+
+.header-auth .google-button img {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+}
+
+.header-auth .google-button:hover {
+    background-color: #f8f8f8 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.header-auth #user-email {
+    color: white;
+    font-size: 0.85em;
+    margin-right: 10px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-auth #logout-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    font-size: 0.75em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-auth #logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.test-mode-badge {
+    background-color: #F2C037;
+    color: #06202B;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 600;
+    cursor: help;
+}
+
+@media (max-width: 768px) {
+    .header-auth #user-email {
+        display: none;
+    }
+    
+    .calendar-controls h2 {
+        font-size: 1.2em;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 600px) {
+    .calendar-controls {
+        padding: 8px 12px;
+    }
+    
+    .calendar-controls h2 {
+        font-size: 1em;
+        max-width: 100px;
+    }
+    
+    .calendar-controls button {
+        font-size: 1.4em;
+        padding: 2px 6px;
+    }
+    
+    .header-auth .google-button {
+        font-size: 0.7em;
+        padding: 3px 6px !important;
+        height: 24px;
+    }
+    
+    .header-auth .google-button img {
+        width: 12px;
+        height: 12px;
+        margin-right: 3px;
+    }
+    
+    .test-mode-badge {
+        font-size: 0.6em;
+        padding: 1px 4px;
+        margin-left: 4px;
+    }
+    
+    .header-auth #logout-button {
+        font-size: 0.7em;
+        padding: 3px 6px;
     }
 } 

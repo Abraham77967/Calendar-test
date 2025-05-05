@@ -13,6 +13,21 @@
             <h2 id="month-year-display">Date/Month Display</h2>
             <button id="next-month">&gt;</button>
             <button id="toggle-view-button">Month View</button>
+            
+            <!-- Authentication UI in header -->
+            <div class="header-auth">
+                <div id="login-form">
+                    <button id="google-signin-button" class="google-button">
+                        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+                        Sign in
+                    </button>
+                    <span class="test-mode-badge" title="You can add and view events without signing in. Data will be stored in browser memory only.">Test Mode</span>
+                </div>
+                <div id="user-info" style="display:none;">
+                    <span id="user-email"></span>
+                    <button id="logout-button">Sign Out</button>
+                </div>
+            </div>
         </div>
 
         <!-- Main Goals Section -->
@@ -22,26 +37,6 @@
                 <!-- Goals will be added here dynamically -->
             </div>
             <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
-        </div>
-
-        <!-- Authentication UI moved to top -->
-        <div id="auth-container" class="auth-container">
-          <div id="login-form">
-            <h3>Sign in to sync your calendar</h3>
-            <div class="test-mode-indicator">
-              <p>🧪 TEST MODE ENABLED 🧪</p>
-              <p>You can add and view events without signing in.</p>
-              <p>Data will be stored in your browser memory only.</p>
-            </div>
-            <button id="google-signin-button" class="google-button">
-              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
-              Sign in with Google
-            </button>
-          </div>
-          <div id="user-info" style="display:none;">
-            <p>Signed in as: <span id="user-email"></span></p>
-            <button id="logout-button">Sign Out</button>
-          </div>
         </div>
 
         <div class="content-area">
