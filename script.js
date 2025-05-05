@@ -182,16 +182,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderCalendarView(); // Render empty view on error
                 });
         } else {
-            // User is signed out - aggressively clear all data
-            console.log('No user logged in - clearing all data');
+            // User is signed out - for testing purposes, allow using the app
+            console.log('No user logged in - using test mode');
             loginForm.style.display = 'block';
             userInfo.style.display = 'none';
             
-            // Clear all calendar data completely
-            notes = clearAllCalendarData();
-            console.log('All calendar data cleared');
+            // Use empty notes object for testing instead of clearing
+            if (Object.keys(notes).length === 0) {
+                notes = {}; // Only initialize if empty
+                console.log('Using empty notes object for testing');
+            } else {
+                console.log('Using existing notes data for testing');
+            }
             
-            // Re-render with empty data
+            // Render with test data
             renderCalendarView();
         }
     });
@@ -416,12 +420,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Progress Panel for Multiple Events ---
     function renderEventProgressPanel() {
-        // Skip rendering if not logged in
-        if (!firebase.auth().currentUser) {
-            // Clear panel
-            progressItemsContainer.innerHTML = '';
-            return;
-        }
+        // TEST MODE: Allow viewing progress panel without login
+        // Skip rendering if not logged in (commented out for test mode)
+        // if (!firebase.auth().currentUser) {
+        //     // Clear panel
+        //     progressItemsContainer.innerHTML = '';
+        //     return;
+        // }
         
         console.log('Starting to render progress panel');
         
@@ -431,6 +436,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get all dates with events
         const datesWithEvents = Object.entries(notes);
         console.log('All dates with events:', datesWithEvents);
+        
+        // Empty check for test mode
+        if (datesWithEvents.length === 0) {
+            const noEventsMessage = document.createElement('div');
+            noEventsMessage.classList.add('no-events-message-panel');
+            noEventsMessage.textContent = 'No events with checklists. Add some events to see them here!';
+            progressItemsContainer.appendChild(noEventsMessage);
+            return;
+        }
         
         // Filter to include only events with checklists and sort by date
         let eventsWithChecklists = [];
@@ -607,18 +621,26 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (eventIndex !== -1) {
                                 events[eventIndex].checklist[index].done = checkbox.checked;
                                 
-                                // Save to Firebase
-                                saveNotesToFirebase().then(() => {
-                                    // Update UI elements
-                                    label.classList.toggle('completed', checkbox.checked);
-                                    
-                                    // Update completed count and progress bar
-                                    const newCompletedItems = events[eventIndex].checklist.filter(item => item.done).length;
-                                    const newProgress = (newCompletedItems / totalItems) * 100;
-                                    
-                                    progressBar.style.width = `${newProgress}%`;
-                                    progressSummary.textContent = `${newCompletedItems}/${totalItems} Tasks Completed`;
-                                });
+                                // Update UI elements immediately
+                                label.classList.toggle('completed', checkbox.checked);
+                                
+                                // Update completed count and progress bar
+                                const newCompletedItems = events[eventIndex].checklist.filter(item => item.done).length;
+                                const newProgress = (newCompletedItems / totalItems) * 100;
+                                
+                                progressBar.style.width = `${newProgress}%`;
+                                progressSummary.textContent = `${newCompletedItems}/${totalItems} Tasks Completed`;
+                                
+                                // Save to Firebase only if signed in
+                                if (firebase.auth().currentUser) {
+                                    saveNotesToFirebase().then(() => {
+                                        console.log('Checklist item updated in Firebase');
+                                    }).catch(error => {
+                                        console.error('Error saving checklist update:', error);
+                                    });
+                                } else {
+                                    console.log('Test mode: Checklist change saved to memory only');
+                                }
                             }
                         });
                         
@@ -666,11 +688,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Modal Functions ---
     function openNoteModal(dateString) {
-        // Don't allow adding notes if not signed in
-        if (!firebase.auth().currentUser) {
-            alert("Please sign in to add or view notes");
-            return;
-        }
+        // TEST MODE: Allow adding notes without signing in
+        // if (!firebase.auth().currentUser) {
+        //     alert("Please sign in to add or view notes");
+        //     return;
+        // }
         
         selectedDateString = dateString;
         const [year, month, day] = dateString.split('-');
@@ -932,7 +954,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add a new event
     function addEvent() {
-        if (!firebase.auth().currentUser || !selectedDateString) {
+        // TEST MODE: Allow adding events without signing in
+        // if (!firebase.auth().currentUser || !selectedDateString) {
+        if (!selectedDateString) {
             return;
         }
         
@@ -963,19 +987,16 @@ document.addEventListener('DOMContentLoaded', () => {
             notes[selectedDateString].push(newEvent);
             console.log('Updated notes for date:', notes[selectedDateString]);
             
-            // Save to Firebase
-            saveNotesToFirebase().then(() => {
-                // Reset the form
-                newEventTextElement.value = '';
-                newEventTimeElement.value = '';
-                newEventChecklistElement.innerHTML = '';
-                
-                // Refresh the events list
-                displayEventsInModal();
-                
-                // Update calendar view
-                renderCalendarView();
-            });
+            // Save to Firebase if signed in, otherwise just update UI
+            if (firebase.auth().currentUser) {
+                saveNotesToFirebase().then(() => {
+                    updateUIAfterEventChange();
+                });
+            } else {
+                // TEST MODE: Just update UI without Firebase
+                updateUIAfterEventChange();
+                console.log('Test mode: Event saved to memory only');
+            }
         }
     }
     
@@ -1003,7 +1024,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Save edited event
     function saveEditedEvent() {
-        if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
+        // TEST MODE: Allow editing events without signing in
+        // if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
+        if (!selectedDateString || !currentEditingEventId) {
             return;
         }
         
@@ -1028,23 +1051,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('Updated event:', eventsForDay[eventIndex]);
             
-            // Save to Firebase
-            saveNotesToFirebase().then(() => {
-                // Hide edit section
-                hideEditEventSection();
-                
-                // Refresh the events list
-                displayEventsInModal();
-                
-                // Update calendar view
-                renderCalendarView();
-            });
+            // Save to Firebase if signed in, otherwise just update UI
+            if (firebase.auth().currentUser) {
+                saveNotesToFirebase().then(() => {
+                    updateUIAfterEventChange();
+                });
+            } else {
+                // TEST MODE: Just update UI without Firebase
+                updateUIAfterEventChange();
+                console.log('Test mode: Event edited in memory only');
+            }
         }
     }
     
     // Delete an event
     function handleDeleteEvent() {
-        if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
+        // TEST MODE: Allow deleting events without signing in
+        // if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
+        if (!selectedDateString || !currentEditingEventId) {
             return;
         }
         
@@ -1063,18 +1087,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 notes[selectedDateString] = eventsForDay;
             }
             
-            // Save to Firebase
-            saveNotesToFirebase().then(() => {
-                // Hide edit section
-                hideEditEventSection();
-                
-                // Refresh the events list
-                displayEventsInModal();
-                
-                // Update calendar view
-                renderCalendarView();
-            });
+            // Save to Firebase if signed in, otherwise just update UI
+            if (firebase.auth().currentUser) {
+                saveNotesToFirebase().then(() => {
+                    updateUIAfterEventChange();
+                });
+            } else {
+                // TEST MODE: Just update UI without Firebase
+                updateUIAfterEventChange();
+                console.log('Test mode: Event deleted from memory only');
+            }
         }
+    }
+    
+    // Helper function to update UI after event changes
+    function updateUIAfterEventChange() {
+        // Hide edit section
+        hideEditEventSection();
+        
+        // Refresh the events list
+        displayEventsInModal();
+        
+        // Update calendar view
+        renderCalendarView();
     }
     
     // Save notes to Firebase

@@ -1246,4 +1246,26 @@ body {
     text-decoration: line-through;
     color: #777;
     transition: all 0.3s ease;
+}
+
+/* Test Mode Indicator */
+.test-mode-indicator {
+    background-color: #fffaed;
+    border: 2px dashed #f2c037;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 12px 0;
+    text-align: center;
+}
+
+.test-mode-indicator p {
+    margin: 5px 0;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.test-mode-indicator p:first-child {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #ad7b11;
 } 
