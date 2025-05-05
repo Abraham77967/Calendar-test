@@ -15,6 +15,15 @@
             <button id="toggle-view-button">Month View</button>
         </div>
 
+        <!-- Main Goals Section -->
+        <div id="main-goals-section" class="main-goals-section">
+            <h3>My 3 Main Goals</h3>
+            <div id="goals-container" class="goals-container">
+                <!-- Goals will be added here dynamically -->
+            </div>
+            <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
+        </div>
+
         <!-- Authentication UI moved to top -->
         <div id="auth-container" class="auth-container">
           <div id="login-form">
@@ -137,6 +146,32 @@
                     <button type="button" id="cancel-edit" class="secondary-button">Cancel</button>
                     <button type="button" id="delete-event" class="delete-button">Delete Event</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals Editor Modal -->
+    <div id="goals-modal" class="modal">
+        <div class="modal-content goals-modal-content">
+            <span class="close-button goals-close-button">&times;</span>
+            <h3>Set Your 3 Main Goals</h3>
+            <p class="modal-instructions">Define up to three main goals you're currently working on. These will be displayed prominently on your calendar.</p>
+            
+            <div id="goals-editor">
+                <div class="goal-input-container">
+                    <label for="goal-1">Goal 1:</label>
+                    <input type="text" id="goal-1" class="goal-input" placeholder="Enter your first main goal">
+                </div>
+                <div class="goal-input-container">
+                    <label for="goal-2">Goal 2:</label>
+                    <input type="text" id="goal-2" class="goal-input" placeholder="Enter your second main goal">
+                </div>
+                <div class="goal-input-container">
+                    <label for="goal-3">Goal 3:</label>
+                    <input type="text" id="goal-3" class="goal-input" placeholder="Enter your third main goal">
+                </div>
+                
+                <button type="button" id="save-goals-button" class="action-button">Save Goals</button>
             </div>
         </div>
     </div>

@@ -19,6 +19,7 @@ const db = firebase.firestore();
 function clearAllCalendarData() {
     // Clear localStorage
     localStorage.removeItem('calendarNotes');
+    localStorage.removeItem('mainGoals');
     
     // Ensure notes variable is empty when defined
     return {};
@@ -27,6 +28,9 @@ function clearAllCalendarData() {
 document.addEventListener('DOMContentLoaded', () => {
     // Declare notes in the outer scope of the DOMContentLoaded listener
     let notes = clearAllCalendarData();
+    
+    // Initialize main goals array (limited to 3)
+    let mainGoals = JSON.parse(localStorage.getItem('mainGoals')) || [];
     
     // Check for redirect result first
     firebase.auth().getRedirectResult().then((result) => {
@@ -88,6 +92,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const googleSignInButton = document.getElementById('google-signin-button');
     const logoutButton = document.getElementById('logout-button');
     const toggleViewButton = document.getElementById('toggle-view-button');
+
+    // Main Goals elements
+    const goalsContainer = document.getElementById('goals-container');
+    const editGoalsButton = document.getElementById('edit-goals-button');
+    const goalsModal = document.getElementById('goals-modal');
+    const goalInputs = [
+        document.getElementById('goal-1'),
+        document.getElementById('goal-2'),
+        document.getElementById('goal-3')
+    ];
+    const saveGoalsButton = document.getElementById('save-goals-button');
+    const goalsCloseButton = document.querySelector('.goals-close-button');
 
     let currentView = 'week'; // Mobile view state: 'week' or 'month'
     let desktopMonthDate = new Date(); // For desktop two-month navigation
@@ -163,16 +179,28 @@ document.addEventListener('DOMContentLoaded', () => {
             db.collection('userNotes').doc(user.uid).get()
                 .then(doc => {
                     console.log('Firestore response:', doc.exists ? 'Document exists' : 'No document found');
-                    if (doc.exists && doc.data().notes) {
+                    if (doc.exists) {
                         // Use cloud data only when signed in
-                        notes = doc.data().notes;
-                        console.log('Loaded notes from cloud');
+                        if (doc.data().notes) {
+                            notes = doc.data().notes;
+                            console.log('Loaded notes from cloud');
+                        }
+                        
+                        // Load main goals if they exist in cloud data
+                        if (doc.data().mainGoals) {
+                            mainGoals = doc.data().mainGoals;
+                            localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
+                            console.log('Loaded main goals from cloud');
+                        }
+                        
                         renderCalendarView();
+                        renderMainGoals();
                     } else {
                         // No cloud data, start with empty notes
                         notes = {};
                         console.log('No existing notes found in cloud, starting fresh');
                         renderCalendarView();
+                        renderMainGoals();
                     }
                 })
                 .catch(error => {
@@ -180,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Error fetching your calendar data: " + error.message);
                     notes = {}; // Reset on error
                     renderCalendarView(); // Render empty view on error
+                    renderMainGoals();
                 });
         } else {
             // User is signed out - for testing purposes, allow using the app
@@ -197,10 +226,91 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Render with test data
             renderCalendarView();
+            renderMainGoals();
         }
     });
     
     // --- End Firebase Authentication Logic ---
+
+    // --- Main Goals Functions ---
+    function renderMainGoals() {
+        // Clear existing goals
+        goalsContainer.innerHTML = '';
+        
+        if (mainGoals.length === 0) {
+            // Show placeholder if no goals are set
+            const noGoalsMessage = document.createElement('div');
+            noGoalsMessage.classList.add('no-goals-message');
+            noGoalsMessage.textContent = 'No main goals set. Click "Edit Goals" to add some!';
+            goalsContainer.appendChild(noGoalsMessage);
+            return;
+        }
+        
+        // Create and append goal elements
+        mainGoals.forEach((goal, index) => {
+            if (!goal.trim()) return; // Skip empty goals
+            
+            const goalElement = document.createElement('div');
+            goalElement.classList.add('goal-item');
+            
+            const goalIndex = document.createElement('span');
+            goalIndex.classList.add('goal-index');
+            goalIndex.textContent = (index + 1) + '.';
+            
+            const goalText = document.createElement('span');
+            goalText.classList.add('goal-text');
+            goalText.textContent = goal;
+            
+            goalElement.appendChild(goalIndex);
+            goalElement.appendChild(goalText);
+            goalsContainer.appendChild(goalElement);
+        });
+    }
+    
+    function openGoalsModal() {
+        // Fill inputs with current goals
+        for (let i = 0; i < 3; i++) {
+            goalInputs[i].value = (i < mainGoals.length) ? mainGoals[i] : '';
+        }
+        
+        goalsModal.style.display = 'block';
+    }
+    
+    function closeGoalsModal() {
+        goalsModal.style.display = 'none';
+    }
+    
+    function saveMainGoals() {
+        // Get goal texts from inputs
+        mainGoals = goalInputs.map(input => input.value.trim()).filter(goal => goal.length > 0);
+        
+        // Limit to 3 goals
+        if (mainGoals.length > 3) {
+            mainGoals = mainGoals.slice(0, 3);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
+        
+        // If logged in, also save to Firebase
+        if (firebase.auth().currentUser) {
+            db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
+                mainGoals: mainGoals
+            }).then(() => {
+                console.log('Main goals saved to Firebase');
+            }).catch(error => {
+                console.error('Error saving main goals:', error);
+            });
+        }
+        
+        // Update display
+        renderMainGoals();
+        
+        // Close modal
+        closeGoalsModal();
+    }
+    
+    // --- End Main Goals Functions ---
 
     // --- Helper Function: Format Time Difference ---
     function formatTimeDifference(date1, date2) {
