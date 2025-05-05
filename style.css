@@ -1377,6 +1377,10 @@ body {
 .goal-text {
     font-size: 1.1em;
     color: #06202B;
+    line-height: 1.3;
+    flex-grow: 1;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .no-goals-message {
@@ -1444,6 +1448,41 @@ body {
     .goal-input {
         padding: 10px;
     }
+}
+
+/* Promote to goal button */
+.promote-goal-button {
+    background: none;
+    border: none;
+    color: #F2C037;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 5px;
+    margin-right: 2px;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.promote-goal-button:hover {
+    transform: scale(1.2);
+    opacity: 1;
+    color: #E6B12E;
+}
+
+.promote-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.promote-goal-button:hover .promote-icon {
+    transform: rotate(72deg);
+    animation: starPulse 1s infinite alternate;
+}
+
+@keyframes starPulse {
+    from { text-shadow: 0 0 2px rgba(242, 192, 55, 0.5); }
+    to { text-shadow: 0 0 8px rgba(242, 192, 55, 0.8); }
 }
 
 /* Auth Container */ 

@@ -719,7 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     toggleButton.classList.add('toggle-checklist-button');
                     toggleButton.textContent = 'Show Tasks';
                     toggleButton.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent event bubble to parent (which opens modal)
+                        e.stopPropagation(); // Prevent event bubble to parent
                         const checklistContainer = e.target.nextElementSibling;
                         if (checklistContainer.style.display === 'none' || !checklistContainer.style.display) {
                             checklistContainer.style.display = 'block';
@@ -756,6 +756,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             label.classList.add('completed');
                         }
                         
+                        // Create promote to goal button
+                        const promoteButton = document.createElement('button');
+                        promoteButton.classList.add('promote-goal-button');
+                        promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
+                        promoteButton.title = 'Promote to Main Goal';
+                        promoteButton.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            promoteTaskToMainGoal(item.task, dateString);
+                        });
+                        
                         // Prevent clicks on checkbox from opening modal
                         checkbox.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -763,6 +773,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         // Prevent clicks on label from opening modal
                         label.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                        
+                        // Prevent clicks on promote button from opening modal
+                        promoteButton.addEventListener('click', (e) => {
                             e.stopPropagation();
                         });
                         
@@ -804,6 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         li.appendChild(checkbox);
                         li.appendChild(label);
+                        li.appendChild(promoteButton);
                         checklistUl.appendChild(li);
                     });
                     
@@ -931,6 +947,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 label.classList.add('completed');
             }
             
+            // Add promote to goal button
+            const promoteButton = document.createElement('button');
+            promoteButton.classList.add('promote-goal-button');
+            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
+            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                promoteTaskToMainGoal(item.task, selectedDateString);
+            });
+            
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
             deleteButton.innerHTML = '&times;';
@@ -945,6 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             li.appendChild(checkbox);
             li.appendChild(label);
+            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             newEventChecklistElement.appendChild(li);
         });
@@ -977,12 +1004,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.remove();
             });
             
+            // Add promote to goal button
+            const promoteButton = document.createElement('button');
+            promoteButton.classList.add('promote-goal-button');
+            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
+            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                promoteTaskToMainGoal(item.task, selectedDateString);
+            });
+            
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
             });
 
             li.appendChild(checkbox);
             li.appendChild(label);
+            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             editEventChecklistElement.appendChild(li);
         });
@@ -1031,6 +1069,16 @@ document.addEventListener('DOMContentLoaded', () => {
             label.htmlFor = checkbox.id;
             label.textContent = item.task;
             
+            // Add promote to goal button
+            const promoteButton = document.createElement('button');
+            promoteButton.classList.add('promote-goal-button');
+            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
+            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                promoteTaskToMainGoal(item.task, selectedDateString);
+            });
+            
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
             deleteButton.innerHTML = '&times;';
@@ -1045,6 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             li.appendChild(checkbox);
             li.appendChild(label);
+            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             newEventChecklistElement.appendChild(li);
             
@@ -1076,12 +1125,23 @@ document.addEventListener('DOMContentLoaded', () => {
                  li.remove();
             });
             
+            // Add promote to goal button
+            const promoteButton = document.createElement('button');
+            promoteButton.classList.add('promote-goal-button');
+            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
+            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                promoteTaskToMainGoal(item.task, selectedDateString);
+            });
+            
             checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
             });
 
             li.appendChild(checkbox);
             li.appendChild(label);
+            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             editEventChecklistElement.appendChild(li);
             
@@ -1366,3 +1426,65 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Render
     renderCalendarView();
 }); 
+
+// Function to promote a task to main goals
+function promoteTaskToMainGoal(taskText, dateString) {
+    // Get date in readable format
+    const [year, month, day] = dateString.split('-');
+    const dateObj = new Date(year, month - 1, day);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        month: 'short', day: 'numeric'
+    });
+    
+    // Find the event that contains this task
+    let eventText = "";
+    if (notes[dateString]) {
+        for (const event of notes[dateString]) {
+            if (event.checklist) {
+                for (const item of event.checklist) {
+                    if (item.task === taskText) {
+                        eventText = event.text || "(No description)";
+                        break;
+                    }
+                }
+                if (eventText) break;
+            }
+        }
+    }
+    
+    // Create goal text with date and event reference
+    const goalText = eventText 
+        ? `${taskText} (from "${eventText}" on ${formattedDate})`
+        : `${taskText} (from ${formattedDate})`;
+    
+    // Add to main goals (limit to 3)
+    if (mainGoals.length >= 3) {
+        if (confirm("You already have 3 main goals. Replace the last one with this task?")) {
+            mainGoals[2] = goalText;
+        } else {
+            return; // User cancelled
+        }
+    } else {
+        mainGoals.push(goalText);
+    }
+    
+    // Save goals to localStorage
+    localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
+    
+    // If logged in, also save to Firebase
+    if (firebase.auth().currentUser) {
+        db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
+            mainGoals: mainGoals
+        }).then(() => {
+            console.log('Main goals saved to Firebase');
+        }).catch(error => {
+            console.error('Error saving main goals:', error);
+        });
+    }
+    
+    // Update goals display
+    renderMainGoals();
+    
+    // Show confirmation
+    alert(`Task promoted to main goals: "${taskText}"`);
+} 
