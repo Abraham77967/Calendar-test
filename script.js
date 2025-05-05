@@ -794,8 +794,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Update the label class
                             if (checkbox.checked) {
                                 label.classList.add('completed');
+                                
                                 // Trigger celebration when task is completed
-                                createCelebration(e);
+                                const rect = checkbox.getBoundingClientRect();
+                                const x = rect.left + rect.width / 2;
+                                const y = rect.top + rect.height / 2;
+                                createFireworkCelebration(x, y);
                             } else {
                                 label.classList.remove('completed');
                             }
@@ -970,10 +974,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.remove();
             });
             
-            checkbox.addEventListener('change', (e) => {
+            checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
+                
+                // Trigger celebration when task is completed
                 if (checkbox.checked) {
-                    createCelebration(e);
+                    const rect = checkbox.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    createFireworkCelebration(x, y);
                 }
             });
             
@@ -1022,10 +1031,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 promoteTaskToMainGoal(item.task, selectedDateString);
             });
             
-            checkbox.addEventListener('change', (e) => {
+            checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
+                
+                // Trigger celebration when task is completed
                 if (checkbox.checked) {
-                    createCelebration(e);
+                    const rect = checkbox.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    createFireworkCelebration(x, y);
                 }
             });
 
@@ -1098,10 +1112,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.remove();
             });
             
-            checkbox.addEventListener('change', (e) => {
+            checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
+                
+                // Trigger celebration when task is completed
                 if (checkbox.checked) {
-                    createCelebration(e);
+                    const rect = checkbox.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    createFireworkCelebration(x, y);
                 }
             });
             
@@ -1149,10 +1168,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 promoteTaskToMainGoal(item.task, selectedDateString);
             });
             
-            checkbox.addEventListener('change', (e) => {
+            checkbox.addEventListener('change', () => {
                 label.classList.toggle('completed', checkbox.checked);
+                
+                // Trigger celebration when task is completed
                 if (checkbox.checked) {
-                    createCelebration(e);
+                    const rect = checkbox.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+                    createFireworkCelebration(x, y);
                 }
             });
 
@@ -1526,6 +1550,109 @@ function promoteTaskToMainGoal(taskText, dateString) {
     document.dispatchEvent(event);
 }
 
+// Function to create a firework celebration
+function createFireworkCelebration(x, y) {
+    // Create container if it doesn't exist
+    let container = document.querySelector('.firework-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'firework-container';
+        document.body.appendChild(container);
+    }
+    
+    // Play celebration sound
+    playCelebrationSound();
+    
+    // Create firework at specified position
+    const firework = document.createElement('div');
+    firework.className = 'firework';
+    firework.style.left = `${x}px`;
+    firework.style.top = `${y}px`;
+    
+    // Define colors for particles
+    const colors = [
+        '#077A7D', // Teal
+        '#7AE2CF', // Mint
+        '#F2C037', // Gold
+        '#FF9500', // Orange
+        '#F5EEDD'  // Light beige
+    ];
+    
+    // Create particles
+    const particleCount = 30;
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random angle and distance
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 50 + Math.random() * 80;
+        
+        // Set CSS variables for the animation
+        particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+        particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+        
+        // Set random color
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        firework.appendChild(particle);
+    }
+    
+    container.appendChild(firework);
+    
+    // Remove firework after animation completes
+    setTimeout(() => {
+        if (container.contains(firework)) {
+            container.removeChild(firework);
+        }
+    }, 1000);
+}
+
+// Function to play celebration sound
+function playCelebrationSound() {
+    // Create different types of sounds
+    const sounds = [
+        { frequency: 440, duration: 100 }, // A4
+        { frequency: 554, duration: 100 }, // C#5
+        { frequency: 659, duration: 150 }  // E5
+    ];
+    
+    try {
+        // Create audio context
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Play each sound with a slight delay
+        sounds.forEach((sound, index) => {
+            setTimeout(() => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = sound.frequency;
+                gainNode.gain.value = 0.2; // Not too loud
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                
+                // Fade out
+                gainNode.gain.exponentialRampToValueAtTime(
+                    0.001, audioCtx.currentTime + sound.duration / 1000
+                );
+                
+                // Stop after duration
+                setTimeout(() => {
+                    oscillator.stop();
+                }, sound.duration);
+                
+            }, index * 100); // Stagger the sounds
+        });
+    } catch (e) {
+        console.log('Web Audio API not supported or user interaction required');
+    }
+}
+
 // Function to show a toast notification
 function showToastNotification(message) {
     // Create toast element if it doesn't exist
@@ -1543,114 +1670,5 @@ function showToastNotification(message) {
     // Hide after 3 seconds
     setTimeout(() => {
         toast.className = toast.className.replace('show', '');
-    }, 3000);
-}
-
-// Function to create a celebration effect when a task is completed
-function createCelebration(event) {
-    // Play celebration sounds
-    try {
-        const completeSound = document.getElementById('complete-sound');
-        if (completeSound) {
-            completeSound.currentTime = 0;
-            completeSound.play().catch(e => console.log('Sound play error:', e));
-        }
-        
-        // Play firework sound with slight delay
-        setTimeout(() => {
-            const fireworkSound = document.getElementById('firework-sound');
-            if (fireworkSound) {
-                fireworkSound.currentTime = 0;
-                fireworkSound.volume = 0.3; // Lower volume
-                fireworkSound.play().catch(e => console.log('Sound play error:', e));
-            }
-        }, 200);
-    } catch (e) {
-        console.log('Error playing sound:', e);
-    }
-    
-    // Create container for fireworks if it doesn't exist
-    let container = document.querySelector('.firework-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'firework-container';
-        document.body.appendChild(container);
-    }
-    
-    // Get position of the event (if provided) or random position
-    let x, y;
-    if (event && event.clientX && event.clientY) {
-        x = event.clientX;
-        y = event.clientY;
-    } else {
-        // Use random position or center of screen
-        x = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
-        y = Math.random() * window.innerHeight * 0.8 + window.innerHeight * 0.1;
-    }
-    
-    // Create fireworks
-    const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500'];
-    
-    // Create main firework
-    const firework = document.createElement('div');
-    firework.className = 'firework';
-    firework.style.left = `${x}px`;
-    firework.style.top = `${y}px`;
-    firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    container.appendChild(firework);
-    
-    // Create particles
-    const particleCount = 20;
-    for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'firework-particle';
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        
-        // Random direction
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 50 + Math.random() * 50;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance;
-        
-        // Set custom properties for the animation
-        particle.style.setProperty('--tx', `${tx}px`);
-        particle.style.setProperty('--ty', `${ty}px`);
-        
-        // Random color
-        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        
-        container.appendChild(particle);
-    }
-    
-    // Create confetti
-    const confettiCount = 30;
-    for (let i = 0; i < confettiCount; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        
-        // Random position
-        confetti.style.left = `${Math.random() * window.innerWidth}px`;
-        
-        // Random rotation
-        confetti.style.transform = `rotateZ(${Math.random() * 360}deg)`;
-        
-        // Random color
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        
-        // Random shape
-        if (Math.random() > 0.5) {
-            confetti.style.borderRadius = '50%';
-            confetti.style.width = '8px';
-            confetti.style.height = '8px';
-        }
-        
-        container.appendChild(confetti);
-    }
-    
-    // Clean up animation elements after they finish
-    setTimeout(() => {
-        const elements = container.querySelectorAll('.firework, .firework-particle, .confetti');
-        elements.forEach(el => el.remove());
     }, 3000);
 } 
