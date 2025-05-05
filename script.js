@@ -762,8 +762,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Create promote to goal button
                         const promoteButton = document.createElement('button');
                         promoteButton.classList.add('promote-goal-button');
-                        promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
-                        promoteButton.title = 'Promote to Main Goal';
+                        promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+                        promoteButton.title = 'Add to main goals';
                         promoteButton.addEventListener('click', (e) => {
                             e.stopPropagation();
                             promoteTaskToMainGoal(item.task, dateString);
@@ -953,8 +953,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
-            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 promoteTaskToMainGoal(item.task, selectedDateString);
@@ -1010,8 +1010,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
-            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 promoteTaskToMainGoal(item.task, selectedDateString);
@@ -1075,8 +1075,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
-            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 promoteTaskToMainGoal(item.task, selectedDateString);
@@ -1131,8 +1131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add promote to goal button
             const promoteButton = document.createElement('button');
             promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon">⭐</span>';
-            promoteButton.title = 'Promote to Main Goal';
+            promoteButton.innerHTML = '<span class="promote-icon"></span>Priority';
+            promoteButton.title = 'Add to main goals';
             promoteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 promoteTaskToMainGoal(item.task, selectedDateString);
@@ -1499,10 +1499,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const toast = document.createElement('div');
         toast.className = 'promotion-toast';
         toast.innerHTML = `
-            <div class="toast-icon">⭐</div>
             <div class="toast-message">
-                <div class="toast-title">Goal Added</div>
-                <div class="toast-text">"${taskText}" added to main goals</div>
+                <div class="toast-title">Added to Main Goals</div>
+                <div class="toast-text">"${taskText}"</div>
             </div>
         `;
         document.body.appendChild(toast);

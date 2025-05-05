@@ -1454,79 +1454,74 @@ body {
 .promote-goal-button {
     background: none;
     border: none;
-    color: #F2C037;
+    color: #077A7D;
     cursor: pointer;
-    font-size: 1.2em;
-    padding: 0 5px;
-    margin-right: 2px;
-    opacity: 0.8;
-    transition: all 0.3s ease;
+    font-size: 0.9em;
+    padding: 2px 6px;
+    margin-right: 4px;
+    opacity: 0.75;
+    transition: all 0.2s ease;
     flex-shrink: 0;
     position: relative;
+    border-radius: 3px;
 }
 
 .promote-goal-button:hover {
-    transform: scale(1.2);
+    background-color: rgba(7, 122, 125, 0.1);
     opacity: 1;
-    color: #E6B12E;
+    color: #077A7D;
 }
 
 .promote-goal-button:active {
-    transform: scale(1.5);
+    background-color: rgba(7, 122, 125, 0.2);
     opacity: 1;
-    color: #FF9500;
 }
 
-.promote-goal-button:active::after {
-    content: "✓";
+.promote-goal-button::after {
+    content: "";
     position: absolute;
-    color: #077A7D;
-    font-size: 1em;
-    top: -8px;
-    right: -2px;
-    animation: checkmarkPop 0.3s ease-out;
+    width: 100%;
+    height: 2px;
+    bottom: -1px;
+    left: 0;
+    background-color: #077A7D;
+    transform: scaleX(0);
+    transition: transform 0.2s;
+}
+
+.promote-goal-button:hover::after {
+    transform: scaleX(1);
 }
 
 .promote-icon {
     display: inline-block;
-    transition: transform 0.3s ease;
+    font-family: sans-serif;
+    font-weight: normal;
 }
 
-.promote-goal-button:hover .promote-icon {
-    transform: rotate(72deg);
-    animation: starPulse 1s infinite alternate;
+.promote-goal-button .promote-icon::before {
+    content: "↗"; /* Up-right arrow instead of star */
+    font-size: 1.1em;
 }
-
-.promote-goal-button:active .promote-icon {
-    transform: rotate(360deg);
-    animation: starPulse 0.3s infinite;
-}
-
-@keyframes starPulse {
-    from { text-shadow: 0 0 2px rgba(242, 192, 55, 0.5); }
-    to { text-shadow: 0 0 8px rgba(242, 192, 55, 0.8); }
-}
-
-/* Auth Container */
 
 /* Toast notification for goal promotion */
 .promotion-toast {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background-color: #06202B;
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
+    background-color: #ffffff;
+    color: #333333;
+    padding: 12px 16px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     transform: translateY(100px);
     opacity: 0;
     transition: transform 0.3s ease, opacity 0.3s ease;
     max-width: 300px;
-    border-left: 5px solid #F2C037;
+    border-left: 3px solid #077A7D;
 }
 
 .promotion-toast.show {
@@ -1534,34 +1529,23 @@ body {
     opacity: 1;
 }
 
-.toast-icon {
-    font-size: 2em;
-    margin-right: 12px;
-    color: #F2C037;
-    animation: starPulseToast 1.5s infinite alternate;
-}
-
 .toast-message {
     flex: 1;
 }
 
 .toast-title {
-    font-weight: bold;
+    font-weight: 600;
     margin-bottom: 3px;
-    font-size: 1.1em;
+    font-size: 0.95em;
+    color: #077A7D;
 }
 
 .toast-text {
-    font-size: 0.9em;
-    opacity: 0.9;
+    font-size: 0.85em;
+    color: #555;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-@keyframes starPulseToast {
-    from { transform: scale(1); }
-    to { transform: scale(1.2); text-shadow: 0 0 10px rgba(242, 192, 55, 0.8); }
 }
 
 @media (max-width: 768px) {
