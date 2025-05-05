@@ -1258,9 +1258,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            db.collection('userNotes').doc(user.uid).set({ notes: notes })
+            db.collection('userNotes').doc(user.uid).set({ 
+                notes: notes,
+                mainGoals: mainGoals
+            })
                 .then(() => {
-                    console.log('Notes saved successfully to Firestore');
+                    console.log('Notes and goals saved successfully to Firestore');
                     resolve();
                 })
                 .catch(error => {
@@ -1347,7 +1350,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target == noteModal) {
             closeNoteModal();
         }
+        if (event.target == goalsModal) {
+            closeGoalsModal();
+        }
     });
+
+    // Main Goals event listeners
+    editGoalsButton.addEventListener('click', openGoalsModal);
+    goalsCloseButton.addEventListener('click', closeGoalsModal);
+    saveGoalsButton.addEventListener('click', saveMainGoals);
 
     // Add resize listener
     window.addEventListener('resize', renderCalendarView);
