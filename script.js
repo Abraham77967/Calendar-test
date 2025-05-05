@@ -565,7 +565,80 @@ document.addEventListener('DOMContentLoaded', () => {
                     progressSummary.textContent = `${completedItems}/${totalItems} Tasks Completed`;
                     progressContainer.appendChild(progressSummary);
                     
+                    // Add dropdown indicator for checklist
+                    const dropdownIndicator = document.createElement('div');
+                    dropdownIndicator.classList.add('checklist-dropdown-indicator');
+                    dropdownIndicator.innerHTML = '▼ Show Checklist';
+                    progressContainer.appendChild(dropdownIndicator);
+                    
+                    // Create hidden checklist container
+                    const checklistContainer = document.createElement('div');
+                    checklistContainer.classList.add('panel-checklist-container');
+                    checklistContainer.style.display = 'none';
+                    
+                    // Create list of checklist items
+                    const checklistUl = document.createElement('ul');
+                    checklistUl.classList.add('panel-checklist');
+                    
+                    // Add each checklist item
+                    event.checklist.forEach((item, index) => {
+                        const li = document.createElement('li');
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = item.done;
+                        checkbox.id = `panel-${dateString}-${event.id}-item-${index}`;
+                        
+                        // Add event listener to update checklist item status
+                        checkbox.addEventListener('change', () => {
+                            // Find the event in notes and update the checklist item
+                            const eventsArray = notes[dateString];
+                            if (eventsArray) {
+                                const eventIndex = eventsArray.findIndex(e => e.id === event.id);
+                                if (eventIndex !== -1) {
+                                    // Update the done status
+                                    notes[dateString][eventIndex].checklist[index].done = checkbox.checked;
+                                    
+                                    // Update label class
+                                    label.classList.toggle('completed', checkbox.checked);
+                                    
+                                    // Update progress bar and summary
+                                    const updatedCompletedItems = notes[dateString][eventIndex].checklist.filter(item => item.done).length;
+                                    const updatedProgress = (updatedCompletedItems / totalItems) * 100;
+                                    progressBar.style.width = `${updatedProgress}%`;
+                                    progressSummary.textContent = `${updatedCompletedItems}/${totalItems} Tasks Completed`;
+                                    
+                                    // Save to Firebase
+                                    saveNotesToFirebase();
+                                }
+                            }
+                        });
+                        
+                        const label = document.createElement('label');
+                        label.htmlFor = checkbox.id;
+                        label.textContent = item.task;
+                        if (item.done) {
+                            label.classList.add('completed');
+                        }
+                        
+                        li.appendChild(checkbox);
+                        li.appendChild(label);
+                        checklistUl.appendChild(li);
+                    });
+                    
+                    checklistContainer.appendChild(checklistUl);
+                    
+                    // Toggle checklist visibility when clicking the dropdown indicator
+                    dropdownIndicator.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent opening the modal
+                        
+                        const isHidden = checklistContainer.style.display === 'none';
+                        checklistContainer.style.display = isHidden ? 'block' : 'none';
+                        dropdownIndicator.innerHTML = isHidden ? '▲ Hide Checklist' : '▼ Show Checklist';
+                    });
+                    
                     eventElement.appendChild(progressContainer);
+                    eventElement.appendChild(checklistContainer);
                 }
                 
                 // Add click handler to open the modal for this date and select this event
