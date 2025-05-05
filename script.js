@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const calendarGrid2 = document.getElementById('calendar-grid-2'); // Added back
     const monthYearElement2 = document.getElementById('month-year-2'); // Added back
     const calendar2Container = document.getElementById('calendar-2'); // Container for hiding
-    
+
     const prevButton = document.getElementById('prev-month'); // Use generic name
     const nextButton = document.getElementById('next-month'); // Use generic name
     
@@ -700,21 +700,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     const completedItems = event.checklist.filter(item => item.done).length;
                     const percent = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
-                    const progressContainer = document.createElement('div');
-                    progressContainer.classList.add('progress-container');
-                    
-                    const progressBarContainer = document.createElement('div');
-                    progressBarContainer.classList.add('progress-bar-container');
-                    
-                    const progressBar = document.createElement('div');
-                    progressBar.classList.add('progress-bar');
+            const progressContainer = document.createElement('div');
+            progressContainer.classList.add('progress-container');
+            
+            const progressBarContainer = document.createElement('div');
+            progressBarContainer.classList.add('progress-bar-container');
+            
+            const progressBar = document.createElement('div');
+            progressBar.classList.add('progress-bar');
                     progressBar.style.width = `${percent}%`;
-                    
-                    progressBarContainer.appendChild(progressBar);
-                    progressContainer.appendChild(progressBarContainer);
+            
+            progressBarContainer.appendChild(progressBar);
+            progressContainer.appendChild(progressBarContainer);
 
-                    const progressSummary = document.createElement('div');
-                    progressSummary.classList.add('progress-summary');
+            const progressSummary = document.createElement('div');
+            progressSummary.classList.add('progress-summary');
                     progressSummary.textContent = `${completedItems}/${totalItems} Tasks`;
                     
                     // Add toggle button
@@ -734,31 +734,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     
                     // Create checklist container (initially hidden)
-                    const checklistContainer = document.createElement('div');
+            const checklistContainer = document.createElement('div');
                     checklistContainer.classList.add('panel-checklist-container');
                     checklistContainer.style.display = 'none';
-                    
+            
                     // Add checklist items
                     const checklistUl = document.createElement('ul');
                     checklistUl.classList.add('panel-checklist');
-                    
+
                     // Add clickable checklist items
                     event.checklist.forEach((item, index) => {
-                        const li = document.createElement('li');
-                        
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.checked = item.done;
+                const li = document.createElement('li');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = item.done;
                         checkbox.id = `panel-${dateString}-${event.id}-item-${index}`;
                         
                         // Create label once
-                        const label = document.createElement('label');
+                const label = document.createElement('label');
                         label.htmlFor = checkbox.id;
-                        label.textContent = item.task;
-                        if (item.done) {
-                            label.classList.add('completed');
-                        }
-                        
+                label.textContent = item.task;
+                if (item.done) {
+                    label.classList.add('completed');
+                }
+
                         // Create promote to goal button
                         const promoteButton = document.createElement('button');
                         promoteButton.classList.add('promote-goal-button');
@@ -775,17 +775,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         
                         // Prevent clicks on label from opening modal
-                        label.addEventListener('click', (e => {
+                        label.addEventListener('click', (e) => {
                             e.stopPropagation();
-                        }));
+                        });
                         
                         // Prevent clicks on promote button from opening modal
-                        promoteButton.addEventListener('click', (e => {
+                        promoteButton.addEventListener('click', (e) => {
                             e.stopPropagation();
-                        }));
+                        });
                         
                         // Handle checkbox change
-                        checkbox.addEventListener('change', (e => {
+                        checkbox.addEventListener('change', (e) => {
                             e.stopPropagation(); // Prevent event bubble
                             
                             // Update the item in the checklist array
@@ -794,12 +794,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Update the label class
                             if (checkbox.checked) {
                                 label.classList.add('completed');
+                                // Trigger celebration when task is completed
+                                createCelebration(e);
                             } else {
                                 label.classList.remove('completed');
                             }
-                            
-                            // Celebrate task completion!
-                            celebrateTaskCompletion(checkbox, checkbox.checked);
                             
                             // Update the progress bar and summary
                             const completedCount = event.checklist.filter(item => item.done).length;
@@ -821,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             } else {
                                 console.log("Test mode: Saving checklist item change to memory only");
                             }
-                        }));
+                        });
                         
                         li.appendChild(checkbox);
                         li.appendChild(label);
@@ -971,9 +970,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.remove();
             });
             
-            checkbox.addEventListener('change', () => {
+            checkbox.addEventListener('change', (e) => {
                 label.classList.toggle('completed', checkbox.checked);
-                celebrateTaskCompletion(checkbox, checkbox.checked);
+                if (checkbox.checked) {
+                    createCelebration(e);
+                }
             });
             
             li.appendChild(checkbox);
@@ -1021,9 +1022,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 promoteTaskToMainGoal(item.task, selectedDateString);
             });
             
-            checkbox.addEventListener('change', () => {
+            checkbox.addEventListener('change', (e) => {
                 label.classList.toggle('completed', checkbox.checked);
-                celebrateTaskCompletion(checkbox, checkbox.checked);
+                if (checkbox.checked) {
+                    createCelebration(e);
+                }
             });
 
             li.appendChild(checkbox);
@@ -1095,9 +1098,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.remove();
             });
             
-            checkbox.addEventListener('change', () => {
+            checkbox.addEventListener('change', (e) => {
                 label.classList.toggle('completed', checkbox.checked);
-                celebrateTaskCompletion(checkbox, checkbox.checked);
+                if (checkbox.checked) {
+                    createCelebration(e);
+                }
             });
             
             li.appendChild(checkbox);
@@ -1144,9 +1149,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 promoteTaskToMainGoal(item.task, selectedDateString);
             });
             
-            checkbox.addEventListener('change', () => {
+            checkbox.addEventListener('change', (e) => {
                 label.classList.toggle('completed', checkbox.checked);
-                celebrateTaskCompletion(checkbox, checkbox.checked);
+                if (checkbox.checked) {
+                    createCelebration(e);
+                }
             });
 
             li.appendChild(checkbox);
@@ -1539,82 +1546,111 @@ function showToastNotification(message) {
     }, 3000);
 }
 
-// Function to create fireworks animation at a specific position
-function createFireworks(x, y) {
-    const fireworksContainer = document.createElement('div');
-    fireworksContainer.className = 'fireworks-container';
-    fireworksContainer.style.position = 'fixed';
-    fireworksContainer.style.left = x + 'px';
-    fireworksContainer.style.top = y + 'px';
-    fireworksContainer.style.zIndex = '9999';
-    document.body.appendChild(fireworksContainer);
-
-    // Create 12 particles
-    for (let i = 0; i < 12; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'firework-particle';
+// Function to create a celebration effect when a task is completed
+function createCelebration(event) {
+    // Play celebration sounds
+    try {
+        const completeSound = document.getElementById('complete-sound');
+        if (completeSound) {
+            completeSound.currentTime = 0;
+            completeSound.play().catch(e => console.log('Sound play error:', e));
+        }
         
-        // Random colors
-        const colors = ['#ffaa00', '#ff00aa', '#00ffaa', '#aaff00', '#aa00ff'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.backgroundColor = randomColor;
-        
-        // Random angle and distance
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 30 + Math.random() * 30;
-        
-        // Set animation properties
-        particle.style.transform = 'translate(-50%, -50%)';
-        
-        // Animation
-        const animation = particle.animate(
-            [
-                { 
-                    transform: 'translate(-50%, -50%) scale(0.8)',
-                    opacity: 1
-                },
-                {
-                    transform: `translate(
-                        calc(-50% + ${Math.cos(angle) * distance}px), 
-                        calc(-50% + ${Math.sin(angle) * distance}px)
-                    ) scale(0)`,
-                    opacity: 0
-                }
-            ],
-            {
-                duration: 800,
-                easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)',
-                fill: 'forwards'
+        // Play firework sound with slight delay
+        setTimeout(() => {
+            const fireworkSound = document.getElementById('firework-sound');
+            if (fireworkSound) {
+                fireworkSound.currentTime = 0;
+                fireworkSound.volume = 0.3; // Lower volume
+                fireworkSound.play().catch(e => console.log('Sound play error:', e));
             }
-        );
-        
-        fireworksContainer.appendChild(particle);
+        }, 200);
+    } catch (e) {
+        console.log('Error playing sound:', e);
     }
     
-    // Remove container after animation completes
-    setTimeout(() => {
-        if (document.body.contains(fireworksContainer)) {
-            document.body.removeChild(fireworksContainer);
+    // Create container for fireworks if it doesn't exist
+    let container = document.querySelector('.firework-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'firework-container';
+        document.body.appendChild(container);
+    }
+    
+    // Get position of the event (if provided) or random position
+    let x, y;
+    if (event && event.clientX && event.clientY) {
+        x = event.clientX;
+        y = event.clientY;
+    } else {
+        // Use random position or center of screen
+        x = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
+        y = Math.random() * window.innerHeight * 0.8 + window.innerHeight * 0.1;
+    }
+    
+    // Create fireworks
+    const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500'];
+    
+    // Create main firework
+    const firework = document.createElement('div');
+    firework.className = 'firework';
+    firework.style.left = `${x}px`;
+    firework.style.top = `${y}px`;
+    firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    container.appendChild(firework);
+    
+    // Create particles
+    const particleCount = 20;
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'firework-particle';
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        
+        // Random direction
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 50 + Math.random() * 50;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        // Set custom properties for the animation
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        
+        // Random color
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        container.appendChild(particle);
+    }
+    
+    // Create confetti
+    const confettiCount = 30;
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Random position
+        confetti.style.left = `${Math.random() * window.innerWidth}px`;
+        
+        // Random rotation
+        confetti.style.transform = `rotateZ(${Math.random() * 360}deg)`;
+        
+        // Random color
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Random shape
+        if (Math.random() > 0.5) {
+            confetti.style.borderRadius = '50%';
+            confetti.style.width = '8px';
+            confetti.style.height = '8px';
         }
-    }, 1000);
-}
-
-// Function to celebrate task completion
-function celebrateTaskCompletion(element, isChecked) {
-    if (!isChecked) return; // Only celebrate when checked (not unchecked)
+        
+        container.appendChild(confetti);
+    }
     
-    // Add a pulse animation to the list item
-    const listItem = element.closest('li');
-    
-    // Create pulse animation element
-    const pulse = document.createElement('div');
-    pulse.className = 'task-complete-animation';
-    listItem.appendChild(pulse);
-    
-    // Remove pulse element after animation completes
+    // Clean up animation elements after they finish
     setTimeout(() => {
-        if (pulse.parentNode === listItem) {
-            listItem.removeChild(pulse);
-        }
-    }, 800);
+        const elements = container.querySelectorAll('.firework, .firework-particle, .confetti');
+        elements.forEach(el => el.remove());
+    }, 3000);
 } 
