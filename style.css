@@ -1,20 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
 * {
     box-sizing: border-box;
 }
 
 body {
-    font-family: sans-serif;
-    min-height: 100vh;
-    background-color: #FAEDF0; /* Light pink (was beige) */
+    font-family: 'Roboto', sans-serif;
+    background: #FAEDF0; /* Existing light pink background, can be changed to a gradient or image */
+    color: #161853; /* Dark blue for text */
+    margin: 0;
     padding: 20px;
-    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align items to the start for better layout with multiple sections */
+    min-height: 100vh;
+    box-sizing: border-box;
     animation: fadeIn 0.8s ease-out;
 }
 
 .main-container {
-    width: 100%;
-    max-width: 1600px;
-    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1); /* Semi-transparent white for a subtle glass effect */
+    backdrop-filter: blur(10px); /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(10px); /* Safari support */
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Light border */
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Softer shadow */
+    padding: 20px;
+    width: 95%;
+    max-width: 1400px; /* Max width for larger screens */
+    display: flex;
+    flex-direction: column; /* Ensure children stack vertically */
     animation: fadeIn 1s ease-out;
 }
 
@@ -41,45 +56,39 @@ body {
 
 .calendar-controls {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
+    padding: 15px 20px;
+    background: rgba(41, 44, 109, 0.8); /* Medium Blue with more transparency */
+    color: #FAEDF0; /* Light pink text */
+    border-radius: 10px;
     margin-bottom: 20px;
-    padding: 12px 20px;
-    background-color: #292C6D; /* Medium blue (was teal) */
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: white;
-    opacity: 0;
-    animation: slideInUp 0.6s ease-out forwards;
-    transition: box-shadow 0.3s, transform 0.2s;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.calendar-controls:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
+    border: 1px solid rgba(250, 237, 240, 0.3); /* Light pinkish border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .calendar-controls h2 {
     margin: 0;
-    font-size: 1.6em;
-    color: white; /* White text on blue */
+    font-size: 1.8em;
+    font-weight: 500;
+    color: #FAEDF0;
 }
 
 .calendar-controls button {
-    background: none;
-    border: none;
-    font-size: 1.8em;
+    background-color: transparent; /* Make button background transparent */
+    color: #FAEDF0; /* Light pink text */
+    border: 1px solid rgba(250, 237, 240, 0.5); /* Light border for buttons */
+    padding: 8px 15px;
+    border-radius: 8px;
     cursor: pointer;
-    padding: 5px 10px;
-    color: white; /* White text on blue */
-    transition: all 0.2s ease;
+    font-size: 1.1em;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
 }
 
 .calendar-controls button:hover {
-    transform: scale(1.15);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    background-color: rgba(250, 237, 240, 0.2); /* Light pinkish transparent background on hover */
+    color: #FFFFFF; /* White text on hover */
+    transform: translateY(-2px);
 }
 
 .calendar-container {
