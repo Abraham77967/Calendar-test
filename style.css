@@ -1465,12 +1465,14 @@ body {
     display: flex;
     align-items: center;
     margin-left: auto;
+    min-width: 120px;
 }
 
 .header-auth #login-form,
 .header-auth #user-info {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
 .header-auth .google-button {
@@ -1485,6 +1487,7 @@ body {
     align-items: center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     margin: 0;
+    white-space: nowrap;
 }
 
 .header-auth .google-button img {

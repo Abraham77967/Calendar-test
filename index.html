@@ -12,6 +12,31 @@
             <button id="prev-month">&lt;</button>
             <h2 id="month-year-display">April & May 2025</h2>
             <button id="next-month">&gt;</button>
+            <button id="toggle-view-button">Month View</button>
+            
+            <!-- Authentication UI in header -->
+            <div class="header-auth">
+                <div id="login-form">
+                    <button id="google-signin-button" class="google-button">
+                        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+                        Sign in
+                    </button>
+                    <span class="test-mode-badge" title="You can add and view events without signing in. Data will be stored in browser memory only.">Test Mode</span>
+                </div>
+                <div id="user-info" style="display:none;">
+                    <span id="user-email"></span>
+                    <button id="logout-button">Sign Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Goals Section -->
+        <div id="main-goals-section" class="main-goals-section">
+            <h3>My 3 Main Goals</h3>
+            <div id="goals-container" class="goals-container">
+                <!-- Goals will be added here dynamically -->
+            </div>
+            <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
         </div>
 
         <div class="content-area">
@@ -74,6 +99,38 @@
             <button id="delete-note">Delete Note</button>
         </div>
     </div>
+
+    <!-- Goals Editor Modal -->
+    <div id="goals-modal" class="modal">
+        <div class="modal-content goals-modal-content">
+            <span class="close-button goals-close-button">&times;</span>
+            <h3>Set Your 3 Main Goals</h3>
+            <p class="modal-instructions">Define up to three main goals you're currently working on. These will be displayed prominently on your calendar.</p>
+            
+            <div id="goals-editor">
+                <div class="goal-input-container">
+                    <label for="goal-1">Goal 1:</label>
+                    <input type="text" id="goal-1" class="goal-input" placeholder="Enter your first main goal">
+                </div>
+                <div class="goal-input-container">
+                    <label for="goal-2">Goal 2:</label>
+                    <input type="text" id="goal-2" class="goal-input" placeholder="Enter your second main goal">
+                </div>
+                <div class="goal-input-container">
+                    <label for="goal-3">Goal 3:</label>
+                    <input type="text" id="goal-3" class="goal-input" placeholder="Enter your third main goal">
+                </div>
+                
+                <button type="button" id="save-goals-button" class="action-button">Save Goals</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Firebase SDK scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
 
     <script src="script.js"></script>
 </body>
