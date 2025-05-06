@@ -5,7 +5,7 @@
 body {
     font-family: sans-serif;
     min-height: 100vh;
-    background-color: #FAEDF0; /* Light pink background (was beige) */
+    background-color: #FAEDF0; /* Light pink (was beige) */
     padding: 20px;
     font-size: 16px;
     animation: fadeIn 0.8s ease-out;
@@ -45,7 +45,7 @@ body {
     align-items: center;
     margin-bottom: 20px;
     padding: 12px 20px;
-    background-color: #161853; /* Dark blue (was teal) */
+    background-color: #292C6D; /* Medium blue (was teal) */
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     color: white;
@@ -88,7 +88,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 100%; /* Full width within wrapper */
-    border: 1px solid #161853; /* Dark blue */
+    border: 1px solid #161853; /* Dark blue (was dark blue-green) */
     transition: box-shadow 0.3s, transform 0.2s;
 }
 
@@ -106,7 +106,7 @@ body {
 .calendar-header h3 {
     margin: 0;
     font-size: 1.2em; /* Adjusted size for two calendars */
-    color: #06202B;
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 .calendar-grid {
@@ -121,7 +121,7 @@ body {
     padding-bottom: 8px;
     border-bottom: 1px solid #292C6D; /* Medium blue (was teal) */
     font-size: 0.9em; /* Adjusted size */
-    color: #161853; /* Dark blue */
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 .day {
@@ -149,7 +149,7 @@ body {
 .day:nth-child(7n+7) { animation-delay: 0.4s; }
 
 .day:hover {
-    background-color: #fef9fa; /* Very light pink (was darker beige) */
+    background-color: #FAEDF0; /* Light pink (was beige) */
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     z-index: 2;
@@ -157,20 +157,20 @@ body {
 
 .day.today {
     background-color: #FAEDF0; /* Light pink (was beige) */
-    border: 2px solid #EC255A; /* Accent red (was mint) */
+    border: 2px solid #EC255A; /* Bright pink (was mint) */
     animation: pulseScale 2s ease-in-out;
     animation-delay: 1s;
 }
 
 .day.today .day-number {
     font-weight: 900;
-    color: #EC255A; /* Accent red (was teal) */
+    color: #292C6D; /* Medium blue (was teal) */
 }
 
 .day .day-number {
     font-weight: bold;
     font-size: 0.95em; /* Adjusted size */
-    color: #06202B;
+    color: #161853; /* Dark blue (was dark blue-green) */
     align-self: flex-start;
 }
 
@@ -250,40 +250,40 @@ body {
 }
 
 .modal-content {
-    background-color: white;
+    width: 80%;
+    max-width: 600px;
+    margin: 5% auto;
     padding: 20px;
-    border-radius: 8px;
-    width: 70%;
-    max-width: 700px;
-    margin: auto;
-    border: 1px solid #292C6D; /* Medium blue (was dark teal) */
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
     position: relative;
-    animation: modalFadeIn 0.3s ease-out;
+    animation: slideInUp 0.3s ease-out;
 }
 
 .close-button {
+    color: #161853; /* Dark blue (was dark blue-green) */
     position: absolute;
     top: 10px;
-    right: 10px;
-    font-size: 24px;
+    right: 15px;
+    font-size: 32px;
     font-weight: bold;
-    color: #161853; /* Dark blue */
-    cursor: pointer;
+    line-height: 1;
     transition: all 0.2s ease;
 }
 
 .close-button:hover {
-    color: #EC255A; /* Accent red */
+    transform: rotate(90deg);
+    color: #292C6D; /* Medium blue (was teal) */
 }
 
 #modal-date {
     margin-top: 0;
-    margin-bottom: 15px;
-    font-weight: 600;
-    color: #161853; /* Dark blue (was dark teal) */
-    font-size: 1.3em;
+    margin-bottom: 20px;
+    color: #161853; /* Dark blue (was dark blue-green) */
+    font-size: 1.4em;
     text-align: center;
-    border-bottom: 2px solid #FAEDF0; /* Light pink (was beige) */
+    border-bottom: 2px solid #292C6D; /* Medium blue (was teal) */
     padding-bottom: 10px;
 }
 
@@ -291,7 +291,7 @@ body {
     font-size: 0.95em;
     margin-bottom: 3px;
     display: inline-block;
-    color: #06202B; /* Dark navy (was navy) */
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 #note-time {
@@ -299,7 +299,7 @@ body {
     width: auto;
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #077A7D; /* Teal (was blue) */
+    border: 1px solid #292C6D; /* Medium blue (was teal) */
     border-radius: 4px;
     font-size: 1em;
 }
@@ -309,7 +309,7 @@ body {
     height: 110px;
     margin-bottom: 10px;
     padding: 10px;
-    border: 1px solid #077A7D; /* Teal (was blue) */
+    border: 1px solid #292C6D; /* Medium blue (was teal) */
     border-radius: 4px;
     resize: vertical;
     font-size: 1em;
@@ -323,8 +323,8 @@ body {
 
 .modal-content input:focus, 
 .modal-content textarea:focus {
-    border-color: #077A7D; /* Teal (was blue) */
-    box-shadow: 0 0 0 2px rgba(7, 122, 125, 0.25); /* Teal with opacity */
+    border-color: #292C6D; /* Medium blue (was teal) */
+    box-shadow: 0 0 0 2px rgba(18, 20, 67, 0.25); /* Medium blue with opacity */
     transform: translateY(-1px);
     outline: none;
 }
@@ -350,28 +350,28 @@ body {
 }
 
 #save-note {
-    background-color: #077A7D; /* Teal (was blue) */
+    background-color: #292C6D; /* Medium blue (was teal) */
     color: white;
 }
 
 #save-note:hover {
-    background-color: #06202B; /* Dark navy on hover (was navy) */
+    background-color: #161853; /* Dark blue */
 }
 
 #delete-note {
-    background-color: #7AE2CF; /* Mint (was salmon) */
-    color: #06202B; /* Dark text on light button */
+    background-color: #EC255A; /* Bright pink (was red) */
+    color: white;
 }
 
 #delete-note:hover {
-    background-color: #5dd1bd; /* Darker mint on hover */
+    background-color: #d01b4b; /* Darker bright pink */
 }
 
 /* Checklist styles in Modal */
 .checklist-container {
     margin-top: 15px;
     margin-bottom: 15px;
-    border-top: 1px solid #077A7D; /* Teal (was blue) */
+    border-top: 1px solid #292C6D; /* Medium blue (was teal) */
     padding-top: 10px;
 }
 
@@ -379,7 +379,7 @@ body {
     margin-top: 0;
     margin-bottom: 10px;
     font-size: 1.1em;
-    color: #06202B; /* Dark navy (was navy) */
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 #checklist-items {
@@ -415,7 +415,7 @@ body {
     appearance: none;
     width: 20px;
     height: 20px;
-    border: 2px solid #077A7D; /* Teal (was blue) */
+    border: 2px solid #292C6D; /* Medium blue (was teal) */
     border-radius: 4px;
     position: relative;
     cursor: pointer;
@@ -424,8 +424,8 @@ body {
 }
 
 #checklist-items input[type="checkbox"]:checked {
-    background-color: #7AE2CF; /* Mint (was salmon) */
-    border-color: #7AE2CF; /* Mint (was salmon) */
+    background-color: #EC255A; /* Bright pink (was red) */
+    border-color: #EC255A; /* Bright pink (was red) */
 }
 
 #checklist-items input[type="checkbox"]:checked::after {
@@ -443,19 +443,19 @@ body {
     flex-grow: 1;
     cursor: pointer;
     font-size: 0.95em;
-    color: #06202B; /* Dark navy (was navy) */
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 #checklist-items label.completed {
     text-decoration: line-through;
-    color: #077A7D; /* Teal (was blue) */
+    color: #292C6D; /* Medium blue (was teal) */
     transition: all 0.3s ease;
 }
 
 #checklist-items .delete-item-button {
     background: none;
     border: none;
-    color: #7AE2CF; /* Mint (was salmon) */
+    color: #EC255A; /* Bright pink (was red) */
     cursor: pointer;
     font-size: 1.4em;
     padding: 0 8px;
@@ -477,7 +477,7 @@ body {
 #new-checklist-item {
     flex-grow: 1;
     padding: 10px;
-    border: 1px solid #077A7D; /* Teal (was blue) */
+    border: 1px solid #292C6D; /* Medium blue (was teal) */
     border-radius: 4px;
     font-size: 1em;
     background-color: white;
@@ -485,7 +485,7 @@ body {
 
 #add-item-button, #edit-add-item-button {
     padding: 8px 15px;
-    background-color: #077A7D;
+    background-color: #292C6D;
     color: white;
     border: none;
     border-radius: 0 4px 4px 0;
@@ -494,7 +494,7 @@ body {
 }
 
 #add-item-button:hover, #edit-add-item-button:hover {
-    background-color: #06202B;
+    background-color: #161853; /* Dark blue */
     transform: translateY(-2px);
 }
 
@@ -506,7 +506,7 @@ body {
     padding: 12px 25px;
     font-size: 1.1em;
     text-align: center;
-    background-color: #077A7D;
+    background-color: #292C6D;
     color: white;
     border: none;
     border-radius: 5px;
@@ -516,7 +516,7 @@ body {
 }
 
 #add-event-button:hover {
-    background-color: #056163;
+    background-color: #161853; /* Dark blue */
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -683,8 +683,8 @@ body {
 .event-count {
     font-weight: bold;
     text-align: center;
-    background-color: #7AE2CF !important; /* Use !important cautiously */
-    color: #06202B !important;
+    background-color: #EC255A !important; /* Use !important cautiously */
+    color: #161853 !important;
     padding: 3px 5px !important;
     border-radius: 4px;
     font-size: 0.85em !important;
@@ -693,7 +693,7 @@ body {
 /* Style for single event display (can reuse note-text styles mostly) */
 .single-event {
     /* Inherits from .note-text, can add specific overrides if needed */
-    background-color: #077A7D !important; 
+    background-color: #292C6D !important; 
     color: white !important;
     /* Ensure it takes full width and handles overflow */
     display: block;
@@ -718,7 +718,7 @@ body {
 #events-list-container h4 {
     margin-top: 0;
     margin-bottom: 10px;
-    color: #077A7D;
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 .no-events-message {
@@ -738,7 +738,7 @@ body {
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    border-left: 4px solid #077A7D;
+    border-left: 4px solid #292C6D; /* Medium blue (was teal) */
 }
 
 .event-item:hover {
@@ -748,7 +748,7 @@ body {
 
 .event-time {
     font-weight: bold;
-    color: #077A7D;
+    color: #292C6D; /* Medium blue (was teal) */
     margin-right: 10px;
     min-width: 60px;
 }
@@ -776,7 +776,7 @@ body {
 #add-event-section h4, #edit-event-section h4 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #077A7D;
+    color: #161853; /* Dark blue (was dark blue-green) */
 }
 
 #new-event-time, #edit-event-time {
@@ -884,26 +884,25 @@ body {
 }
 
 .secondary-button {
-    background-color: #e7e7e7;
-    color: #292C6D; /* Medium blue */
+    background-color: #e0e0e0;
+    color: #444;
 }
 
 .delete-button {
-    background-color: #EC255A; /* Accent red (was red) */
+    background-color: #EC255A; /* Bright pink (was red) */
     color: white;
 }
 
 .action-button:hover {
-    background-color: #161853; /* Dark blue (was dark teal) */
+    background-color: #161853; /* Dark blue */
 }
 
 .secondary-button:hover {
-    background-color: #d5d5d5;
-    color: #161853; /* Dark blue */
+    background-color: #d0d0d0;
 }
 
 .delete-button:hover {
-    background-color: #c91e49; /* Darker accent red */
+    background-color: #d01b4b; /* Darker bright pink */
 }
 
 .edit-actions {
@@ -938,7 +937,7 @@ body {
     background-color: #f8f8f8;
     border-radius: 4px;
     padding: 10px;
-    border-left: 3px solid #077A7D;
+    border-left: 3px solid #292C6D; /* Medium blue (was teal) */
 }
 
 /* Restored Progress Panel Styles */
@@ -947,12 +946,11 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-top: 30px;
-    max-width: 1200px;
     width: 100%;
-    opacity: 1; /* Make panel visible */
-    display: block; /* Make sure it's displayed */
-    border: 1px solid #161853; /* Dark blue (was dark teal) */
+    max-width: 800px;
+    margin: 20px auto;
+    border: 1px solid #161853;
+    animation: fadeIn 0.8s ease-out;
     transition: all 0.3s ease;
 }
 
@@ -961,50 +959,58 @@ body {
 }
 
 #event-progress-panel h3 {
-    color: #292C6D; /* Medium blue (was teal) */
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.3em;
+    margin: 0 0 20px 0;
     text-align: center;
-    border-bottom: 2px solid #FAEDF0; /* Light pink (was beige) */
-    padding-bottom: 10px;
+    font-size: 1.5em;
+    color: #292C6D; /* Medium blue (was teal) */
+    padding-bottom: 15px;
+    border-bottom: 2px solid #292C6D; /* Medium blue (was teal) */
 }
 
 /* Card-style progress items */
 .progress-item {
-    background: white;
+    background-color: white;
     border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid #FAEDF0; /* Light pink (was light gray) */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
-    animation: fadeIn 0.5s ease-out;
-    animation-fill-mode: both;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideInUp 0.5s ease-out forwards;
 }
 
+/* Stagger card animations */
+.progress-item:nth-child(3n+1) { animation-delay: 0.2s; }
+.progress-item:nth-child(3n+2) { animation-delay: 0.3s; }
+.progress-item:nth-child(3n+3) { animation-delay: 0.4s; }
+
 .progress-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-color: #EC255A; /* Accent red (was teal) */
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+}
+
+/* Item header with date and text */
+.progress-item-header {
+    background-color: #292C6D; /* Medium blue (was teal) */
+    padding: 15px;
+    border-bottom: 1px solid #161853; /* Dark blue (was dark blue-green) */
 }
 
 .progress-item .item-date {
-    font-weight: 600;
-    font-size: 1em;
-    color: #161853; /* Dark blue (was dark teal) */
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 5px;
     display: block;
-    margin-bottom: 3px;
 }
 
 .progress-item .item-text {
-    color: #292C6D; /* Medium blue (was teal) */
-    font-size: 0.9em;
-    opacity: 0.9;
-    font-weight: normal;
-    padding: 2px 4px;
-    border-radius: 3px;
-    display: inline-block;
+    font-size: 1.15em;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    word-wrap: break-word;
+    line-height: 1.3;
 }
 
 /* Event container for multiple events */
@@ -1039,7 +1045,7 @@ body {
 
 .panel-event-time {
     font-weight: 600;
-    color: #EC255A; /* Accent red (was teal) */
+    color: #292C6D; /* Medium blue (was teal) */
     margin-right: 8px;
     display: inline-block;
     min-width: 60px;
@@ -1054,8 +1060,8 @@ body {
 /* Edit button styles */
 .panel-event-edit {
     background-color: transparent;
-    border: 1px solid #292C6D; /* Medium blue (was teal) */
-    color: #292C6D; /* Medium blue (was teal) */
+    border: 1px solid #EC255A;
+    color: #EC255A;
     padding: 3px 8px;
     border-radius: 4px;
     cursor: pointer;
@@ -1064,14 +1070,14 @@ body {
     display: flex;
     align-items: center;
     margin-left: 10px;
-    opacity: 0.8;
+    opacity: 0.7;
     flex-shrink: 0;
     min-width: 45px;
     justify-content: center;
 }
 
 .panel-event-edit:hover {
-    background-color: #292C6D; /* Medium blue (was teal) */
+    background-color: #EC255A;
     color: white;
     opacity: 1;
 }
@@ -1087,19 +1093,17 @@ body {
 }
 
 .panel-event .progress-bar-container {
-    width: 100%;
-    height: 6px;
-    background-color: #f1f1f1;
-    border-radius: 3px;
+    height: 12px;
+    background-color: #f0f0f0;
+    border-radius: 6px;
     overflow: hidden;
-    margin: 8px 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .panel-event .progress-bar {
-    height: 6px;
-    background-color: #EC255A; /* Accent red (was teal) */
-    border-radius: 3px;
-    width: 0; /* Will be set dynamically */
+    height: 8px;
+    background-color: #EC255A;
+    border-radius: 4px;
     transition: width 0.3s ease;
 }
 
@@ -1126,8 +1130,8 @@ body {
     background-color: #292C6D; /* Medium blue (was teal) */
     color: white;
     border: none;
-    padding: 5px 10px;
     border-radius: 4px;
+    padding: 6px 10px;
     margin: 8px 0;
     font-size: 0.85em;
     cursor: pointer;
@@ -1135,19 +1139,17 @@ body {
 }
 
 .toggle-checklist-button:hover {
-    background-color: #161853; /* Dark blue (was dark teal) */
+    background-color: #161853; /* Dark blue */
     transform: translateY(-1px);
 }
 
 /* Panel checklist container */
 .panel-checklist-container {
-    background-color: #FAEDF0; /* Light pink (was lighter teal) */
+    background-color: #f9f9f9;
     border-radius: 6px;
-    padding: 10px;
-    margin-top: 5px;
+    margin: 5px 0 10px;
     overflow: hidden;
-    max-height: 0;
-    animation: expandDown 0.3s ease forwards;
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* Panel checklist */
@@ -1171,9 +1173,8 @@ body {
 }
 
 .panel-checklist li:hover {
-    background-color: #fff9fa; /* Slightly lighter pink (was off-white) */
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    background-color: #f5f5f5;
+    transform: translateX(2px);
 }
 
 .panel-checklist input[type="checkbox"] {
@@ -1183,7 +1184,7 @@ body {
     appearance: none;
     width: 18px;
     height: 18px;
-    border: 2px solid #077A7D;
+    border: 2px solid #292C6D; /* Medium blue (was teal) */
     border-radius: 3px;
     position: relative;
     cursor: pointer;
@@ -1192,19 +1193,19 @@ body {
 }
 
 .panel-checklist input[type="checkbox"]:checked {
-    background-color: #7AE2CF;
-    border-color: #7AE2CF;
+    background-color: #EC255A; /* Bright pink (was red) */
+    border-color: #EC255A; /* Bright pink (was red) */
 }
 
 .panel-checklist input[type="checkbox"]:checked::after {
-    content: '✓';
+    content: "✓";
     position: absolute;
-    top: -2px;
-    left: 1px;
-    color: #EC255A; /* Accent red (was teal) */
-    font-size: 14px;
-    font-weight: bold;
-    animation: checkmarkPop 0.2s ease-out;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: checkmarkPop 0.3s ease-out;
 }
 
 .panel-checklist label {
@@ -1216,7 +1217,8 @@ body {
 
 .panel-checklist label.completed {
     text-decoration: line-through;
-    color: #888;
+    color: #777;
+    transition: all 0.3s ease;
 }
 
 /* Main Goals Section Styles */
@@ -1228,7 +1230,7 @@ body {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto 20px;
-    border: 1px solid #161853; /* Dark blue (was dark teal) */
+    border: 1px solid #161853; /* Dark blue (was dark blue-green) */
     transition: box-shadow 0.3s, transform 0.2s;
     animation: slideInUp 0.7s ease-out forwards;
 }
@@ -1260,7 +1262,7 @@ body {
     padding: 12px 15px;
     border-radius: 6px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     transition: all 0.2s ease;
     animation: fadeIn 0.5s ease-out;
 }
@@ -1272,7 +1274,7 @@ body {
 }
 
 .goal-index {
-    color: #EC255A; /* Accent red (was teal) */
+    color: #292C6D; /* Medium blue (was teal) */
     font-weight: bold;
     font-size: 1.2em;
     margin-right: 10px;
@@ -1281,7 +1283,7 @@ body {
 
 .goal-text {
     font-size: 1.1em;
-    color: #06202B;
+    color: #161853; /* Dark blue (was dark blue-green) */
     line-height: 1.3;
     flex-grow: 1;
     overflow-wrap: break-word;
@@ -1309,7 +1311,7 @@ body {
 }
 
 .edit-goals-button:hover {
-    background-color: #161853; /* Dark blue (was dark teal) */
+    background-color: #161853; /* Dark blue (was darker teal) */
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
@@ -1327,7 +1329,7 @@ body {
 .goal-input-container label {
     display: block;
     margin-bottom: 5px;
-    color: #06202B;
+    color: #161853; /* Dark blue (was dark blue-green) */
     font-weight: bold;
 }
 
@@ -1358,8 +1360,8 @@ body {
 /* Promote to goal button */
 .promote-goal-button {
     background: none;
-    border: 1px solid #292C6D; /* Medium blue (was teal) */
-    color: #292C6D; /* Medium blue (was teal) */
+    border: 1px solid #292C6D;
+    color: #292C6D;
     cursor: pointer;
     font-size: 0.75em;
     padding: 2px 8px;
@@ -1373,13 +1375,13 @@ body {
 }
 
 .promote-goal-button:hover {
-    background-color: #292C6D; /* Medium blue (was teal) */
+    background-color: #292C6D;
     opacity: 1;
     color: white;
 }
 
 .promote-goal-button:active {
-    background-color: #161853; /* Dark blue (was dark teal) */
+    background-color: #f0ebe0;
     transform: translateY(1px);
 }
 
@@ -1422,7 +1424,7 @@ body {
     opacity: 0;
     transition: transform 0.3s ease, opacity 0.3s ease;
     max-width: 300px;
-    border-left: 3px solid #EC255A; /* Accent red (was teal) */
+    border-left: 3px solid #292C6D; /* Medium blue (was teal) */
 }
 
 .promotion-toast.show {
@@ -1438,7 +1440,7 @@ body {
     font-weight: 600;
     margin-bottom: 3px;
     font-size: 0.95em;
-    color: #EC255A; /* Accent red (was teal) */
+    color: #292C6D; /* Medium blue (was teal) */
 }
 
 .toast-text {
@@ -1518,11 +1520,11 @@ body {
 }
 
 .header-auth #logout-button:hover {
-    background-color: #EC255A; /* Accent red */
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 .test-mode-badge {
-    background-color: #EC255A; /* Accent red (was gold) */
+    background-color: #EC255A; /* Bright pink (was gold) */
     color: white;
     font-size: 0.7em;
     padding: 2px 6px;
@@ -1583,16 +1585,4 @@ body {
         font-size: 0.7em;
         padding: 3px 6px;
     }
-}
-
-/* Add animation for modal */
-@keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Add animation for expanding checklist */
-@keyframes expandDown {
-    from { max-height: 0; padding-top: 0; padding-bottom: 0; }
-    to { max-height: 500px; padding: 10px; }
 } 
