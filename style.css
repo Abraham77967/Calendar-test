@@ -1,3 +1,59 @@
+/* Animation Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from { 
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -100% 0; }
+    100% { background-position: 100% 0; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
 * {
     box-sizing: border-box;
 }
@@ -20,6 +76,7 @@ body {
     border-radius: 24px;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    animation: float 6s infinite ease-in-out;
 }
 
 .content-area {
@@ -58,6 +115,23 @@ body {
     transition: box-shadow 0.3s, transform 0.2s;
     flex-wrap: wrap;
     gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.calendar-controls::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.8) 50%, 
+        rgba(255,255,255,0) 100%);
+    animation: shimmer 5s infinite;
+    background-size: 200% 100%;
 }
 
 .calendar-controls:hover {
@@ -99,11 +173,15 @@ body {
     width: 100%; /* Full width within wrapper */
     border: 1px solid #161853; /* Dark blue (was dark blue-green) */
     transition: box-shadow 0.3s, transform 0.2s;
+    animation: fadeIn 0.8s ease forwards;
 }
 
-.calendar-container:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    transform: translateY(-3px);
+#calendar-1 {
+    animation: slideInLeft 0.8s ease forwards;
+}
+
+#calendar-2 {
+    animation: slideInRight 0.8s ease forwards;
 }
 
 .calendar-header {
@@ -147,17 +225,31 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
 }
+
+/* Staggered day animations */
+.day:nth-child(7n+1) { animation-delay: 0.1s; }
+.day:nth-child(7n+2) { animation-delay: 0.15s; }
+.day:nth-child(7n+3) { animation-delay: 0.2s; }
+.day:nth-child(7n+4) { animation-delay: 0.25s; }
+.day:nth-child(7n+5) { animation-delay: 0.3s; }
+.day:nth-child(7n+6) { animation-delay: 0.35s; }
+.day:nth-child(7n+7) { animation-delay: 0.4s; }
 
 .day:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    z-index: 5;
 }
 
 .day.today {
     background: rgba(236, 37, 90, 0.08);
     border: 2px solid #EC255A;
+    animation: pulse 2s infinite ease-in-out;
+    animation-delay: 1s;
 }
 
 .day.faded {
@@ -289,7 +381,7 @@ body {
     overflow: auto;
     background-color: rgba(0,0,0,0.4);
     padding-top: 60px;
-    transition: background-color 0.3s ease;
+    transition: visibility 0s, opacity 0.3s ease;
 }
 
 .modal-content {
@@ -304,7 +396,7 @@ body {
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
     border-radius: 16px;
     position: relative;
-    animation: slideInUp 0.3s ease-out;
+    animation: slideInUp 0.4s ease forwards;
 }
 
 .close-button {
@@ -568,22 +660,6 @@ body {
 }
 
 /* Animation Keyframes */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideInUp {
-    from { 
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to { 
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
 @keyframes pulseScale {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -1027,12 +1103,16 @@ body {
     margin-bottom: 20px;
     padding: 16px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    animation: slideInUp 0.5s ease forwards;
 }
 
-/* Stagger card animations */
-.progress-item:nth-child(3n+1) { animation-delay: 0.2s; }
-.progress-item:nth-child(3n+2) { animation-delay: 0.3s; }
-.progress-item:nth-child(3n+3) { animation-delay: 0.4s; }
+/* Staggered progress item animations */
+.progress-item:nth-child(1) { animation-delay: 0.1s; }
+.progress-item:nth-child(2) { animation-delay: 0.2s; }
+.progress-item:nth-child(3) { animation-delay: 0.3s; }
+.progress-item:nth-child(4) { animation-delay: 0.4s; }
+.progress-item:nth-child(5) { animation-delay: 0.5s; }
 
 .progress-item:hover {
     transform: translateY(-5px);
@@ -1068,21 +1148,23 @@ body {
     margin: 0;
 }
 
-/* Individual event in progress panel */
+/* Create a single consistent panel-event style */
 .panel-event {
-    padding: 14px;
-    border-bottom: 1px solid #eee;
-    position: relative;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px;
     margin-bottom: 12px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: center;
 }
 
-.panel-event:last-child {
-    border-bottom: none;
+.panel-event:hover {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px) scale(1.02);
 }
 
 /* New styles for panel event header */
@@ -1289,6 +1371,7 @@ body {
     margin: 20px auto;
     max-width: 800px;
     text-align: center;
+    animation: slideInUp 0.7s ease forwards;
 }
 
 .main-goals-section h3 {
@@ -1328,11 +1411,18 @@ body {
     position: relative;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    animation: slideInLeft 0.5s ease forwards;
 }
 
+.goal-item:nth-child(1) { animation-delay: 0.2s; }
+.goal-item:nth-child(2) { animation-delay: 0.35s; }
+.goal-item:nth-child(3) { animation-delay: 0.5s; }
+
 .goal-item:hover {
-    transform: translateY(-3px);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .goal-item p {
@@ -1527,6 +1617,25 @@ textarea {
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
     padding: 20px;
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    border: 1px solid #161853;
+    animation: fadeIn 0.8s ease-out;
+    transition: all 0.3s ease;
+}
+
+#event-progress-panel:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+#event-progress-panel h3 {
+    margin: 0 0 20px 0;
+    text-align: center;
+    font-size: 1.5em;
+    color: #292C6D; /* Medium blue (was teal) */
+    padding-bottom: 15px;
+    border-bottom: 2px solid #292C6D; /* Medium blue (was teal) */
 }
 
 /* Add subtle animation to progress items */
@@ -1550,19 +1659,40 @@ button {
     font-weight: 600;
     padding: 8px 16px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
 button:hover {
     background: rgba(41, 44, 109, 0.25);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 button:active {
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.2) 50%, 
+        rgba(255,255,255,0) 100%);
+    transform: translateX(-100%);
+    transition: transform 0.8s ease;
+}
+
+button:hover::after {
+    transform: translateX(100%);
 }
 
 /* Special buttons styling */
@@ -1650,12 +1780,14 @@ button:active {
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 14px;
     margin-bottom: 12px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: center;
 }
 
 .panel-event:hover {
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px) scale(1.02);
 }
 
 /* Apply glass effect to modal */
@@ -1671,8 +1803,176 @@ button:active {
 
 /* Update progress bar for glossy effect */
 .progress-bar {
+    position: relative;
+    overflow: hidden;
+    transition: width 1s ease;
     background: linear-gradient(90deg, #EC255A 0%, #FF6B6B 100%);
     box-shadow: 0 2px 6px rgba(236, 37, 90, 0.3);
     border-radius: 4px;
     height: 8px;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.3) 50%, 
+        rgba(255,255,255,0) 100%);
+    animation: shimmer 2s infinite;
+    background-size: 200% 100%;
+}
+
+/* Header Authentication Styles */
+.header-auth {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    min-width: 120px;
+}
+
+.header-auth #login-form,
+.header-auth #user-info {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.header-auth .google-button {
+    background-color: white !important;
+    color: #333 !important;
+    border: none !important;
+    font-size: 0.8em;
+    padding: 5px 10px !important;
+    border-radius: 4px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.header-auth .google-button img {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+}
+
+.header-auth .google-button:hover {
+    background-color: #f8f8f8 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.header-auth #user-email {
+    color: white;
+    font-size: 0.85em;
+    margin-right: 10px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-auth #logout-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    font-size: 0.75em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-auth #logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Goals Modal Styles */
+.goals-modal-content {
+    max-width: 500px;
+    padding: 25px;
+}
+
+.goal-input-container {
+    margin-bottom: 15px;
+}
+
+.goal-input-container label {
+    display: block;
+    margin-bottom: 5px;
+    color: #161853;
+    font-weight: bold;
+}
+
+.goal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+    transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.goal-input:focus {
+    outline: none;
+    border-color: #292C6D;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(236, 37, 90, 0.15);
+}
+
+/* Make no-goals-message look nice */
+.no-goals-message {
+    text-align: center;
+    color: #666;
+    padding: 15px;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+/* Event header animations */
+.panel-event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.panel-event-details {
+    transition: transform 0.3s ease;
+}
+
+.panel-event:hover .panel-event-details {
+    transform: translateX(5px);
+}
+
+/* Edit button animation */
+.panel-event-edit {
+    transition: all 0.3s ease;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.panel-event-edit:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 8px rgba(236, 37, 90, 0.2);
+}
+
+/* Checklist container animation */
+.panel-checklist-container {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+    animation-delay: 0.3s;
 } 
