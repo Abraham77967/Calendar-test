@@ -1411,7 +1411,7 @@ body {
     position: relative;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    opacity: 0;
+        opacity: 0;
     animation: slideInLeft 0.5s ease forwards;
 }
 
