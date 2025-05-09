@@ -54,6 +54,12 @@
     100% { transform: translateY(0px); }
 }
 
+@keyframes todayPulseGreen {
+    0% { box-shadow: 0 0 6px rgba(165, 214, 167, 0.4), 0 0 0 0 rgba(165, 214, 167, 0.2); } /* Soft Green shadow */
+    50% { box-shadow: 0 0 12px rgba(165, 214, 167, 0.6), 0 0 0 8px rgba(165, 214, 167, 0); }
+    100% { box-shadow: 0 0 6px rgba(165, 214, 167, 0.4), 0 0 0 0 rgba(165, 214, 167, 0.2); }
+}
+
 * {
     box-sizing: border-box;
 }
@@ -160,96 +166,42 @@ body {
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-.calendar-container {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-    overflow: hidden;
-    padding: 16px;
-    margin-bottom: 20px;
-    width: 100%; /* Full width within wrapper */
-    border: 1px solid #161853; /* Dark blue (was dark blue-green) */
-    transition: box-shadow 0.3s, transform 0.2s;
-    animation: fadeIn 0.8s ease forwards;
-}
-
-#calendar-1 {
-    animation: slideInLeft 0.8s ease forwards;
-}
-
-#calendar-2 {
-    animation: slideInRight 0.8s ease forwards;
-}
-
-.calendar-header {
-    text-align: center;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.calendar-header h3 {
-    margin: 0;
-    font-size: 1.2em; /* Adjusted size for two calendars */
-    color: #161853; /* Dark blue (was dark blue-green) */
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px; /* Slightly smaller gap for month view */
-}
-
-.day-header {
+.today-button {
+    background-color: #EC255A;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin-right: 10px;
     font-weight: bold;
-    text-align: center;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #292C6D; /* Medium blue (was teal) */
-    font-size: 0.9em; /* Adjusted size */
-    color: #161853; /* Dark blue (was dark blue-green) */
+    transition: background-color 0.3s;
 }
 
-.day {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 8px;
-    position: relative;
-    transition: all 0.3s ease;
-    height: 100%;
-    min-height: 80px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    animation: fadeIn 0.5s ease forwards;
+.today-button:hover {
+    background-color: #d01a4c;
 }
 
-/* Staggered day animations */
-.day:nth-child(7n+1) { animation-delay: 0.1s; }
-.day:nth-child(7n+2) { animation-delay: 0.15s; }
-.day:nth-child(7n+3) { animation-delay: 0.2s; }
-.day:nth-child(7n+4) { animation-delay: 0.25s; }
-.day:nth-child(7n+5) { animation-delay: 0.3s; }
-.day:nth-child(7n+6) { animation-delay: 0.35s; }
-.day:nth-child(7n+7) { animation-delay: 0.4s; }
-
-.day:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    z-index: 5;
-}
-
+/* Enhanced styles for today highlighting in the calendar */
 .day.today {
-    background: rgba(236, 37, 90, 0.08);
-    border: 2px solid #EC255A;
-    animation: pulse 2s infinite ease-in-out;
-    animation-delay: 1s;
+    background-color: #E8F5E9 !important; /* Very Light Pastel Green (e.g., Honeydew variant) */
+    border: 2px solid #A5D6A7 !important; /* Soft, Desaturated Green Border */
+    color: #388E3C !important; /* Darker, Muted Green Text for readability */
+    font-weight: bold !important; /* Keep bold for emphasis */
+    position: relative !important;
+    transform: scale(1.05) !important; /* Keep it slightly larger */
+    z-index: 100 !important; 
+    opacity: 1 !important; 
+    animation: todayPulseGreen 1.8s infinite ease-out !important;
+    overflow: visible !important; 
+}
+
+.day.today .day-number {
+    color: #388E3C !important; /* Muted Green Text */
+    font-weight: bold !important; /* Emphasize the number */
+    font-size: 1.15em !important; /* Slightly larger number */
+    background-color: rgba(255, 255, 255, 0.4) !important; /* Slight white wash for pop */
+    padding: 2px 4px !important;
+    border-radius: 3px !important;
 }
 
 .day.faded {
@@ -1283,11 +1235,10 @@ body {
 
 /* Panel checklist container */
 .panel-checklist-container {
-    background-color: #f9f9f9;
-    border-radius: 6px;
-    margin: 5px 0 10px;
-    overflow: hidden;
-    animation: fadeIn 0.3s ease-out;
+    display: block; /* Ensure visibility */
+    opacity: 1; /* Override any opacity animation that might hide it */
+    margin-top: 10px;
+    animation: fadeIn 0.5s ease forwards;
 }
 
 /* Panel checklist */
@@ -1406,39 +1357,70 @@ body {
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    padding: 16px;
+    padding: 14px 18px; /* Adjusted padding */
     text-align: left;
     position: relative;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        opacity: 0;
+    opacity: 0;
     animation: slideInLeft 0.5s ease forwards;
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Align checkbox and text vertically */
+    gap: 12px; /* Space between checkbox and text */
 }
 
-.goal-item:nth-child(1) { animation-delay: 0.2s; }
-.goal-item:nth-child(2) { animation-delay: 0.35s; }
-.goal-item:nth-child(3) { animation-delay: 0.5s; }
-
-.goal-item:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    background: rgba(255, 255, 255, 0.25);
+.goal-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #292C6D; /* Medium blue */
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    flex-shrink: 0; /* Prevent checkbox from shrinking */
 }
 
-.goal-item p {
+.goal-item input[type="checkbox"]:checked {
+    background-color: #EC255A; /* Accent pink */
+    border-color: #EC255A;
+}
+
+.goal-item input[type="checkbox"]:checked::before {
+    content: '\2713'; /* Checkmark character */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.goal-item label {
     color: #292C6D;
     font-size: 1.1rem;
-    margin: 0;
-    padding-left: 28px;
+    margin: 0; /* Reset margin */
+    /* padding-left: 28px; Remove direct padding, rely on gap */
     position: relative;
+    flex-grow: 1; /* Allow text to take available space */
+    cursor: pointer; /* Make label clickable for checkbox */
+    transition: color 0.3s ease;
 }
 
-.goal-item p:before {
-    content: '🎯';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+/* Remove old :before pseudo-element for the target icon */
+/* .goal-item p:before { ... } */
+
+.goal-item.completed-goal label {
+    text-decoration: line-through;
+    color: #777; /* Muted color for completed text */
+    opacity: 0.7;
+}
+
+.goal-item.completed-goal {
+    background: rgba(230, 230, 230, 0.1); /* Slightly different background for completed */
+    opacity: 0.8;
 }
 
 /* Input Styles */
@@ -1972,7 +1954,117 @@ button:hover::after {
 
 /* Checklist container animation */
 .panel-checklist-container {
-    opacity: 0;
+    display: block; /* Ensure visibility */
+    opacity: 1; /* Override any opacity animation that might hide it */
+    margin-top: 10px;
     animation: fadeIn 0.5s ease forwards;
-    animation-delay: 0.3s;
+}
+
+.calendar-container {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+    overflow: hidden;
+    padding: 16px;
+    margin-bottom: 20px;
+    width: 100%; /* Full width within wrapper */
+    border: 1px solid #161853; /* Dark blue (was dark blue-green) */
+    transition: box-shadow 0.3s, transform 0.2s;
+    animation: fadeIn 0.8s ease forwards;
+}
+
+#calendar-1 {
+    animation: slideInLeft 0.8s ease forwards;
+}
+
+#calendar-2 {
+    animation: slideInRight 0.8s ease forwards;
+}
+
+.calendar-header {
+    text-align: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calendar-header h3 {
+    margin: 0;
+    font-size: 1.2em; /* Adjusted size for two calendars */
+    color: #161853; /* Dark blue (was dark blue-green) */
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px; /* Slightly smaller gap for month view */
+}
+
+.day-header {
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #292C6D; /* Medium blue (was teal) */
+    font-size: 0.9em; /* Adjusted size */
+    color: #161853; /* Dark blue (was dark blue-green) */
+}
+
+.day {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 8px;
+    position: relative;
+    transition: all 0.3s ease;
+    height: 100%;
+    min-height: 80px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+        opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Staggered day animations */
+.day:nth-child(7n+1) { animation-delay: 0.1s; }
+.day:nth-child(7n+2) { animation-delay: 0.15s; }
+.day:nth-child(7n+3) { animation-delay: 0.2s; }
+.day:nth-child(7n+4) { animation-delay: 0.25s; }
+.day:nth-child(7n+5) { animation-delay: 0.3s; }
+.day:nth-child(7n+6) { animation-delay: 0.35s; }
+.day:nth-child(7n+7) { animation-delay: 0.4s; }
+
+.day:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+}
+
+.day.today .day-number {
+    color: #EC255A;
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+.highlighted-day {
+    position: relative;
+    overflow: visible;
+    z-index: 2;
+}
+
+.highlighted-day::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px dashed #32CD32;
+    border-radius: 12px;
+    pointer-events: none;
 } 

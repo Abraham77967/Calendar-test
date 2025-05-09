@@ -20,20 +20,40 @@ let tempPromotionData = null;
 
 // Function to completely clear all calendar data
 function clearAllCalendarData() {
+    console.log('[CLEAR DATA] Clearing all calendar data');
+    
     // Clear localStorage
     localStorage.removeItem('calendarNotes');
     localStorage.removeItem('mainGoals');
     
-    // Ensure notes variable is empty when defined
-    return {};
+    // Create a new empty object
+    window.calendarNotes = {};
+    
+    console.log('[CLEAR DATA] Calendar data cleared');
+    return window.calendarNotes;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Declare notes in the outer scope of the DOMContentLoaded listener
-    let notes = clearAllCalendarData();
+    // Declare notes as a global variable outside of the function scope
+    // This was the main issue - the 'notes' variable was being reset each time
+    window.calendarNotes = window.calendarNotes || {};
+    let notes = window.calendarNotes;
+
+    // Only initialize if empty
+    if (Object.keys(notes).length === 0) {
+        notes = {};
+        window.calendarNotes = notes;
+    }
     
     // Initialize main goals array (limited to 3)
+    // Ensure goals are objects: { text: string, completed: boolean }
     let mainGoals = JSON.parse(localStorage.getItem('mainGoals')) || [];
+    mainGoals = mainGoals.map(goal => {
+        if (typeof goal === 'string') {
+            return { text: goal, completed: false }; // Convert old string goals
+        }
+        return goal; // Already an object, or will be filtered if invalid
+    }).filter(goal => goal && typeof goal.text === 'string'); // Ensure valid structure
     
     // Check for redirect result first
     firebase.auth().getRedirectResult().then((result) => {
@@ -109,15 +129,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const goalsCloseButton = document.querySelector('.goals-close-button');
 
     let currentView = 'week'; // Mobile view state: 'week' or 'month'
-    let desktopMonthDate = new Date(); // For desktop two-month navigation
-    desktopMonthDate.setDate(1);
-    let mobileMonthDate = new Date(); // For mobile month view navigation
-    mobileMonthDate.setDate(1);
-    let mobileWeekStartDate = new Date(); // For mobile week view navigation
+
+    // Create fresh date objects for the current date
+    const currentDate = new Date();
+    // Reset time portions to zero for accurate date comparison
+    currentDate.setHours(0, 0, 0, 0);
+    
+    // Set up desktop month view (start at first day of current month)
+    let desktopMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    desktopMonthDate.setHours(0, 0, 0, 0);
+    console.log('[INIT] Desktop month date:', desktopMonthDate);
+    
+    // Set up mobile month view (start at first day of current month)
+    let mobileMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    mobileMonthDate.setHours(0, 0, 0, 0);
+    console.log('[INIT] Mobile month date:', mobileMonthDate);
+    
+    // Set up mobile week view (start at current date)
+    let mobileWeekStartDate = new Date(currentDate);
     mobileWeekStartDate.setHours(0, 0, 0, 0);
+    console.log('[INIT] Mobile week start date:', mobileWeekStartDate);
+    
     let selectedDateString = null;
+    // Create a fresh today variable with the current date
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Debug output for today's date
+    console.log('[INIT] Today date:', today);
+    console.log('[INIT] Today date string:', 
+        `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
 
     // Add variable to track current event being edited
     let currentEditingEventId = null;
@@ -172,59 +213,72 @@ document.addEventListener('DOMContentLoaded', () => {
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
             // User is signed in
-            console.log('User detected:', user.email);
+            console.log('[AUTH] User detected:', user.email);
             loginForm.style.display = 'none';
             userInfo.style.display = 'block';
             userEmail.textContent = user.email;
             
             // Fetch notes from Firestore
-            console.log('Fetching notes for user:', user.uid);
+            console.log('[AUTH] Fetching notes for user:', user.uid);
             db.collection('userNotes').doc(user.uid).get()
                 .then(doc => {
-                    console.log('Firestore response:', doc.exists ? 'Document exists' : 'No document found');
+                    console.log('[AUTH] Firestore response:', doc.exists ? 'Document exists' : 'No document found');
                     if (doc.exists) {
                         // Use cloud data only when signed in
                         if (doc.data().notes) {
-                            notes = doc.data().notes;
-                            console.log('Loaded notes from cloud');
+                            // Update the global notes object
+                            window.calendarNotes = doc.data().notes;
+                            // Update our local reference
+                            notes = window.calendarNotes;
+                            console.log('[AUTH] Loaded notes from cloud');
                         }
                         
                         // Load main goals if they exist in cloud data
                         if (doc.data().mainGoals) {
                             mainGoals = doc.data().mainGoals;
                             localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
-                            console.log('Loaded main goals from cloud');
+                            console.log('[AUTH] Loaded main goals from cloud');
                         }
                         
                         renderCalendarView();
                         renderMainGoals();
                     } else {
                         // No cloud data, start with empty notes
-                        notes = {};
-                        console.log('No existing notes found in cloud, starting fresh');
+                        // Keep using our global object, but reset it if empty
+                        if (Object.keys(window.calendarNotes).length === 0) {
+                            window.calendarNotes = {};
+                            notes = window.calendarNotes;
+                        }
+                        console.log('[AUTH] No existing notes found in cloud, using current data');
                         renderCalendarView();
                         renderMainGoals();
                     }
                 })
                 .catch(error => {
-                    console.error("Error fetching notes:", error);
+                    console.error("[AUTH] Error fetching notes:", error);
                     alert("Error fetching your calendar data: " + error.message);
-                    notes = {}; // Reset on error
-                    renderCalendarView(); // Render empty view on error
+                    // Keep using our global object, but reset it if empty
+                    if (Object.keys(window.calendarNotes).length === 0) {
+                        window.calendarNotes = {};
+                        notes = window.calendarNotes;
+                    }
+                    renderCalendarView(); // Render view with existing data
                     renderMainGoals();
                 });
         } else {
             // User is signed out - for testing purposes, allow using the app
-            console.log('No user logged in - using test mode');
+            console.log('[AUTH] No user logged in - using test mode');
             loginForm.style.display = 'block';
             userInfo.style.display = 'none';
             
-            // Use empty notes object for testing instead of clearing
-            if (Object.keys(notes).length === 0) {
-                notes = {}; // Only initialize if empty
-                console.log('Using empty notes object for testing');
+            // Keep using our global notes object 
+            if (Object.keys(window.calendarNotes).length === 0) {
+                window.calendarNotes = {}; // Only initialize if empty
+                notes = window.calendarNotes;
+                console.log('[AUTH] Using empty notes object for testing');
             } else {
-                console.log('Using existing notes data for testing');
+                notes = window.calendarNotes;
+                console.log('[AUTH] Using existing notes data for testing');
             }
             
             // Render with test data
@@ -237,87 +291,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Main Goals Functions ---
     function renderMainGoals() {
-        // Clear existing goals
         goalsContainer.innerHTML = '';
-        
         if (mainGoals.length === 0) {
-            // Show placeholder if no goals are set
-            const noGoalsMessage = document.createElement('div');
-            noGoalsMessage.classList.add('no-goals-message');
-            noGoalsMessage.textContent = 'No main goals set. Click "Edit Goals" to add some!';
-            goalsContainer.appendChild(noGoalsMessage);
+            goalsContainer.innerHTML = '<p class="no-goals-message">No main goals set yet. Click "Edit Goals" to add some!</p>';
             return;
         }
-        
-        // Create and append goal elements
         mainGoals.forEach((goal, index) => {
-            if (!goal.trim()) return; // Skip empty goals
+            const goalItem = document.createElement('div');
+            goalItem.classList.add('goal-item');
+            if (goal.completed) {
+                goalItem.classList.add('completed-goal');
+            }
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = goal.completed;
+            checkbox.id = `main-goal-cb-${index}`;
+            checkbox.dataset.goalIndex = index;
+            checkbox.addEventListener('change', handleMainGoalCheckboxChange);
+
+            const goalText = document.createElement('label'); // Use label for accessibility
+            goalText.htmlFor = checkbox.id;
+            goalText.textContent = goal.text;
             
-            const goalElement = document.createElement('div');
-            goalElement.classList.add('goal-item');
-            
-            const goalIndex = document.createElement('span');
-            goalIndex.classList.add('goal-index');
-            goalIndex.textContent = (index + 1) + '.';
-            
-            const goalText = document.createElement('span');
-            goalText.classList.add('goal-text');
-            goalText.textContent = goal;
-            
-            goalElement.appendChild(goalIndex);
-            goalElement.appendChild(goalText);
-            goalsContainer.appendChild(goalElement);
+            goalItem.appendChild(checkbox);
+            goalItem.appendChild(goalText);
+            goalsContainer.appendChild(goalItem);
         });
     }
-    
-    function openGoalsModal() {
-        // Fill inputs with current goals
-        for (let i = 0; i < 3; i++) {
-            goalInputs[i].value = (i < mainGoals.length) ? mainGoals[i] : '';
+
+    function handleMainGoalCheckboxChange(event) {
+        const goalIndex = parseInt(event.target.dataset.goalIndex);
+        if (goalIndex >= 0 && goalIndex < mainGoals.length) {
+            mainGoals[goalIndex].completed = event.target.checked;
+            localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
+            renderMainGoals(); // Re-render to update styles
+            console.log(`[GOALS] Main goal '${mainGoals[goalIndex].text}' completed: ${mainGoals[goalIndex].completed}`);
         }
-        
+    }
+
+    function openGoalsModal() {
+        goalInputs.forEach((input, index) => {
+            if (mainGoals[index]) {
+                input.value = mainGoals[index].text;
+            } else {
+                input.value = '';
+            }
+        });
         goalsModal.style.display = 'block';
     }
-    
-    function closeGoalsModal() {
-        goalsModal.style.display = 'none';
-    }
-    
+
     function saveMainGoals() {
-        // Get goal texts from inputs
-        mainGoals = goalInputs.map(input => input.value.trim()).filter(goal => goal.length > 0);
-        
-        // Limit to 3 goals
-        if (mainGoals.length > 3) {
-            mainGoals = mainGoals.slice(0, 3);
-        }
-        
-        // Save to localStorage
+        const newGoals = [];
+        goalInputs.forEach((input, index) => {
+            const text = input.value.trim();
+            if (text) {
+                // Preserve completed status if goal text is the same, or default to false for new/changed text
+                const existingGoal = mainGoals.find(g => g.text === text);
+                newGoals.push({ 
+                    text: text, 
+                    completed: existingGoal ? existingGoal.completed : (mainGoals[index] && mainGoals[index].text === text ? mainGoals[index].completed : false)
+                });
+            }
+        });
+        mainGoals = newGoals.slice(0, 3); // Limit to 3 goals
         localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
-        
-        // If logged in, also save to Firebase
-        if (firebase.auth().currentUser) {
-            db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
-                mainGoals: mainGoals
-            }).then(() => {
-                console.log('Main goals saved to Firebase');
-            }).catch(error => {
-                console.error('Error saving main goals:', error);
-            });
-        }
-        
-        // Update display
         renderMainGoals();
-        
-        // Close modal
         closeGoalsModal();
+        console.log('[GOALS] Main goals saved:', mainGoals);
     }
     
     // --- End Main Goals Functions ---
 
     // --- Helper Function: Format Time Difference ---
     function formatTimeDifference(date1, date2) {
-        const diffTime = date1.getTime() - date2.getTime();
+        // Create copies of the dates and set time to midnight for accurate day comparisons
+        const d1 = new Date(date1);
+        d1.setHours(0, 0, 0, 0);
+        const d2 = new Date(date2);
+        d2.setHours(0, 0, 0, 0);
+
+        const diffTime = d1.getTime() - d2.getTime();
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // Difference in days
 
         if (diffDays === 0) {
@@ -338,57 +392,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Renders a single month into a specific grid/header element
     function renderCalendar(targetDate, gridElement, monthYearElement) {
-         // Safety check
-        if (!firebase.auth().currentUser) {
-            notes = clearAllCalendarData(); // Ensure notes are clear if somehow called when logged out
-        }
-        
-        // Clear previous grid days
-        while (gridElement.children.length > 7) {
-            gridElement.removeChild(gridElement.lastChild);
-        }
+        console.log(`[NEW RENDER] Starting renderCalendar for ${targetDate.toDateString()}`);
+        const globalNotes = window.calendarNotes;
+
+        const nowDate = new Date();
+        nowDate.setHours(0, 0, 0, 0);
+        const todayYear = nowDate.getFullYear();
+        const todayMonth = nowDate.getMonth();
+        const todayDay = nowDate.getDate();
+
+        gridElement.innerHTML = ''; // Clear previous grid content VERY FIRST
 
         const year = targetDate.getFullYear();
-        const month = targetDate.getMonth();
+        const month = targetDate.getMonth(); // 0-indexed
 
         monthYearElement.textContent = `${targetDate.toLocaleString('default', { month: 'long' })} ${year}`;
+        console.log(`[NEW RENDER] Rendering month: ${month + 1}/${year}`);
 
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayOfMonth = new Date(year, month, 1);
+        const firstDayIndex = firstDayOfMonth.getDay(); // 0 (Sunday) to 6 (Saturday)
 
-        // Add empty prefix days
-        for (let i = 0; i < firstDayOfMonth; i++) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.classList.add('day', 'other-month');
-            gridElement.appendChild(emptyDiv);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const daysInMonth = lastDayOfMonth.getDate();
+
+        console.log(`[NEW RENDER] ${month + 1}/${year}: First day is index ${firstDayIndex}, ${daysInMonth} days total.`);
+
+        // Use a DocumentFragment for performance and atomic updates
+        const fragment = document.createDocumentFragment();
+
+        // Add day headers (Sun-Sat)
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        dayNames.forEach(name => {
+            const dayHeader = document.createElement('div');
+            dayHeader.classList.add('day-header');
+            dayHeader.textContent = name;
+            fragment.appendChild(dayHeader);
+        });
+
+        // Add empty cells for days before the 1st of the month
+        for (let i = 0; i < firstDayIndex; i++) {
+            const emptyDayCell = document.createElement('div');
+            emptyDayCell.classList.add('day', 'other-month');
+            fragment.appendChild(emptyDayCell);
         }
 
-        // Add actual days
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = document.createElement('div');
-            const currentDate = new Date(year, month, day);
-            currentDate.setHours(0, 0, 0, 0);
+        // Add cells for each day of the month
+        for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+            const currentDateOfLoop = new Date(year, month, dayNum);
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
 
-            dayElement.classList.add('day');
-            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            dayElement.dataset.date = dateString;
+            const dayCell = document.createElement('div');
+            dayCell.classList.add('day');
+            dayCell.dataset.date = dateString;
+            dayCell.dataset.dayNum = dayNum; // For easier debugging
 
-            const dayNumber = document.createElement('span');
-            dayNumber.classList.add('day-number');
-            dayNumber.textContent = day;
-            dayElement.appendChild(dayNumber);
+            // Visual Debug: Add a border to all cells initially
+            // dayCell.style.border = '1px dotted blue'; 
 
-            if (currentDate.getTime() === today.getTime()) {
-                dayElement.classList.add('today');
+            const dayNumberElement = document.createElement('div');
+            dayNumberElement.classList.add('day-number');
+            dayNumberElement.textContent = dayNum;
+            dayCell.appendChild(dayNumberElement);
+
+            const isToday = (dayNum === todayDay && month === todayMonth && year === todayYear);
+            if (isToday) {
+                dayCell.classList.add('today');
+                console.log(`[NEW RENDER] Marked as TODAY: ${dateString}.`);
+                // ---- TEMPORARY DEV STYLES FOR TODAY - REMOVED ----
+                // dayCell.style.backgroundColor = 'lime';
+                // dayCell.style.border = '3px solid red';
+                // dayCell.style.color = 'black';
+                // dayCell.style.fontWeight = '900';
+                // dayCell.style.setProperty('outline', '3px dashed blue', 'important');
+                // dayCell.style.setProperty('z-index', '9999', 'important');
+                // dayCell.style.setProperty('opacity', '1', 'important');
+                // dayCell.style.setProperty('transform', 'scale(1.1)', 'important');
+                // ------------------------------------------
             }
 
             // --- Display Events --- 
-            const eventsForDay = notes[dateString] || [];
+            const eventsForDay = globalNotes[dateString] || [];
             const eventsContainer = document.createElement('div');
             eventsContainer.classList.add('day-events');
 
             if (eventsForDay.length === 1) {
-                // Show single event text (truncated)
                 const eventTextElement = document.createElement('div');
                 eventTextElement.classList.add('note-text', 'single-event');
                 let displayText = eventsForDay[0].text || '(No description)';
@@ -396,18 +483,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 eventTextElement.textContent = displayText;
                 eventsContainer.appendChild(eventTextElement);
             } else if (eventsForDay.length > 1) {
-                // Show event count
                 const eventCountElement = document.createElement('div');
                 eventCountElement.classList.add('note-text', 'event-count');
                 eventCountElement.textContent = `${eventsForDay.length} Events`;
                 eventsContainer.appendChild(eventCountElement);
             }
-            dayElement.appendChild(eventsContainer);
+            dayCell.appendChild(eventsContainer);
             // --- End Display Events ---
 
-            dayElement.addEventListener('click', () => openNoteModal(dateString));
-            gridElement.appendChild(dayElement);
+            dayCell.addEventListener('click', () => openNoteModal(dateString));
+            fragment.appendChild(dayCell);
         }
+
+        // Append the entire fragment to the grid at once
+        gridElement.appendChild(fragment);
+        console.log(`[NEW RENDER] Appended all day cells for ${month + 1}/${year}. Total children in grid: ${gridElement.children.length}`);
     }
 
     // Renders two adjacent months for desktop
@@ -433,59 +523,91 @@ document.addEventListener('DOMContentLoaded', () => {
         monthYearDisplayElement.textContent = mobileMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
     }
 
-    // Renders the mobile two-week view
+    // Renders the mobile two-week view with consistent today highlighting
     function renderMobileTwoWeekView() {
-        if (!firebase.auth().currentUser) {
-            notes = clearAllCalendarData();
+        console.log(`[NEW MOBILE RENDER] Starting renderMobileTwoWeekView`);
+        const globalNotes = window.calendarNotes;
+
+        const nowDate = new Date();
+        nowDate.setHours(0, 0, 0, 0);
+        const todayYear = nowDate.getFullYear();
+        const todayMonth = nowDate.getMonth();
+        const todayDay = nowDate.getDate();
+
+        calendarGrid1.innerHTML = ''; // Clear previous grid content VERY FIRST
+
+        const viewStartDate = new Date(mobileWeekStartDate);
+        viewStartDate.setHours(0, 0, 0, 0);
+
+        const viewEndDate = new Date(viewStartDate);
+        viewEndDate.setDate(viewStartDate.getDate() + 13); // 14 days total
+
+        const headerOptions = { month: 'short', day: 'numeric' };
+        monthYearElement1.textContent = `${viewStartDate.toLocaleDateString('default', headerOptions)} - ${viewEndDate.toLocaleDateString('default', headerOptions)}, ${viewStartDate.getFullYear()}`;
+        monthYearDisplayElement.textContent = `${viewStartDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}`;
+        console.log(`[NEW MOBILE RENDER] Rendering 2-week view from: ${viewStartDate.toDateString()} to ${viewEndDate.toDateString()}`);
+
+        const fragment = document.createDocumentFragment();
+
+        // Add day headers (Sun-Sat) for the first week shown in the two-week view for context
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        for (let i = 0; i < 7; i++) {
+            const dayHeader = document.createElement('div');
+            dayHeader.classList.add('day-header', 'mobile-week-header');
+            // We can set textContent to dayNames[ (viewStartDate.getDay() + i) % 7 ] if we want dynamic headers for the week view starting day
+            // For simplicity, or if the visual grid doesn't always start on Sunday for the *data* but visually *does* for the headers, we might just use fixed headers.
+            // Let's assume the visual grid header row is always Sun-Sat for this display.
+            dayHeader.textContent = dayNames[i];
+            fragment.appendChild(dayHeader);
         }
-        
-        // Clear previous grid days
-        while (calendarGrid1.children.length > 7) {
-            calendarGrid1.removeChild(calendarGrid1.lastChild);
-        }
 
-        const startDate = new Date(mobileWeekStartDate);
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 13);
-
-        // Update header display (use monthYearElement1 for the single calendar header)
-        const options = { month: 'short', day: 'numeric' };
-        monthYearElement1.textContent = `${startDate.toLocaleDateString('default', options)} - ${endDate.toLocaleDateString('default', options)}, ${startDate.getFullYear()}`;
-        monthYearDisplayElement.textContent = `${startDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}`; // Update top control header
-
+        // Create and add all 14 day cells
         for (let i = 0; i < 14; i++) {
-            const dayElement = document.createElement('div');
-            const currentDate = new Date(startDate);
-            currentDate.setDate(startDate.getDate() + i);
-            currentDate.setHours(0, 0, 0, 0);
+            const currentDateOfLoop = new Date(viewStartDate);
+            currentDateOfLoop.setDate(viewStartDate.getDate() + i);
 
-            // Add both day and week-view classes
-            dayElement.classList.add('day', 'week-view');
-            const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-            dayElement.dataset.date = dateString;
+            const year = currentDateOfLoop.getFullYear();
+            const month = currentDateOfLoop.getMonth(); // 0-indexed
+            const dayNum = currentDateOfLoop.getDate();
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+
+            const dayCell = document.createElement('div');
+            dayCell.classList.add('day', 'week-view'); // Ensure 'week-view' styles apply
+            dayCell.dataset.date = dateString;
+            dayCell.dataset.dayNum = dayNum;
 
             const dayNameElement = document.createElement('div');
             dayNameElement.classList.add('day-name');
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            dayNameElement.textContent = dayNames[currentDate.getDay()];
-            dayElement.appendChild(dayNameElement);
-            
+            dayNameElement.textContent = dayNames[currentDateOfLoop.getDay()];
+            dayCell.appendChild(dayNameElement);
+
             const dayNumberElement = document.createElement('div');
             dayNumberElement.classList.add('day-number');
-            dayNumberElement.textContent = currentDate.getDate();
-            dayElement.appendChild(dayNumberElement);
-            
-            if (currentDate.getTime() === today.getTime()) {
-                dayElement.classList.add('today');
+            dayNumberElement.textContent = dayNum;
+            dayCell.appendChild(dayNumberElement);
+
+            const isToday = (dayNum === todayDay && month === todayMonth && year === todayYear);
+            if (isToday) {
+                dayCell.classList.add('today');
+                console.log(`[NEW MOBILE RENDER] Marked as TODAY: ${dateString}.`);
+                // ---- TEMPORARY DEV STYLES FOR TODAY - REMOVED ----
+                // dayCell.style.backgroundColor = 'lime';
+                // dayCell.style.border = '3px solid red';
+                // dayCell.style.color = 'black';
+                // dayCell.style.fontWeight = '900';
+                // dayCell.style.setProperty('outline', '3px dashed blue', 'important');
+                // dayCell.style.setProperty('z-index', '9999', 'important');
+                // dayCell.style.setProperty('opacity', '1', 'important');
+                // dayCell.style.setProperty('transform', 'scale(1.1)', 'important');
+                // ------------------------------------------
             }
 
-            // --- Display Events --- 
-            const eventsForDay = notes[dateString] || [];
+            // --- Display Events ---
+            const eventsForDay = globalNotes[dateString] || [];
             const eventsContainer = document.createElement('div');
             eventsContainer.classList.add('day-events');
 
             if (eventsForDay.length === 1) {
-                // Show single event text (truncated)
                 const eventTextElement = document.createElement('div');
                 eventTextElement.classList.add('note-text', 'single-event');
                 let displayText = eventsForDay[0].text || '(No description)';
@@ -493,22 +615,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 eventTextElement.textContent = displayText;
                 eventsContainer.appendChild(eventTextElement);
             } else if (eventsForDay.length > 1) {
-                // Show event count
                 const eventCountElement = document.createElement('div');
                 eventCountElement.classList.add('note-text', 'event-count');
                 eventCountElement.textContent = `${eventsForDay.length} Events`;
                 eventsContainer.appendChild(eventCountElement);
             }
-            dayElement.appendChild(eventsContainer);
+            dayCell.appendChild(eventsContainer);
             // --- End Display Events ---
 
-            dayElement.addEventListener('click', () => openNoteModal(dateString));
-            calendarGrid1.appendChild(dayElement);
+            dayCell.addEventListener('click', () => openNoteModal(dateString));
+            fragment.appendChild(dayCell);
         }
+
+        calendarGrid1.appendChild(fragment);
+        console.log(`[NEW MOBILE RENDER] Appended all 14 day cells. Total children in grid: ${calendarGrid1.children.length}`);
     }
 
     // --- Combined Render Function (Checks screen size) ---
     function renderCalendarView() {
+        console.log('[CALENDAR VIEW] Starting calendar render');
+        
+        // Force refresh of current date to ensure today highlighting works
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        console.log(`[CALENDAR VIEW] Current date: ${currentDate.toISOString()}`);
+        
+        // Reset to current month/week on first render or when explicitly requested
+        if (!window.calendarInitialized || window.forceCalendarReset) {
+            console.log('[CALENDAR VIEW] Initializing calendar to current date');
+            
+            // Set desktop view to current month
+            desktopMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            desktopMonthDate.setHours(0, 0, 0, 0);
+            
+            // Set mobile month view to current month
+            mobileMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            mobileMonthDate.setHours(0, 0, 0, 0);
+            
+            // Set mobile week view to include current date
+            // Start the week on Sunday before the current date
+            const dayOfWeek = currentDate.getDay();
+            mobileWeekStartDate = new Date(currentDate);
+            mobileWeekStartDate.setDate(currentDate.getDate() - dayOfWeek);
+            mobileWeekStartDate.setHours(0, 0, 0, 0);
+            
+            console.log(`[CALENDAR VIEW] Desktop month set to: ${desktopMonthDate.toISOString()}`);
+            console.log(`[CALENDAR VIEW] Mobile month set to: ${mobileMonthDate.toISOString()}`);
+            console.log(`[CALENDAR VIEW] Mobile week start set to: ${mobileWeekStartDate.toISOString()}`);
+            
+            // Mark as initialized and reset the force flag
+            window.calendarInitialized = true;
+            window.forceCalendarReset = false;
+        }
+        
         const isDesktop = window.innerWidth > 1200;
         
         // Show/Hide second calendar and toggle button based on screen size
@@ -516,12 +675,15 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleViewButton.style.display = isDesktop ? 'none' : 'inline-block'; // Hide toggle on desktop
         
         if (isDesktop) {
+            console.log('[CALENDAR VIEW] Rendering desktop view');
             renderDesktopView();
         } else { // Mobile view
             if (currentView === 'week') {
+                console.log('[CALENDAR VIEW] Rendering mobile week view');
                 renderMobileTwoWeekView();
                 toggleViewButton.textContent = 'Month View';
             } else {
+                console.log('[CALENDAR VIEW] Rendering mobile month view');
                 renderMobileMonthView();
                 toggleViewButton.textContent = 'Week View';
             }
@@ -529,26 +691,23 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Always render progress panel
         renderEventProgressPanel();
+        
+        console.log('[CALENDAR VIEW] Calendar render complete');
     }
 
     // --- Event Progress Panel for Multiple Events ---
     function renderEventProgressPanel() {
-        // TEST MODE: Allow viewing progress panel without login
-        // Skip rendering if not logged in (commented out for test mode)
-        // if (!firebase.auth().currentUser) {
-        //     // Clear panel
-        //     progressItemsContainer.innerHTML = '';
-        //     return;
-        // }
+        // Always use the global notes object
+        const globalNotes = window.calendarNotes;
         
-        console.log('Starting to render progress panel');
+        console.log('[PROGRESS PANEL] Starting to render progress panel');
         
         // Clear existing panel content
         progressItemsContainer.innerHTML = '';
         
         // Get all dates with events
-        const datesWithEvents = Object.entries(notes);
-        console.log('All dates with events:', datesWithEvents);
+        const datesWithEvents = Object.entries(globalNotes);
+        console.log('[PROGRESS PANEL] Found', datesWithEvents.length, 'dates with events');
         
         // Empty check for test mode
         if (datesWithEvents.length === 0) {
@@ -647,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
             eventsContainer.classList.add('events-container');
             
             // Add each event
-            events.forEach(event => {
+            events.forEach((event, index) => {
                 const eventDiv = document.createElement('div');
                 eventDiv.className = 'panel-event';
                 
@@ -746,83 +905,92 @@ document.addEventListener('DOMContentLoaded', () => {
                     event.checklist.forEach((item, index) => {
                 const li = document.createElement('li');
 
+                // Create checkbox with proper event handler
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
+                checkbox.id = `panel-cb-${event.id}-${index}`;
                 checkbox.checked = item.done;
-                        checkbox.id = `panel-${dateString}-${event.id}-item-${index}`;
-                        
-                        // Create label once
+                
+                // Create label once
                 const label = document.createElement('label');
-                        label.htmlFor = checkbox.id;
+                label.classList.add('panel-checklist-label');
+                label.htmlFor = checkbox.id;
                 label.textContent = item.task;
+                
                 if (item.done) {
                     label.classList.add('completed');
                 }
 
-                        // Create promote to goal button
-                        const promoteButton = document.createElement('button');
-                        promoteButton.classList.add('promote-goal-button');
-                        promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
-                        promoteButton.title = 'Add to main goals';
-                        promoteButton.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            promoteTaskToMainGoal(item.task, dateString);
-                        });
+                // Create promote to goal button
+                const promoteButton = document.createElement('button');
+                promoteButton.classList.add('promote-goal-button');
+                promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
+                promoteButton.title = 'Add to main goals';
+                
+                // Prevent event propagation to parent
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent opening edit modal
+                });
+                
+                label.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent opening edit modal
+                });
+                
+                promoteButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent opening edit modal
+                    promoteTaskToMainGoal(item.task, dateString);
+                });
+                
+                // Add event listener for checkbox changes
+                checkbox.addEventListener('change', (e) => {
+                    // Always use the global notes object
+                    const globalNotes = window.calendarNotes;
+                    
+                    // Update the checked state in the UI
+                    label.classList.toggle('completed', checkbox.checked);
+                    
+                    // Find and update the item in the data structure
+                    const updatedEvents = globalNotes[dateString] || [];
+                    const eventIndex = updatedEvents.findIndex(e => e.id === event.id);
+                    
+                    if (eventIndex !== -1) {
+                        const checklistItems = updatedEvents[eventIndex].checklist || [];
+                        const itemIndex = checklistItems.findIndex(i => i.task === item.task);
                         
-                        // Prevent clicks on checkbox from opening modal
-                        checkbox.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                        });
-                        
-                        // Prevent clicks on label from opening modal
-                        label.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                        });
-                        
-                        // Prevent clicks on promote button from opening modal
-                        promoteButton.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                        });
-                        
-                        // Handle checkbox change
-                        checkbox.addEventListener('change', (e) => {
-                            e.stopPropagation(); // Prevent event bubble
+                        if (itemIndex !== -1) {
+                            // Update the done state
+                            checklistItems[itemIndex].done = checkbox.checked;
                             
-                            // Update the item in the checklist array
-                            event.checklist[index].done = checkbox.checked;
+                            // Update in the data structure
+                            updatedEvents[eventIndex].checklist = checklistItems;
+                            globalNotes[dateString] = updatedEvents;
+                            // Update local reference
+                            notes = globalNotes;
                             
-                            // Update the label class
-                            if (checkbox.checked) {
-                                label.classList.add('completed');
-                            } else {
-                                label.classList.remove('completed');
-                            }
-                            
-                            // Update the progress bar and summary
-                            const completedCount = event.checklist.filter(item => item.done).length;
-                            const total = event.checklist.length;
-                            const percent = total > 0 ? (completedCount / total) * 100 : 0;
+                            // Update progress bar
+                            const totalItems = checklistItems.length;
+                            const completedItems = checklistItems.filter(i => i.done).length;
+                            const percent = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
                             progressBar.style.width = `${percent}%`;
-                            progressBar.setAttribute('aria-valuenow', percent);
+                            progressSummary.textContent = `${completedItems}/${totalItems} Tasks`;
                             
-                            // Update the progress summary
-                            progressSummary.textContent = `${completedCount}/${total} Tasks`;
-                            
-                            // Save to Firebase if user is signed in
+                            // Save to Firebase if signed in
                             if (firebase.auth().currentUser) {
-                                console.log("Saving checklist item change to Firebase");
-                                const userRef = firebase.database().ref('users/' + firebase.auth().currentUser.uid);
-                                userRef.child(`notes/${dateString}/${event.id}`).update({
-                                    checklist: event.checklist
-                                });
+                                saveNotesToFirebase();
+                                console.log('[CHECKBOX] Saved change to Firebase');
                             } else {
-                                console.log("Test mode: Saving checklist item change to memory only");
+                                console.log('[CHECKBOX] Test mode: Checklist update saved to memory only');
                             }
-                        });
-                        
+                        }
+                    }
+                });
+
+                        // Append all elements to the list item
                         li.appendChild(checkbox);
                         li.appendChild(label);
                         li.appendChild(promoteButton);
+                        
+                        // Append the list item to the checklist
                         checklistUl.appendChild(li);
                     });
                     
@@ -850,6 +1018,9 @@ document.addEventListener('DOMContentLoaded', () => {
         //     return;
         // }
         
+        console.log('------ OPENING NOTE MODAL ------');
+        console.log('Opening modal for date:', dateString);
+        
         selectedDateString = dateString;
         const [year, month, day] = dateString.split('-');
         const dateObj = new Date(year, month - 1, day);
@@ -858,16 +1029,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset any editing state
         hideEditEventSection();
         
-        // Reset new event form
+        // Reset new event form - ensure all fields are cleared
         newEventTimeElement.value = '';
         newEventTextElement.value = '';
         newEventChecklistElement.innerHTML = '';
         newChecklistItemElement.value = '';
         
+        // Ensure the add event section is visible
+        const addEventSection = document.getElementById('add-event-section');
+        if (addEventSection) {
+            addEventSection.style.display = 'block';
+        }
+        
         // Display events for this date
         displayEventsInModal();
         
+        // Show the modal
         noteModal.style.display = 'block';
+        
+        console.log('------ NOTE MODAL OPENED ------');
     }
 
     function closeNoteModal() {
@@ -878,8 +1058,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Display all events for the selected date
     function displayEventsInModal() {
+        // Always use the global notes object
+        const globalNotes = window.calendarNotes;
+        
         // Get events for the selected date
-        const eventsForDay = notes[selectedDateString] || [];
+        const eventsForDay = globalNotes[selectedDateString] || [];
+        
+        console.log('[DISPLAY EVENTS] For date:', selectedDateString);
+        console.log('[DISPLAY EVENTS] Total events:', eventsForDay.length);
         
         // Clear the events list
         eventsListElement.innerHTML = '';
@@ -892,7 +1078,9 @@ document.addEventListener('DOMContentLoaded', () => {
             eventsListElement.appendChild(noEventsMessage);
         } else {
             // Create and display each event in the list
-            eventsForDay.forEach(event => {
+            eventsForDay.forEach((event, index) => {
+                console.log(`[DISPLAY EVENTS] Rendering event ${index+1}:`, event.id);
+                
                 const eventItem = document.createElement('div');
                 eventItem.classList.add('event-item');
                 eventItem.dataset.eventId = event.id; // Store event ID for editing
@@ -1152,11 +1340,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Add a new event
+    // Add a new event - completely rewritten for reliability
     function addEvent() {
-        // TEST MODE: Allow adding events without signing in
-        // if (!firebase.auth().currentUser || !selectedDateString) {
         if (!selectedDateString) {
+            console.error('Cannot add event: No date selected');
             return;
         }
         
@@ -1164,39 +1351,74 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventTime = newEventTimeElement.value;
         const checklist = getChecklistFromUI(newEventChecklistElement);
         
-        console.log('Adding new event with checklist:', checklist);
+        console.log('[EVENT ADD] Starting to add new event for date:', selectedDateString);
         
         // Only save if there's content
         if (eventText || checklist.length > 0) {
-            // Create new event object with unique ID
+            // Create new event object with guaranteed unique ID
+            const uniqueId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
             const newEvent = {
-                id: Date.now(),
+                id: uniqueId,
                 text: eventText,
                 time: eventTime,
                 checklist: checklist
             };
             
-            console.log('New event object:', newEvent);
+            console.log('[EVENT ADD] Created new event object:', newEvent);
             
-            // Initialize array if needed
-            if (!notes[selectedDateString]) {
-                notes[selectedDateString] = [];
+            // Make sure we have direct access to global notes storage
+            const globalNotes = window.calendarNotes;
+            
+            // IMPORTANT: Initialize array if needed with a fresh empty array
+            if (!globalNotes[selectedDateString]) {
+                globalNotes[selectedDateString] = [];
+                console.log('[EVENT ADD] Initialized empty array for date:', selectedDateString);
             }
             
-            // Add new event to array
-            notes[selectedDateString].push(newEvent);
-            console.log('Updated notes for date:', notes[selectedDateString]);
+            // Add new event to the global notes array
+            globalNotes[selectedDateString].push(newEvent);
+            
+            // Make sure our local reference is updated
+            notes = globalNotes;
+            
+            console.log('[EVENT ADD] Updated notes array, now has', 
+                globalNotes[selectedDateString].length, 'events for date', selectedDateString);
             
             // Save to Firebase if signed in, otherwise just update UI
             if (firebase.auth().currentUser) {
-                saveNotesToFirebase().then(() => {
-                    updateUIAfterEventChange();
-                });
+                saveNotesToFirebase()
+                    .then(() => {
+                        // Clear form fields BEFORE updating UI
+                        newEventTimeElement.value = '';
+                        newEventTextElement.value = '';
+                        newEventChecklistElement.innerHTML = '';
+                        newChecklistItemElement.value = '';
+                        
+                        // Update UI after firebase save completes
+                        updateUIAfterEventChange();
+                        console.log('[EVENT ADD] Event saved to Firebase');
+                    })
+                    .catch(error => {
+                        console.error('[EVENT ADD] Error saving to Firebase:', error);
+                        alert('There was an error saving your event. Please try again.');
+                    });
             } else {
-                // TEST MODE: Just update UI without Firebase
+                // TEST MODE: No Firebase, just update UI
+                // Clear form fields BEFORE updating UI
+                newEventTimeElement.value = '';
+                newEventTextElement.value = '';
+                newEventChecklistElement.innerHTML = '';
+                newChecklistItemElement.value = '';
+                
+                // Update UI with the new event
                 updateUIAfterEventChange();
                 console.log('Test mode: Event saved to memory only');
             }
+            
+            console.log('---------- EVENT ADDED ----------');
+            console.log('Total events for all dates:', Object.values(notes).reduce((count, events) => count + events.length, 0));
+        } else {
+            console.warn('Event not added: No content provided');
         }
     }
     
@@ -1224,8 +1446,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Save edited event
     function saveEditedEvent() {
-        // TEST MODE: Allow editing events without signing in
-        // if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
         if (!selectedDateString || !currentEditingEventId) {
             return;
         }
@@ -1234,10 +1454,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const eventTime = editEventTimeElement.value;
         const checklist = getChecklistFromUI(editEventChecklistElement);
         
-        console.log('Saving edited event with checklist:', checklist);
+        console.log('[EDIT EVENT] Saving event ID:', currentEditingEventId);
+        
+        // Always use the global notes object
+        const globalNotes = window.calendarNotes;
         
         // Find the event in the array
-        const eventsForDay = notes[selectedDateString] || [];
+        const eventsForDay = globalNotes[selectedDateString] || [];
         const eventIndex = eventsForDay.findIndex(e => e.id === currentEditingEventId);
         
         if (eventIndex !== -1) {
@@ -1249,31 +1472,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 checklist: checklist
             };
             
-            console.log('Updated event:', eventsForDay[eventIndex]);
+            // Update global notes
+            globalNotes[selectedDateString] = eventsForDay;
+            // Update local reference
+            notes = globalNotes;
+            
+            console.log('[EDIT EVENT] Updated event at index', eventIndex);
             
             // Save to Firebase if signed in, otherwise just update UI
             if (firebase.auth().currentUser) {
                 saveNotesToFirebase().then(() => {
                     updateUIAfterEventChange();
+                    console.log('[EDIT EVENT] Saved changes to Firebase');
                 });
             } else {
                 // TEST MODE: Just update UI without Firebase
                 updateUIAfterEventChange();
-                console.log('Test mode: Event edited in memory only');
+                console.log('[EDIT EVENT] Saved changes to memory only (test mode)');
             }
+        } else {
+            console.error('[EDIT EVENT] Event not found with ID:', currentEditingEventId);
         }
     }
     
     // Delete an event
     function handleDeleteEvent() {
-        // TEST MODE: Allow deleting events without signing in
-        // if (!firebase.auth().currentUser || !selectedDateString || !currentEditingEventId) {
         if (!selectedDateString || !currentEditingEventId) {
             return;
         }
         
+        console.log('[DELETE EVENT] Deleting event ID:', currentEditingEventId);
+        
+        // Always use the global notes object
+        const globalNotes = window.calendarNotes;
+        
         // Find the event in the array
-        const eventsForDay = notes[selectedDateString] || [];
+        const eventsForDay = globalNotes[selectedDateString] || [];
         const eventIndex = eventsForDay.findIndex(e => e.id === currentEditingEventId);
         
         if (eventIndex !== -1) {
@@ -1282,26 +1516,40 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // If no events left, delete the date entry
             if (eventsForDay.length === 0) {
-                delete notes[selectedDateString];
+                delete globalNotes[selectedDateString];
             } else {
-                notes[selectedDateString] = eventsForDay;
+                globalNotes[selectedDateString] = eventsForDay;
             }
+            
+            // Update local reference
+            notes = globalNotes;
+            
+            console.log('[DELETE EVENT] Event removed, remaining events:', 
+                globalNotes[selectedDateString] ? globalNotes[selectedDateString].length : 0);
             
             // Save to Firebase if signed in, otherwise just update UI
             if (firebase.auth().currentUser) {
                 saveNotesToFirebase().then(() => {
                     updateUIAfterEventChange();
+                    console.log('[DELETE EVENT] Change saved to Firebase');
                 });
             } else {
                 // TEST MODE: Just update UI without Firebase
                 updateUIAfterEventChange();
-                console.log('Test mode: Event deleted from memory only');
+                console.log('[DELETE EVENT] Change saved to memory only (test mode)');
             }
+        } else {
+            console.error('[DELETE EVENT] Event not found with ID:', currentEditingEventId);
         }
     }
     
     // Helper function to update UI after event changes
     function updateUIAfterEventChange() {
+        // Always use the global notes object
+        const globalNotes = window.calendarNotes;
+
+        console.log('[UI UPDATE] Starting UI refresh');
+        
         // Hide edit section
         hideEditEventSection();
         
@@ -1310,6 +1558,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update calendar view
         renderCalendarView();
+        
+        // Log the current state
+        console.log('[UI UPDATE] Completed. Events for date', selectedDateString + ':',
+            globalNotes[selectedDateString] ? globalNotes[selectedDateString].length : 0);
+        console.log('[UI UPDATE] Total events in calendar:', countTotalEvents());
     }
     
     // Save notes to Firebase
@@ -1321,16 +1574,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            // Always use the global notes object for saving
+            const globalNotes = window.calendarNotes;
+            
             db.collection('userNotes').doc(user.uid).set({ 
-                notes: notes,
+                notes: globalNotes,
                 mainGoals: mainGoals
             })
                 .then(() => {
-                    console.log('Notes and goals saved successfully to Firestore');
+                    console.log('[FIREBASE] Notes and goals saved successfully');
                     resolve();
                 })
                 .catch(error => {
-                    console.error("Error saving notes:", error);
+                    console.error("[FIREBASE] Error saving notes:", error);
                     alert("Error saving to cloud: " + error.message);
                     reject(error);
                 });
@@ -1525,6 +1781,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add resize listener
     window.addEventListener('resize', renderCalendarView);
+
+    // Add event listener for Today button
+    document.getElementById('today-button').addEventListener('click', () => {
+        console.log('[CALENDAR] Today button clicked');
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Reset all calendar views to current date
+        desktopMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        desktopMonthDate.setHours(0, 0, 0, 0);
+        
+        mobileMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        mobileMonthDate.setHours(0, 0, 0, 0);
+        
+        // Set mobile week view to start on the Sunday before the current date
+        const dayOfWeek = today.getDay();
+        mobileWeekStartDate = new Date(today);
+        mobileWeekStartDate.setDate(today.getDate() - dayOfWeek);
+        mobileWeekStartDate.setHours(0, 0, 0, 0);
+        
+        // Force refresh with today highlighted
+        window.forceCalendarReset = true;
+        renderCalendarView();
+        
+        console.log('[CALENDAR] Calendar reset to today');
+    });
 
     // Initial Render
     renderCalendarView();
