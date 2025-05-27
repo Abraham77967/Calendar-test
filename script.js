@@ -55,6 +55,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return goal; // Already an object, or will be filtered if invalid
     }).filter(goal => goal && typeof goal.text === 'string'); // Ensure valid structure
     
+    // Function to standardize all delete buttons to use × character
+    function standardizeDeleteButtons() {
+        // Find all functions that create delete buttons and update them
+        const script = document.querySelector('script[src="script.js"]');
+        if (script) {
+            const scriptContent = script.textContent;
+            // This is just for visual feedback - the actual replacements are done below
+            console.log('[STANDARDIZE] Standardizing delete buttons to use × character');
+        }
+        
+        // The actual standardization happens in the individual functions
+        // when buttons are created, by using textContent = '×' instead of innerHTML = '&times;'
+    }
+    
+    // Call the standardization function
+    standardizeDeleteButtons();
+    
     // Check for redirect result first
     firebase.auth().getRedirectResult().then((result) => {
         if (result.user) {
@@ -80,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const noteModal = document.getElementById('note-modal');
     const modalDateElement = document.getElementById('modal-date');
-    const closeButton = document.querySelector('.close-button');
+    const noteCloseButton = document.getElementById('note-close-button');
     
     // New modal elements for multi-event support
     const eventsListElement = document.getElementById('events-list');
@@ -126,7 +143,23 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('goal-3')
     ];
     const saveGoalsButton = document.getElementById('save-goals-button');
-    const goalsCloseButton = document.querySelector('.goals-close-button');
+    const goalsCloseButton = document.getElementById('goals-close-button');
+    
+    // Debug log
+    console.log('Goals close button:', goalsCloseButton);
+
+    // New Goals Modal Tab Elements
+    const selectTasksTab = document.getElementById('select-tasks-tab');
+    const customGoalsTab = document.getElementById('custom-goals-tab');
+    const selectTasksContainer = document.getElementById('select-tasks-container');
+    const customGoalsContainer = document.getElementById('custom-goals-container');
+    const taskSearchInput = document.getElementById('task-search-input');
+    const availableTasksContainer = document.getElementById('available-tasks-container');
+    const selectedGoalsContainer = document.getElementById('selected-goals');
+    const noTasksMessage = document.querySelector('.no-tasks-message');
+    
+    // Track selected tasks for goals
+    let selectedTasks = [];
 
     let currentView = 'week'; // Mobile view state: 'week' or 'month'
 
@@ -310,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.dataset.goalIndex = index;
             checkbox.addEventListener('change', handleMainGoalCheckboxChange);
 
-            const goalText = document.createElement('label'); // Use label for accessibility
+            const goalText = document.createElement('label');
             goalText.htmlFor = checkbox.id;
             goalText.textContent = goal.text;
             
@@ -325,12 +358,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (goalIndex >= 0 && goalIndex < mainGoals.length) {
             mainGoals[goalIndex].completed = event.target.checked;
             localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
-            renderMainGoals(); // Re-render to update styles
-            console.log(`[GOALS] Main goal '${mainGoals[goalIndex].text}' completed: ${mainGoals[goalIndex].completed}`);
+            renderMainGoals();
         }
     }
 
     function openGoalsModal() {
+        // Reset selected tasks
+        selectedTasks = [];
+        
+        // Load tasks from events for selection
+        loadTasksFromEvents();
+        
+        // Show the appropriate tab
+        selectTasksTab.classList.add('active');
+        customGoalsTab.classList.remove('active');
+        selectTasksContainer.style.display = 'block';
+        customGoalsContainer.style.display = 'none';
+        
+        // Set existing goals in the custom inputs
         goalInputs.forEach((input, index) => {
             if (mainGoals[index]) {
                 input.value = mainGoals[index].text;
@@ -338,29 +383,263 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.value = '';
             }
         });
+        
         goalsModal.style.display = 'block';
+    }
+
+    function loadTasksFromEvents() {
+        // Get all tasks from all events in the calendar
+        const allTasks = getAllTasksFromEvents();
+        
+        // Clear the container
+        availableTasksContainer.innerHTML = '';
+        
+        // Show message if no tasks
+        if (allTasks.length === 0) {
+            noTasksMessage.style.display = 'block';
+            return;
+        }
+        
+        noTasksMessage.style.display = 'none';
+        
+        // Add each task to the container
+        allTasks.forEach(task => {
+            const taskItem = createTaskElement(task);
+            availableTasksContainer.appendChild(taskItem);
+        });
+        
+        // Refresh selected goals container
+        renderSelectedGoals();
+    }
+
+    function getAllTasksFromEvents() {
+        const allTasks = [];
+        const globalNotes = window.calendarNotes;
+        
+        // Loop through all dates with events
+        for (const dateString in globalNotes) {
+            const eventsForDay = globalNotes[dateString] || [];
+            
+            // Convert date to readable format
+            const [year, month, day] = dateString.split('-');
+            const dateObj = new Date(year, month - 1, day);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                month: 'short', day: 'numeric' 
+            });
+            
+            // Loop through all events on this date
+            eventsForDay.forEach(event => {
+                const eventText = event.text || "(No description)";
+                
+                // Check if this event has a checklist
+                if (event.checklist && event.checklist.length > 0) {
+                    // Add each task from the checklist
+                    event.checklist.forEach(item => {
+                        allTasks.push({
+                            text: item.task,
+                            done: item.done,
+                            dateString: dateString,
+                            formattedDate: formattedDate,
+                            eventText: eventText
+                        });
+                    });
+                }
+            });
+        }
+        
+        return allTasks;
+    }
+
+    function createTaskElement(task) {
+        const taskItem = document.createElement('div');
+        taskItem.classList.add('task-item');
+        
+        // Mark as selected if already in goals
+        const isSelected = selectedTasks.some(selectedTask => 
+            selectedTask.text === task.text && 
+            selectedTask.dateString === task.dateString
+        );
+        
+        if (isSelected) {
+            taskItem.classList.add('selected');
+        }
+        
+        const taskInfo = document.createElement('div');
+        taskInfo.classList.add('task-info');
+        
+        const taskText = document.createElement('div');
+        taskText.classList.add('task-text');
+        taskText.textContent = task.text;
+        
+        const taskSource = document.createElement('div');
+        taskSource.classList.add('task-source');
+        taskSource.textContent = `From "${task.eventText}" on ${task.formattedDate}`;
+        
+        taskInfo.appendChild(taskText);
+        taskInfo.appendChild(taskSource);
+        
+        const taskAction = document.createElement('div');
+        taskAction.classList.add('task-action');
+        
+        const actionButton = document.createElement('button');
+        
+        if (isSelected) {
+            actionButton.classList.add('remove-task-button');
+            actionButton.textContent = '×';
+            actionButton.title = 'Remove from goals';
+            actionButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeTaskFromSelection(task);
+            });
+        } else {
+            actionButton.classList.add('add-task-button');
+            actionButton.textContent = '+';
+            actionButton.title = 'Add to goals';
+            actionButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addTaskToSelection(task);
+            });
+        }
+        
+        taskAction.appendChild(actionButton);
+        
+        taskItem.appendChild(taskInfo);
+        taskItem.appendChild(taskAction);
+        
+        // Make the whole item clickable
+        taskItem.addEventListener('click', () => {
+            if (isSelected) {
+                removeTaskFromSelection(task);
+            } else {
+                addTaskToSelection(task);
+            }
+        });
+        
+        return taskItem;
+    }
+
+    function addTaskToSelection(task) {
+        // Check if already at maximum (3 goals)
+        if (selectedTasks.length >= 3) {
+            alert('You can only select up to 3 goals. Remove one first.');
+            return;
+        }
+        
+        // Add to selected tasks
+        selectedTasks.push(task);
+        
+        // Refresh the task list and selected goals
+        loadTasksFromEvents();
+    }
+
+    function removeTaskFromSelection(taskToRemove) {
+        // Remove from selected tasks
+        selectedTasks = selectedTasks.filter(task => 
+            !(task.text === taskToRemove.text && task.dateString === taskToRemove.dateString)
+        );
+        
+        // Refresh the task list and selected goals
+        loadTasksFromEvents();
+    }
+
+    function renderSelectedGoals() {
+        // Clear the container
+        selectedGoalsContainer.innerHTML = '';
+        
+        // Add each selected task
+        selectedTasks.forEach(task => {
+            const goalItem = document.createElement('div');
+            goalItem.classList.add('selected-goal-item');
+            
+            const goalText = document.createElement('div');
+            goalText.classList.add('selected-goal-text');
+            goalText.textContent = task.text;
+            
+            const removeButton = document.createElement('button');
+            removeButton.classList.add('remove-task-button');
+            removeButton.textContent = '×';
+            removeButton.title = 'Remove from goals';
+            removeButton.addEventListener('click', () => {
+                removeTaskFromSelection(task);
+            });
+            
+            goalItem.appendChild(goalText);
+            goalItem.appendChild(removeButton);
+            
+            selectedGoalsContainer.appendChild(goalItem);
+        });
+    }
+
+    function filterTasks() {
+        const searchTerm = taskSearchInput.value.toLowerCase();
+        const taskItems = availableTasksContainer.querySelectorAll('.task-item');
+        
+        taskItems.forEach(item => {
+            const taskText = item.querySelector('.task-text').textContent.toLowerCase();
+            const eventText = item.querySelector('.task-source').textContent.toLowerCase();
+            
+            if (taskText.includes(searchTerm) || eventText.includes(searchTerm)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function closeGoalsModal() {
+        console.log('Closing goals modal...');
+        goalsModal.style.display = 'none';
     }
 
     function saveMainGoals() {
         const newGoals = [];
-        goalInputs.forEach((input, index) => {
-            const text = input.value.trim();
-            if (text) {
-                // Preserve completed status if goal text is the same, or default to false for new/changed text
-                const existingGoal = mainGoals.find(g => g.text === text);
-                newGoals.push({ 
-                    text: text, 
-                    completed: existingGoal ? existingGoal.completed : (mainGoals[index] && mainGoals[index].text === text ? mainGoals[index].completed : false)
+        const activeTab = document.querySelector('.goal-tab.active').id;
+        
+        if (activeTab === 'select-tasks-tab') {
+            // Save from selected tasks
+            selectedTasks.forEach(task => {
+                // Format the goal text with event source
+                const goalText = `${task.text} (from "${task.eventText}" on ${task.formattedDate})`;
+                
+                // Check if this goal text already exists in main goals
+                const existingGoal = mainGoals.find(g => g.text === goalText);
+                
+                newGoals.push({
+                    text: goalText,
+                    completed: existingGoal ? existingGoal.completed : task.done
                 });
-            }
-        });
+            });
+        } else {
+            // Save from custom input fields
+            goalInputs.forEach(input => {
+                const text = input.value.trim();
+                if (text) {
+                    // Preserve completed status if goal text is the same
+                    const existingGoal = mainGoals.find(g => g.text === text);
+                    newGoals.push({ 
+                        text: text, 
+                        completed: existingGoal ? existingGoal.completed : false
+                    });
+                }
+            });
+        }
+        
         mainGoals = newGoals.slice(0, 3); // Limit to 3 goals
         localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
+        
+        // If logged in, also save to Firebase
+        if (firebase.auth().currentUser) {
+            db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
+                mainGoals: mainGoals
+            }).catch(error => {
+                console.error('Error saving main goals to Firebase:', error);
+            });
+        }
+        
         renderMainGoals();
         closeGoalsModal();
-        console.log('[GOALS] Main goals saved:', mainGoals);
     }
-    
+
     // --- End Main Goals Functions ---
 
     // --- Helper Function: Format Time Difference ---
@@ -921,12 +1200,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     label.classList.add('completed');
                 }
 
-                // Create promote to goal button
-                const promoteButton = document.createElement('button');
-                promoteButton.classList.add('promote-goal-button');
-                promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
-                promoteButton.title = 'Add to main goals';
-                
                 // Prevent event propagation to parent
                 checkbox.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent opening edit modal
@@ -934,11 +1207,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 label.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent opening edit modal
-                });
-                
-                promoteButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent opening edit modal
-                    promoteTaskToMainGoal(item.task, dateString);
                 });
                 
                 // Add event listener for checkbox changes
@@ -988,7 +1256,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Append all elements to the list item
                         li.appendChild(checkbox);
                         li.appendChild(label);
-                        li.appendChild(promoteButton);
                         
                         // Append the list item to the checklist
                         checklistUl.appendChild(li);
@@ -1138,19 +1405,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 label.classList.add('completed');
             }
             
-            // Add promote to goal button
-            const promoteButton = document.createElement('button');
-            promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
-            promoteButton.title = 'Add to main goals';
-            promoteButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                promoteTaskToMainGoal(item.task, selectedDateString);
-            });
-            
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
-            deleteButton.innerHTML = '&times;';
+            deleteButton.textContent = '×';
             deleteButton.addEventListener('click', (e) => {
                 e.stopPropagation(); // Prevent event from bubbling up
                 li.remove();
@@ -1162,7 +1419,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             li.appendChild(checkbox);
             li.appendChild(label);
-            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             newEventChecklistElement.appendChild(li);
         });
@@ -1189,20 +1445,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
-            deleteButton.innerHTML = '&times;';
+            deleteButton.textContent = '×';
             deleteButton.addEventListener('click', (e) => {
                 e.stopPropagation(); // Prevent event from bubbling up
                 li.remove();
-            });
-            
-            // Add promote to goal button
-            const promoteButton = document.createElement('button');
-            promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
-            promoteButton.title = 'Add to main goals';
-            promoteButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                promoteTaskToMainGoal(item.task, selectedDateString);
             });
             
             checkbox.addEventListener('change', () => {
@@ -1211,7 +1457,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             li.appendChild(checkbox);
             li.appendChild(label);
-            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             editEventChecklistElement.appendChild(li);
         });
@@ -1260,19 +1505,9 @@ document.addEventListener('DOMContentLoaded', () => {
             label.htmlFor = checkbox.id;
             label.textContent = item.task;
             
-            // Add promote to goal button
-            const promoteButton = document.createElement('button');
-            promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
-            promoteButton.title = 'Add to main goals';
-            promoteButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                promoteTaskToMainGoal(item.task, selectedDateString);
-            });
-            
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
-            deleteButton.innerHTML = '&times;';
+            deleteButton.textContent = '×';
             deleteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 li.remove();
@@ -1284,7 +1519,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             li.appendChild(checkbox);
             li.appendChild(label);
-            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             newEventChecklistElement.appendChild(li);
             
@@ -1310,20 +1544,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
-            deleteButton.innerHTML = '&times;';
+            deleteButton.textContent = '×';
             deleteButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                  li.remove();
-            });
-            
-            // Add promote to goal button
-            const promoteButton = document.createElement('button');
-            promoteButton.classList.add('promote-goal-button');
-            promoteButton.innerHTML = '<span class="promote-icon"></span>Add';
-            promoteButton.title = 'Add to main goals';
-            promoteButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                promoteTaskToMainGoal(item.task, selectedDateString);
             });
             
             checkbox.addEventListener('change', () => {
@@ -1332,7 +1556,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             li.appendChild(checkbox);
             li.appendChild(label);
-            li.appendChild(promoteButton);
             li.appendChild(deleteButton);
             editEventChecklistElement.appendChild(li);
             
@@ -1638,7 +1861,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Modal event listeners
-    closeButton.addEventListener('click', closeNoteModal);
+    noteCloseButton.addEventListener('click', closeNoteModal);
     
     // Add new event
     addEventButton.addEventListener('click', addEvent);
@@ -1676,8 +1899,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Main Goals event listeners
     editGoalsButton.addEventListener('click', openGoalsModal);
-    goalsCloseButton.addEventListener('click', closeGoalsModal);
+    goalsCloseButton.addEventListener('click', (event) => {
+        console.log('Goals close button clicked!', event.target);
+        closeGoalsModal();
+    });
     saveGoalsButton.addEventListener('click', saveMainGoals);
+    
+    // Goals modal tab event listeners
+    selectTasksTab.addEventListener('click', () => {
+        selectTasksTab.classList.add('active');
+        customGoalsTab.classList.remove('active');
+        selectTasksContainer.style.display = 'block';
+        customGoalsContainer.style.display = 'none';
+    });
+    
+    customGoalsTab.addEventListener('click', () => {
+        customGoalsTab.classList.add('active');
+        selectTasksTab.classList.remove('active');
+        customGoalsContainer.style.display = 'block';
+        selectTasksContainer.style.display = 'none';
+    });
+    
+    // Task search input listener
+    taskSearchInput.addEventListener('input', filterTasks);
 
     // Function to handle promotion of tasks to main goals (inside scope)
     function handleTaskPromotion() {
@@ -1716,13 +1960,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add to main goals (limit to 3)
         if (mainGoals.length >= 3) {
             if (confirm("You already have 3 main goals. Replace the last one with this task?")) {
-                mainGoals[2] = goalText;
+                mainGoals[2] = { text: goalText, completed: false };
             } else {
                 tempPromotionData = null;
                 return; // User cancelled
             }
         } else {
-            mainGoals.push(goalText);
+            mainGoals.push({ text: goalText, completed: false });
         }
         
         // Save goals to localStorage
@@ -1811,6 +2055,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Render
     renderCalendarView();
+
+    // Get month selector elements
+    const monthSelect = document.getElementById('month-select');
+    const yearDisplay = document.getElementById('year-display');
+
+    // Set initial values
+    monthSelect.value = desktopMonthDate.getMonth();
+    yearDisplay.textContent = desktopMonthDate.getFullYear();
+
+    // Update month select when calendar changes
+    function updateMonthSelect() {
+        monthSelect.value = desktopMonthDate.getMonth();
+        yearDisplay.textContent = desktopMonthDate.getFullYear();
+    }
+
+    // Handle month selection
+    monthSelect.addEventListener('change', () => {
+        const selectedMonth = parseInt(monthSelect.value);
+        const currentYear = parseInt(yearDisplay.textContent);
+        
+        // Update desktop view
+        desktopMonthDate = new Date(currentYear, selectedMonth, 1);
+        desktopMonthDate.setHours(0, 0, 0, 0);
+        
+        // Update mobile view
+        mobileMonthDate = new Date(currentYear, selectedMonth, 1);
+        mobileMonthDate.setHours(0, 0, 0, 0);
+        
+        // Update week view to start of the month
+        mobileWeekStartDate = new Date(currentYear, selectedMonth, 1);
+        mobileWeekStartDate.setHours(0, 0, 0, 0);
+        
+    renderCalendarView();
+    });
+
+    // Update month select when using prev/next buttons
+    const originalRenderCalendarView = renderCalendarView;
+    renderCalendarView = function() {
+        originalRenderCalendarView();
+        updateMonthSelect();
+    };
 });
 
 // Function that stores promotion data and is called by the star buttons
@@ -1820,4 +2105,9 @@ function promoteTaskToMainGoal(taskText, dateString) {
     // Create a custom event to trigger the internal promotion function
     const event = new CustomEvent('promoteTask');
     document.dispatchEvent(event);
+}
+
+function closeGoalsModal() {
+    console.log('Closing goals modal...');
+    goalsModal.style.display = 'none';
 } 
