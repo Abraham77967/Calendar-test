@@ -1,6 +1,3 @@
-/* Import Spotify Mix font */
-@import url('https://fonts.cdnfonts.com/css/spotify-mix');
-
 /* Animation Keyframes */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -85,6 +82,7 @@ body {
     border-radius: 24px;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    animation: float 6s infinite ease-in-out;
 }
 
 .content-area {
@@ -108,18 +106,21 @@ body {
     max-width: 800px; /* Max width for stacked calendars */
 }
 
-/* Header and Controls Redesign */
 .calendar-controls {
-    background: linear-gradient(135deg, #292C6D 0%, #1a1c3d 100%);
-    padding: 20px 30px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     display: flex;
+    justify-content: flex-start;
     align-items: center;
-    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    background-color: #292C6D; /* Medium blue (was teal) */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: white;
+    opacity: 0;
+    animation: slideInUp 0.6s ease-out forwards;
+    transition: box-shadow 0.3s, transform 0.2s;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 10px;
     position: relative;
     overflow: hidden;
 }
@@ -130,132 +131,54 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.8) 50%, 
+        rgba(255,255,255,0) 100%);
+    animation: shimmer 5s infinite;
+    background-size: 200% 100%;
+}
+
+.calendar-controls:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
 .calendar-controls h2 {
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 1.8rem;
-    color: #ffffff;
     margin: 0;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 1.6em;
+    color: white; /* White text on blue */
 }
 
 .calendar-controls button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 8px;
+    background: none;
+    border: none;
+    font-size: 1.8em;
     cursor: pointer;
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
+    padding: 5px 10px;
+    color: white; /* White text on blue */
+    transition: all 0.2s ease;
 }
 
 .calendar-controls button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: scale(1.15);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .today-button {
-    background: #EC255A !important;
-    border: none !important;
-    font-weight: 600;
-    padding: 10px 20px !important;
+    background-color: #EC255A;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin-right: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s;
 }
 
 .today-button:hover {
-    background: #d01a4c !important;
-    transform: translateY(-1px);
-}
-
-/* Header Auth Section Redesign */
-.header-auth {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.header-auth #login-form,
-.header-auth #user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.header-auth .google-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-.header-auth .google-button img {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-}
-
-.header-auth .google-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-}
-
-.header-auth #user-email {
-    color: #ffffff;
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.header-auth #logout-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-.header-auth #logout-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .calendar-controls {
-        padding: 15px;
-        gap: 10px;
-    }
-
-    .calendar-controls h2 {
-        font-size: 1.4rem;
-    }
-
-    .calendar-controls button {
-        padding: 6px 12px;
-        font-size: 0.8rem;
-    }
+    background-color: #d01a4c;
 }
 
 /* Enhanced styles for today highlighting in the calendar */
@@ -381,8 +304,8 @@ body {
 }
 
 .day .note-text:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: scale(1.03);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .day .note-text .time-diff {
@@ -425,7 +348,7 @@ body {
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
     border-radius: 16px;
     position: relative;
-    animation: slideInUp 0.3s ease-out;
+    animation: slideInUp 0.4s ease forwards;
 }
 
 .close-button {
@@ -437,7 +360,6 @@ body {
     font-weight: bold;
     line-height: 1;
     transition: all 0.2s ease;
-    cursor: pointer;
 }
 
 .close-button:hover {
@@ -510,14 +432,11 @@ body {
 }
 
 .modal-content button:hover {
-    background: rgba(41, 44, 109, 0.25);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .modal-content button:active {
     transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #save-note {
@@ -858,8 +777,8 @@ body {
 }
 
 .day .note-text:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: scale(1.03);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Events List */
@@ -878,13 +797,9 @@ body {
 
 .no-events-message {
     text-align: center;
-    color: #666;
-    padding: 15px;
+    color: #777;
+    padding: 10px;
     font-style: italic;
-    background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
-    margin: 10px 0;
-    border: 1px dashed #ccc;
 }
 
 .event-item {
@@ -901,7 +816,7 @@ body {
 }
 
 .event-item:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -1152,8 +1067,8 @@ body {
 .progress-item:nth-child(5) { animation-delay: 0.5s; }
 
 .progress-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.25);
 }
 
 /* Item header with date and text */
@@ -1200,8 +1115,8 @@ body {
 
 .panel-event:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px) scale(1.02);
 }
 
 /* New styles for panel event header */
@@ -1251,8 +1166,9 @@ body {
 }
 
 .panel-event-edit:hover {
-    background: rgba(236, 37, 90, 0.2);
-    transform: translateY(-1px);
+    background-color: #EC255A;
+    color: white;
+    opacity: 1;
 }
 
 .edit-icon {
@@ -1346,7 +1262,7 @@ body {
 }
 
 .panel-checklist li:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: #f5f5f5;
     transform: translateX(2px);
 }
 
@@ -1733,8 +1649,8 @@ button {
 
 button:hover {
     background: rgba(41, 44, 109, 0.25);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 button:active {
@@ -1743,7 +1659,22 @@ button:active {
 }
 
 button::after {
-    display: none;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.2) 50%, 
+        rgba(255,255,255,0) 100%);
+    transform: translateX(-100%);
+    transition: transform 0.8s ease;
+}
+
+button:hover::after {
+    transform: translateX(100%);
 }
 
 /* Special buttons styling */
@@ -1779,7 +1710,7 @@ button::after {
 
 .panel-event-edit:hover {
     background: rgba(236, 37, 90, 0.2);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 /* Style the edit goals button */
@@ -1818,8 +1749,8 @@ button::after {
 }
 
 .progress-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.25);
 }
 
 /* Apply glass effect to the panel events */
@@ -1837,8 +1768,8 @@ button::after {
 
 .panel-event:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px) scale(1.02);
 }
 
 /* Apply glass effect to modal */
@@ -1856,7 +1787,7 @@ button::after {
 .progress-bar {
     position: relative;
     overflow: hidden;
-    transition: width 0.3s ease;
+    transition: width 1s ease;
     background: linear-gradient(90deg, #EC255A 0%, #FF6B6B 100%);
     box-shadow: 0 2px 6px rgba(236, 37, 90, 0.3);
     border-radius: 4px;
@@ -1864,7 +1795,18 @@ button::after {
 }
 
 .progress-bar::after {
-    display: none;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.3) 50%, 
+        rgba(255,255,255,0) 100%);
+    animation: shimmer 2s infinite;
+    background-size: 200% 100%;
 }
 
 /* Header Authentication Styles */
@@ -1935,120 +1877,51 @@ button::after {
 
 /* Goals Modal Styles */
 .goals-modal-content {
-    position: relative;
-    max-width: 420px;
-    margin: 0 auto;
-    padding: 40px 32px 32px 32px;
-    background: rgba(255, 255, 255, 0.35);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-radius: 24px;
-    box-shadow: 0 8px 40px 0 rgba(31, 38, 135, 0.18);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.goals-close-button {
-    position: absolute !important;
-    top: 18px !important;
-    right: 18px !important;
-    left: auto !important;
-    margin: 0 !important;
-    z-index: 1001 !important;
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, #EC255A 60%, #FF6B6B 100%);
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    font-size: 1.7rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(236, 37, 90, 0.15);
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-.goals-close-button:hover {
-    background: linear-gradient(135deg, #d01b4b 60%, #ff8fa3 100%);
-    transform: scale(1.05);
-}
-.goals-close-button:active {
-    transform: scale(0.95);
-}
-
-.goals-modal-content h3 {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #161853;
-    margin: 0 0 18px 0;
-    text-align: left;
-    letter-spacing: -1px;
-}
-
-.modal-instructions {
-    background: rgba(255,255,255,0.7);
-    border-left: 4px solid #EC255A;
-    color: #292C6D;
-    font-size: 1.05em;
-    border-radius: 8px;
-    margin-bottom: 28px;
-    padding: 14px 18px;
-    text-align: left;
-    box-shadow: 0 1px 4px rgba(41,44,109,0.06);
+    max-width: 500px;
+    padding: 25px;
 }
 
 .goal-input-container {
-    margin-bottom: 22px;
-}
-.goal-input-container label {
-    font-size: 1.08em;
-    font-weight: 700;
-    color: #292C6D;
-    margin-bottom: 7px;
-    display: block;
-}
-.goal-input {
-    width: 100%;
-    padding: 15px 16px;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1.08em;
-    background: rgba(255,255,255,0.6);
-    color: #292C6D;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 8px rgba(41,44,109,0.04);
-}
-.goal-input:focus {
-    border-color: #EC255A;
-    background: #fff;
-    outline: none;
-    box-shadow: 0 4px 16px rgba(236, 37, 90, 0.10);
+    margin-bottom: 15px;
 }
 
-#save-goals-button {
-    margin-top: 10px;
-    padding: 15px 0;
+.goal-input-container label {
+    display: block;
+    margin-bottom: 5px;
+    color: #161853;
+    font-weight: bold;
+}
+
+.goal-input {
     width: 100%;
-    font-size: 1.15em;
-    font-weight: 700;
-    background: linear-gradient(90deg, #EC255A 60%, #FF6B6B 100%);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(236, 37, 90, 0.10);
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+    transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
-#save-goals-button:hover {
-    background: linear-gradient(90deg, #d01b4b 60%, #ff8fa3 100%);
-    transform: translateY(-1px);
+
+.goal-input:focus {
+    outline: none;
+    border-color: #292C6D;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(236, 37, 90, 0.15);
 }
-#save-goals-button:active {
-    transform: scale(0.97);
+
+/* Make no-goals-message look nice */
+.no-goals-message {
+    text-align: center;
+    color: #666;
+    padding: 15px;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 8px;
+    margin: 15px 0;
 }
 
 /* Event header animations */
@@ -2075,7 +1948,8 @@ button::after {
 }
 
 .panel-event-edit:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 8px rgba(236, 37, 90, 0.2);
 }
 
 /* Checklist container animation */
@@ -2156,18 +2030,18 @@ button::after {
 }
 
 /* Staggered day animations */
-.day:nth-child(7n+1) { animation-delay: 0s; }
-.day:nth-child(7n+2) { animation-delay: 0.05s; }
-.day:nth-child(7n+3) { animation-delay: 0.1s; }
-.day:nth-child(7n+4) { animation-delay: 0.15s; }
-.day:nth-child(7n+5) { animation-delay: 0.2s; }
-.day:nth-child(7n+6) { animation-delay: 0.25s; }
-.day:nth-child(7n+7) { animation-delay: 0.3s; }
+.day:nth-child(7n+1) { animation-delay: 0.1s; }
+.day:nth-child(7n+2) { animation-delay: 0.15s; }
+.day:nth-child(7n+3) { animation-delay: 0.2s; }
+.day:nth-child(7n+4) { animation-delay: 0.25s; }
+.day:nth-child(7n+5) { animation-delay: 0.3s; }
+.day:nth-child(7n+6) { animation-delay: 0.35s; }
+.day:nth-child(7n+7) { animation-delay: 0.4s; }
 
 .day:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     z-index: 5;
 }
 
@@ -2194,1021 +2068,3 @@ button::after {
     border-radius: 12px;
     pointer-events: none;
 } 
-
-/* Goals Modal Styles */
-.goals-modal-content {
-    max-width: 500px;
-    padding: 25px;
-}
-
-.goals-tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ddd;
-}
-
-.goal-tab {
-    flex: 1;
-    padding: 10px 15px;
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.goal-tab.active {
-    color: #EC255A;
-    border-bottom: 3px solid #EC255A;
-}
-
-.goal-tab:hover {
-    background-color: rgba(236, 37, 90, 0.1);
-}
-
-.select-tasks-container {
-    margin-bottom: 20px;
-    animation: fadeIn 0.4s ease-out;
-}
-
-.task-search {
-    margin-bottom: 15px;
-}
-
-.task-search input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.available-tasks {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
-.task-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.task-item:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-}
-
-.task-item.selected {
-    background-color: rgba(236, 37, 90, 0.1);
-    border-left: 3px solid #EC255A;
-}
-
-.task-info {
-    flex: 1;
-}
-
-.task-text {
-    font-weight: 500;
-}
-
-.task-source {
-    font-size: 12px;
-    color: #666;
-    margin-top: 2px;
-}
-
-.task-action {
-    margin-left: 10px;
-}
-
-.add-task-button, .remove-task-button {
-    background: none;
-    border: none;
-    color: #EC255A;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.add-task-button:hover, .remove-task-button:hover {
-    background-color: rgba(236, 37, 90, 0.1);
-}
-
-.selected-goals-container {
-    margin-top: 20px;
-}
-
-.selected-goals-container h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #292C6D;
-}
-
-.selected-goals {
-    min-height: 100px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-}
-
-.selected-goal-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    background-color: rgba(236, 37, 90, 0.1);
-    border-radius: 4px;
-}
-
-.selected-goal-text {
-    flex: 1;
-}
-
-.remove-task-button {
-    background: none;
-    border: none;
-    color: #EC255A;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 2px 8px;
-}
-
-.custom-goals-container {
-    animation: fadeIn 0.4s ease-out;
-}
-
-.no-tasks-message {
-    text-align: center;
-    color: #666;
-    padding: 20px 0;
-}
-
-/* Task Selection Animations */
-.task-item {
-    transition: all 0.3s ease;
-    transform-origin: center;
-    opacity: 0;
-    animation: fadeInUp 0.4s ease forwards;
-}
-
-.task-item:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.task-item.selected {
-    background-color: rgba(76, 175, 80, 0.1);
-    border-color: #4CAF50;
-    transform: scale(1.02);
-}
-
-.add-task-button, .remove-task-button {
-    transition: all 0.2s ease;
-    opacity: 0.7;
-}
-
-.add-task-button:hover, .remove-task-button:hover {
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-.selected-goal-item {
-    animation: slideInRight 0.3s ease;
-    transition: all 0.3s ease;
-}
-
-.selected-goal-item:hover {
-    transform: translateX(2px);
-}
-
-.selected-goal-item .remove-task-button {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.selected-goal-item:hover .remove-task-button {
-    opacity: 1;
-}
-
-/* Smooth tab transitions */
-.goals-tabs {
-    transition: all 0.3s ease;
-}
-
-.goal-tab {
-    transition: all 0.3s ease;
-}
-
-.goal-tab.active {
-    transform: none;
-}
-
-/* Container transitions */
-.select-tasks-container,
-.custom-goals-container {
-    transition: opacity 0.2s ease;
-    opacity: 0;
-}
-
-.select-tasks-container[style*="display: block"],
-.custom-goals-container[style*="display: block"] {
-    opacity: 1;
-    transform: none;
-}
-
-/* Search input animation */
-.task-search input {
-    transition: all 0.3s ease;
-}
-
-.task-search input:focus {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Keyframe animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Staggered animation for task items */
-.task-item:nth-child(1) { animation-delay: 0s; }
-.task-item:nth-child(2) { animation-delay: 0.05s; }
-.task-item:nth-child(3) { animation-delay: 0.1s; }
-.task-item:nth-child(4) { animation-delay: 0.15s; }
-.task-item:nth-child(5) { animation-delay: 0.2s; }
-.task-item:nth-child(n+6) { animation-delay: 0.25s; }
-
-/* Month Selector Styles */
-.month-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
-}
-
-.month-selector:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-#month-select {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 0.9rem;
-    padding: 5px 25px 5px 5px;
-    cursor: pointer;
-    outline: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 5px center;
-    background-size: 20px;
-    min-width: 120px;
-    transition: all 0.3s ease;
-}
-
-#month-select:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-#month-select option {
-    background: #292C6D;
-    color: #ffffff;
-    padding: 10px;
-    font-size: 0.9rem;
-    font-family: 'Spotify Mix', sans-serif;
-}
-
-#month-select option:hover {
-    background: #3D3FA3;
-}
-
-#year-display {
-    color: #ffffff;
-    font-family: 'Spotify Mix', sans-serif;
-    font-size: 0.9rem;
-    padding: 5px;
-    min-width: 50px;
-    text-align: center;
-    font-weight: 500;
-}
-
-/* Responsive adjustments for month selector */
-@media (max-width: 768px) {
-    .month-selector {
-        padding: 3px 8px;
-    }
-    
-    #month-select {
-        font-size: 0.8rem;
-        min-width: 100px;
-        padding: 3px 20px 3px 3px;
-    }
-    
-    #year-display {
-        font-size: 0.8rem;
-        min-width: 40px;
-    }
-}
-
-/* Goals modal styles */
-.goals-modal-content {
-    max-width: 600px;
-    padding: 30px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-}
-
-/* Goals tabs */
-.goals-tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.goal-tab {
-    padding: 12px 20px;
-    cursor: pointer;
-    font-weight: 500;
-    color: #666;
-    position: relative;
-    transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
-}
-
-.goal-tab.active {
-    color: #292C6D;
-    border-bottom: 3px solid #292C6D;
-}
-
-.goal-tab:hover {
-    color: #292C6D;
-}
-
-/* Task selection container */
-.select-tasks-container,
-.custom-goals-container {
-    margin-bottom: 20px;
-    animation: fadeIn 0.5s ease-out;
-}
-
-.select-tasks-container[style*="display: block"],
-.custom-goals-container[style*="display: block"] {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* Task search */
-.task-search input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-}
-
-.task-search input:focus {
-    border-color: #292C6D;
-    box-shadow: 0 0 0 2px rgba(41, 44, 109, 0.2);
-}
-
-/* Available tasks */
-.available-tasks {
-    max-height: 250px;
-    overflow-y: auto;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
-.task-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    animation: fadeInUp 0.3s ease-out forwards;
-}
-
-.task-item:last-child {
-    border-bottom: none;
-}
-
-.task-item:hover {
-    background-color: #f5f5f5;
-    transform: translateY(-2px);
-}
-
-.task-item.selected {
-    background-color: #e8f0fe;
-    border-left: 3px solid #292C6D;
-}
-
-.task-info {
-    flex: 1;
-}
-
-.task-text {
-    font-weight: 500;
-    margin-bottom: 4px;
-}
-
-.task-source {
-    font-size: 0.8em;
-    color: #666;
-}
-
-.task-action {
-    margin-left: 10px;
-}
-
-.add-task-button, .remove-task-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: none;
-    background-color: #292C6D;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.add-task-button:hover, .remove-task-button:hover {
-    transform: scale(1.1);
-}
-
-/* Selected goals */
-.selected-goals {
-    margin-top: 10px;
-    min-height: 100px;
-    border: 1px dashed #ccc;
-    border-radius: 8px;
-    padding: 10px;
-}
-
-.selected-goal-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #e8f0fe;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    animation: fadeIn 0.3s ease;
-}
-
-.selected-goal-item:hover {
-    background-color: #d9e6fd;
-}
-
-.selected-goal-text {
-    flex: 1;
-}
-
-.selected-goal-item .remove-task-button {
-    opacity: 0.7;
-}
-
-.selected-goal-item:hover .remove-task-button {
-    opacity: 1;
-}
-
-/* No tasks message */
-.no-tasks-message {
-    padding: 20px;
-    text-align: center;
-    color: #666;
-    font-style: italic;
-}
-
-/* Animation keyframes */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Task item staggered animations */
-.task-item:nth-child(1) { animation-delay: 0s; }
-.task-item:nth-child(2) { animation-delay: 0.05s; }
-.task-item:nth-child(3) { animation-delay: 0.1s; }
-.task-item:nth-child(4) { animation-delay: 0.15s; }
-.task-item:nth-child(5) { animation-delay: 0.2s; }
-.task-item:nth-child(n+6) { animation-delay: 0.25s; }
-
-/* Styled checklist for event modal */
-.styled-checklist {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 15px 0;
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.6);
-}
-
-.styled-checklist li {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    transition: all 0.2s ease;
-    animation: fadeIn 0.3s ease-out forwards;
-}
-
-.styled-checklist li:last-child {
-    border-bottom: none;
-}
-
-.styled-checklist li:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-}
-
-/* Event list styling to match goals modal */
-#events-list-container {
-    margin-bottom: 25px;
-    border-radius: 8px;
-    background-color: transparent;
-    padding: 0;
-}
-
-#events-list-container h4 {
-    margin-top: 15px;
-    margin-bottom: 10px;
-    color: #292C6D;
-    font-weight: 600;
-}
-
-.event-item {
-    background-color: rgba(255, 255, 255, 0.6);
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    border-left: 4px solid #292C6D;
-    animation: fadeInUp 0.3s ease-out forwards;
-}
-
-.event-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    background-color: rgba(255, 255, 255, 0.8);
-}
-
-/* Add/Edit Event Sections */
-#add-event-section, #edit-event-section {
-    background-color: transparent;
-    padding: 0;
-    border-radius: 0;
-    margin-top: 20px;
-}
-
-#add-event-section h4, #edit-event-section h4 {
-    margin-top: 25px;
-    margin-bottom: 15px;
-    color: #292C6D;
-    font-weight: 600;
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 10px;
-}
-
-/* Checklist section styling */
-.checklist-section {
-    margin: 20px 0;
-}
-
-.checklist-section h5 {
-    margin: 15px 0 10px 0;
-    color: #292C6D;
-    font-weight: 500;
-}
-
-/* Add item button container */
-.add-checklist-item {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.add-checklist-item input {
-    flex-grow: 1;
-}
-
-.add-checklist-item button {
-    min-width: 80px;
-}
-
-/* Action buttons in event modal */
-#add-event-button {
-    display: block;
-    width: 100%;
-    margin: 20px 0 10px 0;
-    padding: 15px 0;
-    font-size: 1.15em;
-    font-weight: 700;
-    background: linear-gradient(90deg, #EC255A 60%, #FF6B6B 100%);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(236, 37, 90, 0.10);
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-
-#add-event-button:hover {
-    background: linear-gradient(90deg, #d01b4b 60%, #ff8fa3 100%);
-    transform: translateY(-1px);
-}
-
-/* Edit actions container */
-.edit-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    gap: 10px;
-}
-
-.edit-actions div {
-    display: flex;
-    gap: 10px;
-}
-
-#save-edited-event {
-    background: linear-gradient(90deg, #EC255A 60%, #FF6B6B 100%);
-    color: #fff;
-    font-weight: 600;
-}
-
-#cancel-edit {
-    background-color: #f0f0f0;
-    color: #333;
-    font-weight: 500;
-}
-
-#delete-event {
-    background-color: #ff5252;
-    color: white;
-    font-weight: 500;
-}
-
-/* Styled checklist checkboxes and buttons */
-.styled-checklist input[type="checkbox"] {
-    margin-right: 10px;
-    transform: scale(1.1);
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #292C6D;
-    border-radius: 4px;
-    position: relative;
-    cursor: pointer;
-    background-color: white;
-    transition: all 0.2s ease;
-}
-
-.styled-checklist input[type="checkbox"]:checked {
-    background-color: #EC255A;
-    border-color: #EC255A;
-}
-
-.styled-checklist input[type="checkbox"]:checked::after {
-    content: "✓";
-    position: absolute;
-    color: white;
-    font-size: 14px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: checkmarkPop 0.3s ease-out;
-}
-
-.styled-checklist label {
-    flex-grow: 1;
-    cursor: pointer;
-    font-size: 0.95em;
-    color: #292C6D;
-    margin: 0;
-    padding: 0 10px;
-}
-
-.styled-checklist label.completed {
-    text-decoration: line-through;
-    color: #888;
-    transition: all 0.3s ease;
-}
-
-.styled-checklist .delete-item-button {
-    background: none;
-    border: none;
-    color: #EC255A;
-    cursor: pointer;
-    font-size: 1.2em;
-    padding: 0 8px;
-    opacity: 0.7;
-    transition: all 0.2s ease;
-}
-
-.styled-checklist .delete-item-button:hover {
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-.styled-checklist .promote-goal-button {
-    background: none;
-    border: none;
-    color: #292C6D;
-    cursor: pointer;
-    font-size: 0.85em;
-    padding: 4px 8px;
-    margin-right: 5px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.styled-checklist .promote-goal-button:hover {
-    background-color: rgba(41, 44, 109, 0.1);
-}
-
-/* Spotify Section Styles */
-.spotify-section {
-    background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 16px rgba(41, 44, 109, 0.1);
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-    max-width: 420px;
-    min-height: 200px;
-    position: absolute;
-    top: 140px;
-    right: 20px;
-}
-
-.spotify-section h3 {
-    color: #161853;
-    font-size: 1.4rem;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-}
-
-.spotify-section h3::before {
-    content: "";
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-image: url('https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-right: 8px;
-}
-
-.spotify-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-#spotify-login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    text-align: center;
-}
-
-#spotify-login-container p {
-    margin-bottom: 15px;
-    color: #292C6D;
-}
-
-.spotify-button {
-    background: #1DB954;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    padding: 10px 20px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.spotify-button:hover {
-    background: #1ed760;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
-}
-
-.spotify-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(29, 185, 84, 0.3);
-}
-
-#spotify-player-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-#spotify-user-info {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    color: #292C6D;
-    margin-bottom: 10px;
-}
-
-#spotify-playlists-container {
-    max-height: 180px;
-    overflow-y: auto;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-}
-
-#spotify-playlists-container h4 {
-    color: #292C6D;
-    margin-bottom: 10px;
-    font-size: 1rem;
-}
-
-#playlists-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.playlist-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.playlist-item:hover {
-    background: rgba(236, 37, 90, 0.08);
-}
-
-.playlist-item.active {
-    background: rgba(236, 37, 90, 0.15);
-}
-
-.playlist-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    margin-right: 10px;
-    object-fit: cover;
-}
-
-.playlist-info {
-    flex: 1;
-}
-
-.playlist-name {
-    font-weight: 500;
-    color: #292C6D;
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-}
-
-.playlist-tracks {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-#spotify-player-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-}
-
-#currently-playing {
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    color: #292C6D;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.player-buttons {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-}
-
-.spotify-control-button {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #292C6D;
-    font-size: 1rem;
-}
-
-.spotify-control-button:hover {
-    background: #f0f0f0;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.spotify-control-button:active {
-    transform: translateY(0);
-}
-
-#spotify-play-button, #spotify-pause-button {
-    width: 46px;
-    height: 46px;
-    background: linear-gradient(135deg, #EC255A 0%, #FF6B6B 100%);
-    color: white;
-    border: none;
-}
-
-#spotify-play-button:hover, #spotify-pause-button:hover {
-    background: linear-gradient(135deg, #d01b4b 0%, #ff5252 100%);
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-    .spotify-section {
-        position: static;
-        margin: 20px auto;
-        max-width: 100%;
-    }
-}
-  

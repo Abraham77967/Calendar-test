@@ -38,33 +38,6 @@
             <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
         </div>
 
-        <!-- Spotify Music Section -->
-        <div id="spotify-section" class="spotify-section">
-            <h3>Your Music</h3>
-            <div id="spotify-container" class="spotify-container">
-                <div id="spotify-login-container">
-                    <p>Connect to Spotify to play your music while working on your goals.</p>
-                    <button id="spotify-connect-button" class="spotify-button">Connect Spotify</button>
-                </div>
-                <div id="spotify-player-container" style="display: none;">
-                    <div id="spotify-user-info"></div>
-                    <div id="spotify-playlists-container">
-                        <h4>Your Playlists</h4>
-                        <div id="playlists-list"></div>
-                    </div>
-                    <div id="spotify-player-controls">
-                        <div id="currently-playing"></div>
-                        <div class="player-buttons">
-                            <button id="spotify-prev-button" class="spotify-control-button">⏮</button>
-                            <button id="spotify-play-button" class="spotify-control-button">▶</button>
-                            <button id="spotify-pause-button" class="spotify-control-button">⏸</button>
-                            <button id="spotify-next-button" class="spotify-control-button">⏭</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="content-area">
             <div class="calendars-wrapper">
                 <div class="calendar-container" id="calendar-1">
@@ -166,7 +139,7 @@
     <!-- Goals Modal -->
     <div id="goals-modal" class="modal">
         <div class="modal-content goals-modal-content">
-            <button class="new-close-button goals-close-button">×</button>
+            <span class="close-button goals-close-button">&times;</span>
             <h3>Set Your 3 Main Goals</h3>
             <p class="modal-instructions">Define your top 3 goals. These will be displayed prominently at the top of your calendar to keep you focused.</p>
             
@@ -194,6 +167,5 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
-    <script src="spotify.js"></script>
 </body>
 </html> 
