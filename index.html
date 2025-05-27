@@ -38,6 +38,33 @@
             <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
         </div>
 
+        <!-- Spotify Music Section -->
+        <div id="spotify-section" class="spotify-section">
+            <h3>Your Music</h3>
+            <div id="spotify-container" class="spotify-container">
+                <div id="spotify-login-container">
+                    <p>Connect to Spotify to play your music while working on your goals.</p>
+                    <button id="spotify-connect-button" class="spotify-button">Connect Spotify</button>
+                </div>
+                <div id="spotify-player-container" style="display: none;">
+                    <div id="spotify-user-info"></div>
+                    <div id="spotify-playlists-container">
+                        <h4>Your Playlists</h4>
+                        <div id="playlists-list"></div>
+                    </div>
+                    <div id="spotify-player-controls">
+                        <div id="currently-playing"></div>
+                        <div class="player-buttons">
+                            <button id="spotify-prev-button" class="spotify-control-button">⏮</button>
+                            <button id="spotify-play-button" class="spotify-control-button">▶</button>
+                            <button id="spotify-pause-button" class="spotify-control-button">⏸</button>
+                            <button id="spotify-next-button" class="spotify-control-button">⏭</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="content-area">
             <div class="calendars-wrapper">
                 <div class="calendar-container" id="calendar-1">
@@ -81,10 +108,9 @@
     </div>
 
     <div id="note-modal" class="modal">
-        <div class="modal-content goals-modal-content">
-            <button id="note-close-button" class="new-close-button goals-close-button">×</button>
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
             <h3 id="modal-date"></h3>
-            <p class="modal-instructions">Manage events for this date. View existing events, add new ones, or edit current events.</p>
             
             <div id="events-list-container">
                 <h4>Events</h4>
@@ -95,21 +121,16 @@
             
             <div id="add-event-section">
                 <h4>Add New Event</h4>
-                <div class="goal-input-container">
                 <label for="new-event-time">Time (optional):</label>
-                    <input type="time" id="new-event-time" class="goal-input">
-                </div>
-                
-                <div class="goal-input-container">
-                    <textarea id="new-event-text" class="goal-input" placeholder="Enter event description..."></textarea>
-                </div>
+                <input type="time" id="new-event-time">
+                <textarea id="new-event-text" placeholder="Enter event description..."></textarea>
                 
                 <div class="checklist-section">
                     <h5>Tasks Checklist</h5>
-                    <ul id="new-event-checklist" class="styled-checklist"></ul>
+                    <ul id="new-event-checklist"></ul>
                     <div class="add-checklist-item">
-                        <input type="text" id="new-checklist-item" class="goal-input" placeholder="Add new task...">
-                        <button id="add-item-button" class="action-button">Add</button>
+                        <input type="text" id="new-checklist-item" placeholder="Add new task...">
+                        <button id="add-item-button">Add</button>
                     </div>
                 </div>
                 
@@ -118,21 +139,16 @@
             
             <div id="edit-event-section" style="display:none;">
                 <h4>Edit Event</h4>
-                <div class="goal-input-container">
                 <label for="edit-event-time">Time (optional):</label>
-                    <input type="time" id="edit-event-time" class="goal-input">
-                </div>
-                
-                <div class="goal-input-container">
-                    <textarea id="edit-event-text" class="goal-input" placeholder="Enter event description..."></textarea>
-                </div>
+                <input type="time" id="edit-event-time">
+                <textarea id="edit-event-text" placeholder="Enter event description..."></textarea>
                 
                 <div class="checklist-section">
                     <h5>Tasks Checklist</h5>
-                    <ul id="edit-event-checklist" class="styled-checklist"></ul>
+                    <ul id="edit-event-checklist"></ul>
                     <div class="add-checklist-item">
-                        <input type="text" id="edit-checklist-item" class="goal-input" placeholder="Add new task...">
-                        <button id="edit-add-item-button" class="action-button">Add</button>
+                        <input type="text" id="edit-checklist-item" placeholder="Add new task...">
+                        <button id="edit-add-item-button">Add</button>
                     </div>
                 </div>
                 
@@ -150,36 +166,10 @@
     <!-- Goals Modal -->
     <div id="goals-modal" class="modal">
         <div class="modal-content goals-modal-content">
-            <button id="goals-close-button" class="new-close-button goals-close-button">×</button>
+            <button class="new-close-button goals-close-button">×</button>
             <h3>Set Your 3 Main Goals</h3>
-            <p class="modal-instructions">Define your top 3 goals. You can select tasks from your calendar events or create custom goals.</p>
+            <p class="modal-instructions">Define your top 3 goals. These will be displayed prominently at the top of your calendar to keep you focused.</p>
             
-            <!-- Add tabs for the two options -->
-            <div class="goals-tabs">
-                <div id="select-tasks-tab" class="goal-tab active">Select from Tasks</div>
-                <div id="custom-goals-tab" class="goal-tab">Custom Goals</div>
-            </div>
-            
-            <!-- Task selection container -->
-            <div id="select-tasks-container" class="select-tasks-container">
-                <div class="task-search">
-                    <input type="text" id="task-search-input" placeholder="Search tasks...">
-                </div>
-                
-                <h4>Available Tasks</h4>
-                <div id="available-tasks-container" class="available-tasks">
-                    <!-- Tasks will be populated here -->
-                    <div class="no-tasks-message">No tasks found in your calendar. Add tasks to events first.</div>
-                </div>
-                
-                <h4>Selected Goals (max 3)</h4>
-                <div id="selected-goals" class="selected-goals">
-                    <!-- Selected goals will appear here -->
-                </div>
-            </div>
-            
-            <!-- Custom goals container -->
-            <div id="custom-goals-container" class="custom-goals-container" style="display: none;">
             <div class="goal-input-container">
                 <label for="goal-1">Goal 1:</label>
                 <input type="text" id="goal-1" class="goal-input" placeholder="Enter your first main goal">
@@ -193,7 +183,6 @@
             <div class="goal-input-container">
                 <label for="goal-3">Goal 3:</label>
                 <input type="text" id="goal-3" class="goal-input" placeholder="Enter your third main goal">
-                </div>
             </div>
             
             <button id="save-goals-button" class="action-button">Save Goals</button>
@@ -205,5 +194,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
+    <script src="spotify.js"></script>
 </body>
 </html> 

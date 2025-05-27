@@ -1302,11 +1302,9 @@ document.addEventListener('DOMContentLoaded', () => {
         newEventChecklistElement.innerHTML = '';
         newChecklistItemElement.value = '';
         
-        // Ensure the add event section is visible
-        const addEventSection = document.getElementById('add-event-section');
-        if (addEventSection) {
-            addEventSection.style.display = 'block';
-        }
+        // Ensure the add event section is visible and edit section is hidden
+        document.getElementById('add-event-section').style.display = 'block';
+        document.getElementById('edit-event-section').style.display = 'none';
         
         // Display events for this date
         displayEventsInModal();
@@ -1654,13 +1652,15 @@ document.addEventListener('DOMContentLoaded', () => {
         editEventTextElement.value = event.text || '';
         renderChecklistForEditEvent(event.checklist || []);
         
-        // Show edit section, hide add section
+        // Hide add section, show edit section
+        document.getElementById('add-event-section').style.display = 'none';
         editEventSection.style.display = 'block';
     }
     
     // Hide the edit event section
     function hideEditEventSection() {
         editEventSection.style.display = 'none';
+        document.getElementById('add-event-section').style.display = 'block';
         currentEditingEventId = null;
         editEventTimeElement.value = '';
         editEventTextElement.value = '';
@@ -1773,8 +1773,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log('[UI UPDATE] Starting UI refresh');
         
-        // Hide edit section
-        hideEditEventSection();
+        // Hide edit section and show add section
+        document.getElementById('edit-event-section').style.display = 'none';
+        document.getElementById('add-event-section').style.display = 'block';
+        currentEditingEventId = null;
         
         // Refresh the events list
         displayEventsInModal();
@@ -1786,6 +1788,21 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('[UI UPDATE] Completed. Events for date', selectedDateString + ':',
             globalNotes[selectedDateString] ? globalNotes[selectedDateString].length : 0);
         console.log('[UI UPDATE] Total events in calendar:', countTotalEvents());
+    }
+    
+    // Helper function to count total events in the calendar
+    function countTotalEvents() {
+        // Always use the global notes object
+        const globalNotes = window.calendarNotes;
+        let count = 0;
+        
+        for (const dateString in globalNotes) {
+            if (globalNotes[dateString] && Array.isArray(globalNotes[dateString])) {
+                count += globalNotes[dateString].length;
+            }
+        }
+        
+        return count;
     }
     
     // Save notes to Firebase
@@ -2110,4 +2127,4 @@ function promoteTaskToMainGoal(taskText, dateString) {
 function closeGoalsModal() {
     console.log('Closing goals modal...');
     goalsModal.style.display = 'none';
-} 
+}
