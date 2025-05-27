@@ -520,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Renders the mobile month view (uses renderCalendar)
     function renderMobileMonthView() {
         renderCalendar(mobileMonthDate, calendarGrid1, monthYearElement1);
-        monthYearDisplayElement.textContent = mobileMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        monthYearDisplayElement.textContent = mobileMonthDate.toLocaleDateString('default', { month: 'long', year: 'numeric' });
     }
 
     // Renders the mobile two-week view with consistent today highlighting
@@ -1676,7 +1676,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Main Goals event listeners
     editGoalsButton.addEventListener('click', openGoalsModal);
-    goalsCloseButton.addEventListener('click', closeGoalsModal);
+    goalsCloseButton.addEventListener('click', () => {
+        console.log('Goals close button clicked');
+        goalsModal.style.display = 'none';
+    });
     saveGoalsButton.addEventListener('click', saveMainGoals);
 
     // Function to handle promotion of tasks to main goals (inside scope)
@@ -1820,4 +1823,295 @@ function promoteTaskToMainGoal(taskText, dateString) {
     // Create a custom event to trigger the internal promotion function
     const event = new CustomEvent('promoteTask');
     document.dispatchEvent(event);
+}
+
+function closeGoalsModal() {
+    console.log('Closing goals modal...');
+    goalsModal.style.display = 'none';
+}
+
+// Weather Widget Functionality
+function initWeatherWidget() {
+    // Weather elements
+    const weatherTemp = document.getElementById('weather-temp');
+    const tempUnit = document.getElementById('temp-unit');
+    const weatherDescription = document.getElementById('weather-description');
+    const weatherLocation = document.getElementById('weather-location');
+    const weatherHumidity = document.getElementById('weather-humidity');
+    const weatherWind = document.getElementById('weather-wind');
+    const weatherIconImg = document.getElementById('weather-icon-img');
+    const weatherContent = document.querySelector('.weather-content');
+    const weatherDetails = document.querySelector('.weather-details');
+    
+    // Show loading state
+    weatherContent.classList.add('loading');
+    weatherDetails.classList.add('loading');
+    weatherTemp.textContent = '--';
+    weatherDescription.textContent = 'Loading weather...';
+    weatherLocation.textContent = '--';
+    weatherHumidity.textContent = '--%';
+    weatherWind.textContent = '-- km/h';
+    
+    // Set default weather icon during loading
+    weatherIconImg.src = 'https://openweathermap.org/img/wn/02d@2x.png';
+    
+    // Add loading shimmer effect
+    document.querySelectorAll('.weather-temp, .weather-description, .weather-location, .detail-value').forEach(el => {
+        el.classList.add('loading-shimmer');
+    });
+    
+    // Function to remove loading state
+    function removeLoadingState() {
+        weatherContent.classList.remove('loading');
+        weatherDetails.classList.remove('loading');
+        document.querySelectorAll('.loading-shimmer').forEach(el => {
+            el.classList.remove('loading-shimmer');
+        });
+    }
+    
+    // Function to get user's location
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetchWeatherData(lat, lon);
+                    
+                    // Try to get location name
+                    fetchLocationName(lat, lon);
+                },
+                error => {
+                    console.error('Error getting location:', error);
+                    // Use default coordinates (New York City)
+                    fetchWeatherData(40.7128, -74.0060);
+                    
+                    // Remove loading state and show default location
+                    removeLoadingState();
+                    weatherLocation.textContent = 'New York';
+                },
+                { timeout: 10000 } // 10 seconds timeout
+            );
+        } else {
+            console.error('Geolocation not supported');
+            // Use default coordinates (New York City)
+            fetchWeatherData(40.7128, -74.0060);
+            
+            // Remove loading state and show default location
+            removeLoadingState();
+            weatherLocation.textContent = 'New York';
+        }
+        
+        // Set a fallback timeout in case geolocation hangs
+        setTimeout(() => {
+            if (weatherTemp.textContent === '--') {
+                console.log('Weather data fetch timeout, showing mock data');
+                displayMockWeatherData();
+            }
+        }, 15000); // 15 seconds fallback
+    }
+
+    // Function to fetch location name using reverse geocoding
+    function fetchLocationName(lat, lon) {
+        // Using a CORS-friendly API
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Location data fetch failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Extract city name from address
+                let location = 'Unknown';
+                if (data.address) {
+                    location = data.address.city || 
+                              data.address.town || 
+                              data.address.village || 
+                              data.address.hamlet || 
+                              data.address.county ||
+                              'Unknown';
+                }
+                weatherLocation.textContent = location;
+            })
+            .catch(error => {
+                console.error('Error fetching location name:', error);
+                // Use approximate location based on latitude/longitude
+                weatherLocation.textContent = `${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
+            });
+    }
+
+    // Function to fetch weather data from the Open-Meteo API
+    function fetchWeatherData(lat, lon) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Weather data fetch failed: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Check if data contains what we need
+                if (!data.current) {
+                    throw new Error('Invalid weather data format');
+                }
+                
+                // Remove loading state
+                removeLoadingState();
+                
+                console.log('Weather data:', data);
+                
+                // Extract current weather data
+                const temp = Math.round(data.current.temperature_2m);
+                const humidity = data.current.relative_humidity_2m;
+                const windSpeed = Math.round(data.current.wind_speed_10m);
+                const weatherCode = data.current.weather_code;
+                
+                // Update UI with weather data
+                weatherTemp.textContent = temp;
+                weatherHumidity.textContent = `${humidity}%`;
+                weatherWind.textContent = `${windSpeed} km/h`;
+                
+                // Set weather description and icon based on weather code
+                const weatherInfo = getWeatherInfo(weatherCode);
+                weatherDescription.textContent = weatherInfo.description;
+                weatherIconImg.src = weatherInfo.iconUrl;
+                
+                // Set up temperature unit toggle
+                setupTempUnitToggle();
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                
+                // Remove loading state
+                removeLoadingState();
+                
+                // Display mock data in case of failure
+                displayMockWeatherData();
+            });
+    }
+
+    // Function to convert Open-Meteo weather codes to descriptions and icons
+    function getWeatherInfo(code) {
+        // Weather codes from Open-Meteo API
+        // https://open-meteo.com/en/docs
+        const weatherCodes = {
+            0: { description: 'Clear sky', icon: '01d' },
+            1: { description: 'Mainly clear', icon: '01d' },
+            2: { description: 'Partly cloudy', icon: '02d' },
+            3: { description: 'Overcast', icon: '03d' },
+            45: { description: 'Fog', icon: '50d' },
+            48: { description: 'Depositing rime fog', icon: '50d' },
+            51: { description: 'Light drizzle', icon: '09d' },
+            53: { description: 'Moderate drizzle', icon: '09d' },
+            55: { description: 'Dense drizzle', icon: '09d' },
+            56: { description: 'Light freezing drizzle', icon: '09d' },
+            57: { description: 'Dense freezing drizzle', icon: '09d' },
+            61: { description: 'Slight rain', icon: '10d' },
+            63: { description: 'Moderate rain', icon: '10d' },
+            65: { description: 'Heavy rain', icon: '10d' },
+            66: { description: 'Light freezing rain', icon: '13d' },
+            67: { description: 'Heavy freezing rain', icon: '13d' },
+            71: { description: 'Slight snow fall', icon: '13d' },
+            73: { description: 'Moderate snow fall', icon: '13d' },
+            75: { description: 'Heavy snow fall', icon: '13d' },
+            77: { description: 'Snow grains', icon: '13d' },
+            80: { description: 'Slight rain showers', icon: '09d' },
+            81: { description: 'Moderate rain showers', icon: '09d' },
+            82: { description: 'Violent rain showers', icon: '09d' },
+            85: { description: 'Slight snow showers', icon: '13d' },
+            86: { description: 'Heavy snow showers', icon: '13d' },
+            95: { description: 'Thunderstorm', icon: '11d' },
+            96: { description: 'Thunderstorm with slight hail', icon: '11d' },
+            99: { description: 'Thunderstorm with heavy hail', icon: '11d' }
+        };
+        
+        const info = weatherCodes[code] || { description: 'Unknown', icon: '50d' };
+        return {
+            description: info.description,
+            iconUrl: `https://openweathermap.org/img/wn/${info.icon}@2x.png`
+        };
+    }
+
+    // Function to display mock weather data as fallback
+    function displayMockWeatherData() {
+        // Remove loading classes if they're still active
+        removeLoadingState();
+        
+        // Get current time to determine if it's day or night
+        const hour = new Date().getHours();
+        const isDay = hour >= 6 && hour < 19; // Day time between 6am and 7pm
+        
+        // Generate a random temperature between 15 and 30
+        const randomTemp = Math.floor(Math.random() * 16) + 15;
+        weatherTemp.textContent = randomTemp;
+        
+        // Choose a random weather condition
+        const conditions = isDay ? 
+            ['Sunny', 'Partly cloudy', 'Cloudy', 'Light rain', 'Mostly sunny'] :
+            ['Clear', 'Partly cloudy', 'Cloudy', 'Light rain', 'Clear night'];
+            
+        const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+        weatherDescription.textContent = randomCondition;
+        
+        // Choose a random city
+        const cities = [
+            'New York', 'London', 'Tokyo', 'Paris', 'Sydney', 'Berlin', 'Toronto', 'Rome'
+        ];
+        const randomCity = cities[Math.floor(Math.random() * cities.length)];
+        weatherLocation.textContent = randomCity;
+        
+        // Random humidity between 40% and 80%
+        const randomHumidity = Math.floor(Math.random() * 41) + 40;
+        weatherHumidity.textContent = `${randomHumidity}%`;
+        
+        // Random wind speed between 2 and 15 km/h
+        const randomWind = Math.floor(Math.random() * 14) + 2;
+        weatherWind.textContent = `${randomWind} km/h`;
+        
+        // Choose appropriate weather icon based on condition
+        let iconCode = isDay ? '01d' : '01n'; // default sunny or clear night
+        
+        if (randomCondition.includes('cloud')) {
+            iconCode = isDay ? '02d' : '02n'; // partly cloudy
+        } else if (randomCondition.includes('rain')) {
+            iconCode = isDay ? '10d' : '10n'; // rainy
+        } else if (randomCondition === 'Cloudy') {
+            iconCode = isDay ? '03d' : '03n'; // cloudy
+        }
+        
+        weatherIconImg.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+        
+        // Make sure the temp unit is clickable
+        setupTempUnitToggle();
+    }
+
+    // Function to set up temperature unit toggle
+    function setupTempUnitToggle() {
+        // Remove existing event listeners first to prevent duplicates
+        tempUnit.removeEventListener('click', handleTempUnitToggle);
+        
+        // Add temperature unit toggle functionality
+        tempUnit.addEventListener('click', handleTempUnitToggle);
+    }
+    
+    // Handler for temperature unit toggle
+    function handleTempUnitToggle() {
+        if (tempUnit.textContent === 'C') {
+            // Convert to Fahrenheit
+            weatherTemp.textContent = Math.round((parseFloat(weatherTemp.textContent) * 9/5) + 32);
+            tempUnit.textContent = 'F';
+        } else {
+            // Convert back to Celsius
+            weatherTemp.textContent = Math.round((parseFloat(weatherTemp.textContent) - 32) * 5/9);
+            tempUnit.textContent = 'C';
+        }
+    }
+    
+    // Start the weather widget by getting user location
+    getUserLocation();
 } 

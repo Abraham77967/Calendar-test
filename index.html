@@ -29,13 +29,43 @@
             </div>
         </div>
         
-        <!-- Main Goals Section -->
-        <div id="main-goals-section" class="main-goals-section">
-            <h3>Main Goals</h3>
-            <div id="goals-container" class="goals-container">
-                <!-- Goals will be added here dynamically -->
+        <!-- Top section container for weather widget and main goals -->
+        <div class="top-section">
+            <!-- Weather Widget Section -->
+            <div id="weather-widget" class="weather-widget">
+                <h3>Weather Today</h3>
+                <div class="weather-content">
+                    <div class="weather-icon">
+                        <img id="weather-icon-img" src="https://openweathermap.org/img/wn/02d@2x.png" alt="Weather icon">
+                    </div>
+                    <div class="weather-info">
+                        <div class="weather-temp">
+                            <span id="weather-temp">--</span>°<span id="temp-unit">C</span>
+                        </div>
+                        <div class="weather-description" id="weather-description">Loading weather...</div>
+                        <div class="weather-location" id="weather-location">--</div>
+                    </div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-detail">
+                        <span class="detail-label">Humidity</span>
+                        <span class="detail-value" id="weather-humidity">--%</span>
+                    </div>
+                    <div class="weather-detail">
+                        <span class="detail-label">Wind</span>
+                        <span class="detail-value" id="weather-wind">-- km/h</span>
+                    </div>
+                </div>
             </div>
-            <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
+            
+            <!-- Main Goals Section -->
+            <div id="main-goals-section" class="main-goals-section">
+                <h3>Main Goals</h3>
+                <div id="goals-container" class="goals-container">
+                    <!-- Goals will be added here dynamically -->
+                </div>
+                <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
+            </div>
         </div>
 
         <div class="content-area">
@@ -139,7 +169,7 @@
     <!-- Goals Modal -->
     <div id="goals-modal" class="modal">
         <div class="modal-content goals-modal-content">
-            <span class="close-button goals-close-button">&times;</span>
+            <button class="new-close-button goals-close-button">×</button>
             <h3>Set Your 3 Main Goals</h3>
             <p class="modal-instructions">Define your top 3 goals. These will be displayed prominently at the top of your calendar to keep you focused.</p>
             
