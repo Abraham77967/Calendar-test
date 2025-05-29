@@ -68,11 +68,11 @@
             
         <!-- Main Goals Section -->
         <div id="main-goals-section" class="main-goals-section">
-            <h3>Main Goals</h3>
+            <h3>Things To Do Today</h3>
             <div id="goals-container" class="goals-container">
                 <!-- Goals will be added here dynamically -->
             </div>
-            <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
+            <button id="edit-goals-button" class="edit-goals-button">Edit List</button>
             </div>
         </div>
 
@@ -207,13 +207,13 @@
     <div id="goals-modal" class="modal">
         <div class="modal-content goals-modal-content">
             <button id="goals-close-button" class="new-close-button goals-close-button">×</button>
-            <h3>Set Your 3 Main Goals</h3>
-            <p class="modal-instructions">Define your top 3 goals. You can select tasks from your calendar events or create custom goals.</p>
+            <h3>Set Your 5 Things To Do Today</h3>
+            <p class="modal-instructions">Define your top 5 tasks. You can select tasks from your calendar events or create custom items.</p>
             
             <!-- Add tabs for the two options -->
             <div class="goals-tabs">
                 <div id="select-tasks-tab" class="goal-tab active">Select from Tasks</div>
-                <div id="custom-goals-tab" class="goal-tab">Custom Goals</div>
+                <div id="custom-goals-tab" class="goal-tab">Custom Items</div>
             </div>
             
             <!-- Task selection container -->
@@ -228,7 +228,7 @@
                     <div class="no-tasks-message">No tasks found in your calendar. Add tasks to events first.</div>
                 </div>
                 
-                <h4>Selected Goals (max 3)</h4>
+                <h4>Selected Items (max 5)</h4>
                 <div id="selected-goals" class="selected-goals">
                     <!-- Selected goals will appear here -->
                 </div>
@@ -237,22 +237,32 @@
             <!-- Custom goals container -->
             <div id="custom-goals-container" class="custom-goals-container" style="display: none;">
             <div class="goal-input-container">
-                <label for="goal-1">Goal 1:</label>
-                <input type="text" id="goal-1" class="goal-input" placeholder="Enter your first main goal">
+                <label for="goal-1">Item 1:</label>
+                <input type="text" id="goal-1" class="goal-input" placeholder="Enter your first item">
             </div>
             
             <div class="goal-input-container">
-                <label for="goal-2">Goal 2:</label>
-                <input type="text" id="goal-2" class="goal-input" placeholder="Enter your second main goal">
+                <label for="goal-2">Item 2:</label>
+                <input type="text" id="goal-2" class="goal-input" placeholder="Enter your second item">
             </div>
             
             <div class="goal-input-container">
-                <label for="goal-3">Goal 3:</label>
-                <input type="text" id="goal-3" class="goal-input" placeholder="Enter your third main goal">
-                </div>
+                <label for="goal-3">Item 3:</label>
+                <input type="text" id="goal-3" class="goal-input" placeholder="Enter your third item">
+            </div>
+
+            <div class="goal-input-container">
+                <label for="goal-4">Item 4:</label>
+                <input type="text" id="goal-4" class="goal-input" placeholder="Enter your fourth item">
             </div>
             
-            <button id="save-goals-button" class="action-button">Save Goals</button>
+            <div class="goal-input-container">
+                <label for="goal-5">Item 5:</label>
+                <input type="text" id="goal-5" class="goal-input" placeholder="Enter your fifth item">
+            </div>
+            </div>
+            
+            <button id="save-goals-button" class="action-button">Save List</button>
         </div>
     </div>
 

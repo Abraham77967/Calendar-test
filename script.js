@@ -140,7 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const goalInputs = [
         document.getElementById('goal-1'),
         document.getElementById('goal-2'),
-        document.getElementById('goal-3')
+        document.getElementById('goal-3'),
+        document.getElementById('goal-4'),
+        document.getElementById('goal-5')
     ];
     const saveGoalsButton = document.getElementById('save-goals-button');
     const goalsCloseButton = document.getElementById('goals-close-button');
@@ -326,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMainGoals() {
         goalsContainer.innerHTML = '';
         if (mainGoals.length === 0) {
-            goalsContainer.innerHTML = '<p class="no-goals-message">No main goals set yet. Click "Edit Goals" to add some!</p>';
+            goalsContainer.innerHTML = '<p class="no-goals-message">No items set yet. Click "Edit List" to add some!</p>';
             return;
         }
         mainGoals.forEach((goal, index) => {
@@ -545,9 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addTaskToSelection(task) {
-        // Check if already at maximum (3 goals)
-        if (selectedTasks.length >= 3) {
-            alert('You can only select up to 3 goals. Remove one first.');
+        // Check if already at maximum (5 goals)
+        if (selectedTasks.length >= 5) {
+            alert('You can only select up to 5 items. Remove one first.');
             return;
         }
         
@@ -655,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         }
         
-        mainGoals = newGoals.slice(0, 3); // Limit to 3 goals
+        mainGoals = newGoals.slice(0, 5); // Limit to 5 goals
         localStorage.setItem('mainGoals', JSON.stringify(mainGoals));
         
         // If logged in, also save to Firebase
@@ -2215,10 +2217,10 @@ document.addEventListener('DOMContentLoaded', () => {
             goalText += ` [Due: ${deadline}]`;
         }
         
-        // Add to main goals (limit to 3)
-        if (mainGoals.length >= 3) {
-            if (confirm("You already have 3 main goals. Replace the last one with this task?")) {
-                mainGoals[2] = { text: goalText, completed: false };
+        // Add to main goals (limit to 5)
+        if (mainGoals.length >= 5) {
+            if (confirm("You already have 5 items in your list. Replace the last one with this task?")) {
+                mainGoals[4] = { text: goalText, completed: false };
             } else {
                 tempPromotionData = null;
                 return; // User cancelled
@@ -2235,9 +2237,9 @@ document.addEventListener('DOMContentLoaded', () => {
             db.collection('userNotes').doc(firebase.auth().currentUser.uid).update({
                 mainGoals: mainGoals
             }).then(() => {
-                console.log('Main goals saved to Firebase');
+                console.log('Things to do today saved to Firebase');
             }).catch(error => {
-                console.error('Error saving main goals:', error);
+                console.error('Error saving to-do items:', error);
             });
         }
         
@@ -2258,7 +2260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.className = 'promotion-toast';
         toast.innerHTML = `
             <div class="toast-message">
-                <div class="toast-title">Added to Main Goals</div>
+                <div class="toast-title">Added to Things To Do Today</div>
                 <div class="toast-text">"${taskText}"</div>
             </div>
         `;
