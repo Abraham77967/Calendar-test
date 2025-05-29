@@ -48,7 +48,7 @@
                             Loading...
                         </div>
                         <div class="weather-location" id="weather-location">
-                            --
+                            Please allow location access
                         </div>
                     </div>
                 </div>
@@ -66,13 +66,13 @@
                 </div>
             </div>
             
-            <!-- Main Goals Section -->
-            <div id="main-goals-section" class="main-goals-section">
-                <h3>Main Goals</h3>
-                <div id="goals-container" class="goals-container">
-                    <!-- Goals will be added here dynamically -->
-                </div>
-                <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
+        <!-- Main Goals Section -->
+        <div id="main-goals-section" class="main-goals-section">
+            <h3>Main Goals</h3>
+            <div id="goals-container" class="goals-container">
+                <!-- Goals will be added here dynamically -->
+            </div>
+            <button id="edit-goals-button" class="edit-goals-button">Edit Goals</button>
             </div>
         </div>
 
@@ -133,53 +133,71 @@
             
             <div id="add-event-section">
                 <h4>Add New Event</h4>
-                <div class="goal-input-container">
-                <label for="new-event-time">Time (optional):</label>
-                    <input type="time" id="new-event-time" class="goal-input">
-                </div>
                 
-                <div class="goal-input-container">
-                    <textarea id="new-event-text" class="goal-input" placeholder="Enter event description..."></textarea>
-                </div>
+                <div class="edit-event-container">
+                    <div class="event-form-row">
+                        <div class="goal-input-container">
+                            <label for="new-event-time">Time</label>
+                            <input type="time" id="new-event-time" class="goal-input">
+                        </div>
+                    </div>
+                    
+                    <div class="event-form-row">
+                        <div class="goal-input-container">
+                            <label for="new-event-text">Description</label>
+                            <textarea id="new-event-text" class="goal-input" placeholder="Enter event description..."></textarea>
+                        </div>
+                    </div>
                 
                 <div class="checklist-section">
                     <h5>Tasks Checklist</h5>
-                    <ul id="new-event-checklist" class="styled-checklist"></ul>
+                        <ul id="new-event-checklist" class="styled-checklist"></ul>
                     <div class="add-checklist-item">
-                        <input type="text" id="new-checklist-item" class="goal-input" placeholder="Add new task...">
-                        <button id="add-item-button" class="action-button">Add</button>
+                            <input type="text" id="new-checklist-item" class="goal-input" placeholder="Add new task...">
+                            <input type="date" id="new-checklist-deadline" class="goal-input deadline-input" title="Set deadline">
+                            <button id="add-item-button" class="action-button">Add</button>
+                        </div>
                     </div>
+                    
+                    <button id="add-event-button" class="action-button">Add Event</button>
                 </div>
-                
-                <button id="add-event-button" class="action-button">Add Event</button>
             </div>
             
             <div id="edit-event-section" style="display:none;">
                 <h4>Edit Event</h4>
-                <div class="goal-input-container">
-                <label for="edit-event-time">Time (optional):</label>
-                    <input type="time" id="edit-event-time" class="goal-input">
-                </div>
                 
-                <div class="goal-input-container">
-                    <textarea id="edit-event-text" class="goal-input" placeholder="Enter event description..."></textarea>
-                </div>
+                <div class="edit-event-container">
+                    <div class="event-form-row">
+                        <div class="goal-input-container">
+                            <label for="edit-event-time">Time</label>
+                            <input type="time" id="edit-event-time" class="goal-input">
+                        </div>
+                    </div>
+                    
+                    <div class="event-form-row">
+                        <div class="goal-input-container">
+                            <label for="edit-event-text">Description</label>
+                            <textarea id="edit-event-text" class="goal-input" placeholder="Enter event description..."></textarea>
+                        </div>
+                    </div>
                 
                 <div class="checklist-section">
                     <h5>Tasks Checklist</h5>
-                    <ul id="edit-event-checklist" class="styled-checklist"></ul>
+                        <ul id="edit-event-checklist" class="styled-checklist"></ul>
                     <div class="add-checklist-item">
-                        <input type="text" id="edit-checklist-item" class="goal-input" placeholder="Add new task...">
-                        <button id="edit-add-item-button" class="action-button">Add</button>
+                            <input type="text" id="edit-checklist-item" class="goal-input" placeholder="Add new task...">
+                            <input type="date" id="edit-checklist-deadline" class="goal-input deadline-input" title="Set deadline">
+                            <button id="edit-add-item-button" class="action-button">Add</button>
                     </div>
                 </div>
                 
                 <div class="edit-actions">
-                    <div>
+                        <div class="primary-actions">
                         <button id="save-edited-event" class="action-button">Save Changes</button>
                         <button id="cancel-edit" class="secondary-button">Cancel</button>
                     </div>
                     <button id="delete-event" class="delete-button">Delete Event</button>
+                    </div>
                 </div>
             </div>
         </div>

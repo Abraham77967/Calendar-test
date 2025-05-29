@@ -349,6 +349,23 @@ document.addEventListener('DOMContentLoaded', () => {
             
             goalItem.appendChild(checkbox);
             goalItem.appendChild(goalText);
+            
+            // Extract deadline information from goal text if it exists
+            // Format: "Task (from "Event" on Jan 1) [Due: 2023-01-15]"
+            const deadlineRegex = /\[Due: (\d{4}-\d{2}-\d{2})\]/;
+            const deadlineMatch = goal.text.match(deadlineRegex);
+            
+            if (deadlineMatch && deadlineMatch[1]) {
+                const deadline = deadlineMatch[1];
+                const deadlineElement = createDeadlineElement(deadline);
+                if (deadlineElement) {
+                    // Apply additional styling for goal deadline elements
+                    deadlineElement.style.marginLeft = 'auto';
+                    deadlineElement.style.order = '2';
+                    goalItem.appendChild(deadlineElement);
+                }
+            }
+            
             goalsContainer.appendChild(goalItem);
         });
     }
@@ -438,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         allTasks.push({
                             text: item.task,
                             done: item.done,
+                            deadline: item.deadline || null,
                             dateString: dateString,
                             formattedDate: formattedDate,
                             eventText: eventText
@@ -477,6 +495,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         taskInfo.appendChild(taskText);
         taskInfo.appendChild(taskSource);
+        
+        // Add deadline display if task has a deadline
+        if (task.deadline) {
+            const deadlineElement = createDeadlineElement(task.deadline);
+            if (deadlineElement) {
+                taskInfo.appendChild(deadlineElement);
+            }
+        }
         
         const taskAction = document.createElement('div');
         taskAction.classList.add('task-action');
@@ -598,8 +624,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeTab === 'select-tasks-tab') {
             // Save from selected tasks
             selectedTasks.forEach(task => {
-                // Format the goal text with event source
-                const goalText = `${task.text} (from "${task.eventText}" on ${task.formattedDate})`;
+                // Add deadline information to the goal text if available
+                let goalText = `${task.text} (from "${task.eventText}" on ${task.formattedDate})`;
+                
+                // Append deadline information if available
+                if (task.deadline) {
+                    goalText += ` [Due: ${task.deadline}]`;
+                }
                 
                 // Check if this goal text already exists in main goals
                 const existingGoal = mainGoals.find(g => g.text === goalText);
@@ -668,6 +699,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- End Helper Function ---
 
     // --- Rendering Functions ---
+
+    // Function to truncate text with ellipsis after a certain length
+    function truncateText(text, maxLength = 25) {
+        if (text && text.length > maxLength) {
+            return text.substring(0, maxLength) + '...';
+        }
+        return text;
+    }
 
     // Renders a single month into a specific grid/header element
     function renderCalendar(targetDate, gridElement, monthYearElement) {
@@ -759,7 +798,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 eventTextElement.classList.add('note-text', 'single-event');
                 let displayText = eventsForDay[0].text || '(No description)';
                 if (eventsForDay[0].time) displayText = `${eventsForDay[0].time} - ${displayText}`; 
-                eventTextElement.textContent = displayText;
+                // Truncate display text to prevent overflow
+                eventTextElement.textContent = truncateText(displayText);
+                eventTextElement.title = displayText; // Show full text on hover
                 eventsContainer.appendChild(eventTextElement);
             } else if (eventsForDay.length > 1) {
                 const eventCountElement = document.createElement('div');
@@ -891,7 +932,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 eventTextElement.classList.add('note-text', 'single-event');
                 let displayText = eventsForDay[0].text || '(No description)';
                 if (eventsForDay[0].time) displayText = `${eventsForDay[0].time} - ${displayText}`; 
-                eventTextElement.textContent = displayText;
+                // Truncate display text to prevent overflow
+                eventTextElement.textContent = truncateText(displayText, 20); // Shorter length for mobile
+                eventTextElement.title = displayText; // Show full text on hover
                 eventsContainer.appendChild(eventTextElement);
             } else if (eventsForDay.length > 1) {
                 const eventCountElement = document.createElement('div');
@@ -1209,6 +1252,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.stopPropagation(); // Prevent opening edit modal
                 });
                 
+                // Add elements to the list item
+                li.appendChild(checkbox);
+                li.appendChild(label);
+                
+                // Add deadline display if there is a deadline - now positioned after label
+                if (item.deadline) {
+                    const deadlineElement = createDeadlineElement(item.deadline);
+                    if (deadlineElement) {
+                        deadlineElement.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent opening edit modal
+                });
+                        li.appendChild(deadlineElement);
+                    }
+                }
+                
                 // Add event listener for checkbox changes
                 checkbox.addEventListener('change', (e) => {
                     // Always use the global notes object
@@ -1252,10 +1310,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 });
-
-                        // Append all elements to the list item
-                        li.appendChild(checkbox);
-                        li.appendChild(label);
                         
                         // Append the list item to the checklist
                         checklistUl.appendChild(li);
@@ -1302,14 +1356,51 @@ document.addEventListener('DOMContentLoaded', () => {
         newEventChecklistElement.innerHTML = '';
         newChecklistItemElement.value = '';
         
-        // Ensure the add event section is visible
-        const addEventSection = document.getElementById('add-event-section');
-        if (addEventSection) {
-            addEventSection.style.display = 'block';
-        }
+        // Explicitly set display states
+        editEventSection.style.display = 'none';
+        
+        // Get events for this date
+        const eventsForDay = window.calendarNotes[dateString] || [];
+        
+        // Show or hide events list based on whether there are events
+        if (eventsForDay.length === 0) {
+            // No events - hide the events list container and focus on adding new event
+            document.getElementById('events-list-container').style.display = 'none';
+            document.getElementById('add-event-section').style.display = 'block';
+            document.getElementById('add-event-section').querySelector('h4').textContent = 'Create New Event';
+        } else {
+            // Events exist - show the events list but hide the add event form initially
+            document.getElementById('events-list-container').style.display = 'block';
+            document.getElementById('add-event-section').style.display = 'none';
         
         // Display events for this date
         displayEventsInModal();
+            
+            // Make sure the "Add Event" button exists in the events list container
+            if (!document.getElementById('show-add-event-button')) {
+                const addEventButtonContainer = document.createElement('div');
+                addEventButtonContainer.className = 'add-event-button-container';
+                
+                const showAddEventButton = document.createElement('button');
+                showAddEventButton.id = 'show-add-event-button';
+                showAddEventButton.className = 'action-button';
+                showAddEventButton.textContent = 'Add New Event';
+                showAddEventButton.addEventListener('click', () => {
+                    // Show the add event section when button is clicked
+                    document.getElementById('add-event-section').style.display = 'block';
+                    document.getElementById('add-event-section').querySelector('h4').textContent = 'Add Another Event';
+                    
+                    // Scroll to the add event section
+                    document.getElementById('add-event-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                
+                addEventButtonContainer.appendChild(showAddEventButton);
+                document.getElementById('events-list-container').appendChild(addEventButtonContainer);
+            }
+        }
+        
+        // Update modal instructions
+        updateModalInstructions();
         
         // Show the modal
         noteModal.style.display = 'block';
@@ -1333,6 +1424,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('[DISPLAY EVENTS] For date:', selectedDateString);
         console.log('[DISPLAY EVENTS] Total events:', eventsForDay.length);
+        
+        // Only proceed if there are events or if events list is being displayed
+        if (document.getElementById('events-list-container').style.display === 'none') {
+            console.log('[DISPLAY EVENTS] Events list is hidden, skipping rendering');
+            return;
+        }
         
         // Clear the events list
         eventsListElement.innerHTML = '';
@@ -1419,6 +1516,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             li.appendChild(checkbox);
             li.appendChild(label);
+            
+            // Add deadline display if there is a deadline - now positioned after label but before delete button
+            if (item.deadline) {
+                const deadlineElement = createDeadlineElement(item.deadline);
+                if (deadlineElement) {
+                    li.appendChild(deadlineElement);
+                }
+                
+                // Store deadline in data attribute for later retrieval
+                li.dataset.deadline = item.deadline;
+            }
+            
             li.appendChild(deleteButton);
             newEventChecklistElement.appendChild(li);
         });
@@ -1457,6 +1566,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             li.appendChild(checkbox);
             li.appendChild(label);
+            
+            // Add deadline display if there is a deadline - now positioned after label but before delete button
+            if (item.deadline) {
+                const deadlineElement = createDeadlineElement(item.deadline);
+                if (deadlineElement) {
+                    li.appendChild(deadlineElement);
+                }
+                
+                // Store deadline in data attribute for later retrieval
+                li.dataset.deadline = item.deadline;
+            }
+            
             li.appendChild(deleteButton);
             editEventChecklistElement.appendChild(li);
         });
@@ -1476,9 +1597,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (checkbox && label) {
                 const item = {
                     task: label.textContent,
-                    done: checkbox.checked
+                    done: checkbox.checked,
+                    deadline: li.dataset.deadline || null
                 };
-                console.log(`Checklist item ${index}: "${item.task}", done: ${item.done}`);
+                console.log(`Checklist item ${index}: "${item.task}", done: ${item.done}, deadline: ${item.deadline}`);
                 checklist.push(item);
             } else {
                 console.log(`Checklist item ${index}: missing checkbox or label elements`);
@@ -1493,7 +1615,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function addNewEventChecklistItem() {
         const taskText = newChecklistItemElement.value.trim();
         if (taskText) {
-            const item = { task: taskText, done: false };
+            const deadline = document.getElementById('new-checklist-deadline').value;
+            const item = { 
+                task: taskText, 
+                done: false,
+                deadline: deadline || null
+            };
             
             const li = document.createElement('li');
 
@@ -1505,6 +1632,7 @@ document.addEventListener('DOMContentLoaded', () => {
             label.htmlFor = checkbox.id;
             label.textContent = item.task;
             
+            // Create delete button
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-item-button');
             deleteButton.textContent = '×';
@@ -1519,10 +1647,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             li.appendChild(checkbox);
             li.appendChild(label);
+            
+            // Add deadline display if there is a deadline - now positioned after label but before delete button
+            if (deadline) {
+                const deadlineElement = createDeadlineElement(deadline);
+                if (deadlineElement) {
+                    li.appendChild(deadlineElement);
+                }
+                
+                // Add data attribute for the deadline to the list item
+                li.dataset.deadline = deadline;
+            }
+            
             li.appendChild(deleteButton);
             newEventChecklistElement.appendChild(li);
             
+            // Reset inputs
             newChecklistItemElement.value = '';
+            document.getElementById('new-checklist-deadline').value = '';
         }
     }
     
@@ -1530,7 +1672,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function addEditEventChecklistItem() {
         const taskText = editChecklistItemElement.value.trim();
         if (taskText) {
-            const item = { task: taskText, done: false };
+            const deadline = document.getElementById('edit-checklist-deadline').value;
+            const item = { 
+                task: taskText, 
+                done: false,
+                deadline: deadline || null
+            };
             
             const li = document.createElement('li');
             
@@ -1556,10 +1703,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             li.appendChild(checkbox);
             li.appendChild(label);
+            
+            // Add deadline display if there is a deadline - now positioned after label but before delete button
+            if (deadline) {
+                const deadlineElement = createDeadlineElement(deadline);
+                if (deadlineElement) {
+                    li.appendChild(deadlineElement);
+                }
+                
+                // Add data attribute for the deadline to the list item
+                li.dataset.deadline = deadline;
+            }
+            
             li.appendChild(deleteButton);
             editEventChecklistElement.appendChild(li);
             
+            // Reset inputs
             editChecklistItemElement.value = '';
+            document.getElementById('edit-checklist-deadline').value = '';
         }
     }
     
@@ -1654,13 +1815,64 @@ document.addEventListener('DOMContentLoaded', () => {
         editEventTextElement.value = event.text || '';
         renderChecklistForEditEvent(event.checklist || []);
         
-        // Show edit section, hide add section
+        // Show edit section, hide add section and events list
         editEventSection.style.display = 'block';
+        document.getElementById('add-event-section').style.display = 'none';
+        document.getElementById('events-list-container').style.display = 'none';
+        
+        // Update modal title to show we're in edit mode
+        modalDateElement.textContent = modalDateElement.textContent + ' - Edit Event';
     }
     
     // Hide the edit event section
     function hideEditEventSection() {
         editEventSection.style.display = 'none';
+        
+        // Check if there are events for the date
+        const eventsForDay = window.calendarNotes[selectedDateString] || [];
+        
+        if (eventsForDay.length === 0) {
+            // No events - keep events list hidden and show add event form
+            document.getElementById('events-list-container').style.display = 'none';
+            document.getElementById('add-event-section').style.display = 'block';
+            document.getElementById('add-event-section').querySelector('h4').textContent = 'Create New Event';
+        } else {
+            // Events exist - show the events list and hide add event form
+            document.getElementById('events-list-container').style.display = 'block';
+            document.getElementById('add-event-section').style.display = 'none';
+            
+            // Make sure the "Add Event" button exists
+            if (!document.getElementById('show-add-event-button')) {
+                const addEventButtonContainer = document.createElement('div');
+                addEventButtonContainer.className = 'add-event-button-container';
+                
+                const showAddEventButton = document.createElement('button');
+                showAddEventButton.id = 'show-add-event-button';
+                showAddEventButton.className = 'action-button';
+                showAddEventButton.textContent = 'Add New Event';
+                showAddEventButton.addEventListener('click', () => {
+                    // Show the add event section when button is clicked
+                    document.getElementById('add-event-section').style.display = 'block';
+                    document.getElementById('add-event-section').querySelector('h4').textContent = 'Add Another Event';
+                    
+                    // Scroll to the add event section
+                    document.getElementById('add-event-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                
+                addEventButtonContainer.appendChild(showAddEventButton);
+                document.getElementById('events-list-container').appendChild(addEventButtonContainer);
+            }
+        }
+        
+        // Update modal instructions
+        updateModalInstructions();
+        
+        // Reset modal title
+        const dateText = modalDateElement.textContent;
+        if (dateText.includes(' - Edit Event')) {
+            modalDateElement.textContent = dateText.replace(' - Edit Event', '');
+        }
+        
         currentEditingEventId = null;
         editEventTimeElement.value = '';
         editEventTextElement.value = '';
@@ -1776,8 +1988,48 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide edit section
         hideEditEventSection();
         
+        // Check if there are events for the date
+        const eventsForDay = globalNotes[selectedDateString] || [];
+        
+        // Determine whether to show events list
+        if (eventsForDay.length === 0) {
+            // No events - hide the events list container
+            document.getElementById('events-list-container').style.display = 'none';
+            document.getElementById('add-event-section').style.display = 'block';
+            document.getElementById('add-event-section').querySelector('h4').textContent = 'Create New Event';
+        } else {
+            // Events exist - ensure the events list is visible but hide add event section
+            document.getElementById('events-list-container').style.display = 'block';
+            document.getElementById('add-event-section').style.display = 'none';
+            
+            // Make sure the "Add Event" button exists
+            if (!document.getElementById('show-add-event-button')) {
+                const addEventButtonContainer = document.createElement('div');
+                addEventButtonContainer.className = 'add-event-button-container';
+                
+                const showAddEventButton = document.createElement('button');
+                showAddEventButton.id = 'show-add-event-button';
+                showAddEventButton.className = 'action-button';
+                showAddEventButton.textContent = 'Add New Event';
+                showAddEventButton.addEventListener('click', () => {
+                    // Show the add event section when button is clicked
+                    document.getElementById('add-event-section').style.display = 'block';
+                    document.getElementById('add-event-section').querySelector('h4').textContent = 'Add Another Event';
+                    
+                    // Scroll to the add event section
+                    document.getElementById('add-event-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                
+                addEventButtonContainer.appendChild(showAddEventButton);
+                document.getElementById('events-list-container').appendChild(addEventButtonContainer);
+            }
+        
         // Refresh the events list
         displayEventsInModal();
+        }
+        
+        // Update modal instructions
+        updateModalInstructions();
         
         // Update calendar view
         renderCalendarView();
@@ -1785,7 +2037,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Log the current state
         console.log('[UI UPDATE] Completed. Events for date', selectedDateString + ':',
             globalNotes[selectedDateString] ? globalNotes[selectedDateString].length : 0);
-        console.log('[UI UPDATE] Total events in calendar:', countTotalEvents());
     }
     
     // Save notes to Firebase
@@ -1938,12 +2189,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Find the event that contains this task
         let eventText = "";
+        let deadline = null;
         if (notes[dateString]) {
             for (const event of notes[dateString]) {
                 if (event.checklist) {
                     for (const item of event.checklist) {
                         if (item.task === taskText) {
                             eventText = event.text || "(No description)";
+                            deadline = item.deadline || null;
                             break;
                         }
                     }
@@ -1953,9 +2206,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Create goal text with date and event reference
-        const goalText = eventText 
+        let goalText = eventText 
             ? `${taskText} (from "${eventText}" on ${formattedDate})`
             : `${taskText} (from ${formattedDate})`;
+        
+        // Append deadline information if available
+        if (deadline) {
+            goalText += ` [Due: ${deadline}]`;
+        }
         
         // Add to main goals (limit to 3)
         if (mainGoals.length >= 3) {
@@ -2058,33 +2316,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Weather Widget functionality
     function fetchWeatherData() {
-        // Using the provided coordinates and API key
+        // API key for OpenWeatherMap
         const apiKey = 'b2cfa04dc7aff6a53b64fabc3a5307bc';
-        const lat = 42.2192;
-        const lon = -87.9795;
+        // Default coordinates (used as fallback)
+        const defaultLat = 42.2192;
+        const defaultLon = -87.9795;
         const units = 'imperial'; // Use imperial for Fahrenheit
         
-        // API URL with the provided key and coordinates
-        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${units}&appid=${apiKey}`;
+        // Get the weather container and create a location button if needed
+        const weatherWidget = document.getElementById('weather-widget');
         
-        // Fetch weather data
-        fetch(weatherUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Weather data fetch failed');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Update weather widget with fetched data
-                updateWeatherWidget(data);
-            })
-            .catch(error => {
-                console.error('Error fetching weather data:', error);
-                document.getElementById('weather-condition').textContent = 'Unable to fetch weather data';
-            });
+        // Function to show loading state in the weather widget
+        function showWeatherLoading() {
+            document.getElementById('weather-condition').textContent = 'Fetching weather...';
+            document.getElementById('weather-location').textContent = 'Locating...';
+        }
+        
+        // Function to fetch weather with provided coordinates
+        function getWeatherFromCoords(lat, lon) {
+            // API URL with the provided key and coordinates
+            const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${units}&appid=${apiKey}`;
+            
+            // Show loading state
+            showWeatherLoading();
+            
+            // Fetch weather data
+            fetch(weatherUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Weather data fetch failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update weather widget with fetched data
+                    updateWeatherWidget(data);
+                    
+                    // Store location in localStorage for future use
+                    if (lat !== defaultLat && lon !== defaultLon) {
+                        localStorage.setItem('weatherLat', lat);
+                        localStorage.setItem('weatherLon', lon);
+                        localStorage.setItem('weatherLocationTime', Date.now());
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching weather data:', error);
+                    document.getElementById('weather-condition').textContent = 'Unable to fetch weather data';
+                    document.getElementById('weather-location').textContent = 'Location unavailable';
+                });
+        }
+        
+        // Function to add location request button
+        function addLocationRequestButton() {
+            // Check if button already exists
+            if (document.getElementById('request-location-btn')) return;
+            
+            // Create a location request button
+            const locationBtn = document.createElement('button');
+            locationBtn.id = 'request-location-btn';
+            locationBtn.className = 'location-request-button';
+            locationBtn.innerHTML = '<span>📍</span> Use my location';
+            locationBtn.addEventListener('click', requestLocationPermission);
+            
+            // Add button to weather widget header
+            const weatherHeader = weatherWidget.querySelector('.weather-header');
+            weatherHeader.appendChild(locationBtn);
+        }
+        
+        // Function to request location permission
+        function requestLocationPermission() {
+            showWeatherLoading();
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Success callback
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        console.log('[WEATHER] Got user location:', lat, lon);
+                        getWeatherFromCoords(lat, lon);
+                        
+                        // Hide the location button if we successfully got location
+                        const locationBtn = document.getElementById('request-location-btn');
+                        if (locationBtn) {
+                            locationBtn.style.display = 'none';
+                        }
+                    },
+                    // Error callback
+                    (error) => {
+                        console.error('[WEATHER] Geolocation error:', error);
+                        // If user denied permission, use default location
+                        getWeatherFromCoords(defaultLat, defaultLon);
+                        // Show a message that we're using default location
+                        document.getElementById('weather-location').textContent = 'Default location';
+                    },
+                    // Options
+                    { timeout: 10000 }
+                );
+            } else {
+                // Browser doesn't support geolocation
+                console.log('[WEATHER] Geolocation not supported');
+                getWeatherFromCoords(defaultLat, defaultLon);
+            }
+        }
+        
+        // Check if we have a recent saved location
+        const savedLat = localStorage.getItem('weatherLat');
+        const savedLon = localStorage.getItem('weatherLon');
+        const savedTime = localStorage.getItem('weatherLocationTime');
+        const locationAge = savedTime ? Date.now() - parseInt(savedTime) : null;
+        
+        // If we have saved coordinates less than 1 hour old (3600000 ms), use them
+        if (savedLat && savedLon && locationAge && locationAge < 3600000) {
+            console.log('[WEATHER] Using saved location');
+            getWeatherFromCoords(parseFloat(savedLat), parseFloat(savedLon));
+        } else {
+            // Try to get fresh coordinates
+            console.log('[WEATHER] Requesting fresh location');
+            addLocationRequestButton();
+            
+            // Auto-prompt for location if this is the first time
+            if (!localStorage.getItem('weatherLocationRequested')) {
+                localStorage.setItem('weatherLocationRequested', 'true');
+                requestLocationPermission();
+            } else {
+                // If not first time, use default location but show location button
+                getWeatherFromCoords(defaultLat, defaultLon);
+            }
+        }
     }
-    
+
     function updateWeatherWidget(data) {
         // Extract weather information
         const temp = Math.round(data.main.temp);
@@ -2120,9 +2481,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch weather on initial load
     fetchWeatherData();
     
+    // Remove refresh button event listener (button has been removed)
+    
     // Refresh weather data every 30 minutes (1800000 ms)
     setInterval(fetchWeatherData, 1800000);
-
+    
     // Get month selector elements
     const monthSelect = document.getElementById('month-select');
     const yearDisplay = document.getElementById('year-display');
@@ -2156,6 +2519,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
     renderCalendarView();
     });
+    
+    // Function to check if the day has changed since last refresh
+    function checkDateChange() {
+        const today = new Date().toLocaleDateString();
+        const lastDate = localStorage.getItem('lastDateCheck');
+        
+        if (today !== lastDate) {
+            console.log('[DEADLINES] Date changed, refreshing deadline displays');
+            localStorage.setItem('lastDateCheck', today);
+            refreshAllDeadlineDisplays();
+        }
+    }
+
+    // Call checkDateChange on initial load and every hour
+    checkDateChange();
+    setInterval(checkDateChange, 3600000); // 1 hour in milliseconds
 
     // Update month select when using prev/next buttons
     const originalRenderCalendarView = renderCalendarView;
@@ -2163,6 +2542,18 @@ document.addEventListener('DOMContentLoaded', () => {
         originalRenderCalendarView();
         updateMonthSelect();
     };
+
+    // Add function to update modal instructions based on whether there are events
+    function updateModalInstructions() {
+        const eventsForDay = window.calendarNotes[selectedDateString] || [];
+        const modalInstructions = document.querySelector('.modal-instructions');
+        
+        if (eventsForDay.length === 0) {
+            modalInstructions.textContent = 'No events for this date. Create a new event below.';
+        } else {
+            modalInstructions.textContent = 'View and manage events for this date. Click on an event to edit its details.';
+        }
+    }
 });
 
 // Function that stores promotion data and is called by the star buttons
@@ -2178,3 +2569,95 @@ function closeGoalsModal() {
     console.log('Closing goals modal...');
     goalsModal.style.display = 'none';
 } 
+
+// Function to calculate days left until deadline and return formatted display
+function calculateDaysLeft(deadline) {
+    if (!deadline) return null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const deadlineDate = new Date(deadline);
+    deadlineDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = deadlineDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    let displayClass = '';
+    let displayText = '';
+    
+    if (diffDays < 0) {
+        displayClass = 'overdue';
+        displayText = 'Overdue';
+    } else if (diffDays === 0) {
+        displayClass = 'urgent';
+        displayText = 'Due today';
+    } else if (diffDays === 1) {
+        displayClass = 'urgent';
+        displayText = 'Due tomorrow';
+    } else if (diffDays <= 3) {
+        displayClass = 'warning';
+        displayText = `${diffDays} days left`;
+    } else {
+        displayClass = 'comfortable';
+        displayText = `${diffDays} days left`;
+    }
+    
+    return {
+        days: diffDays,
+        class: displayClass,
+        text: displayText
+    };
+}
+
+// Function to create a deadline display element
+function createDeadlineElement(deadline) {
+    if (!deadline) return null;
+    
+    const daysLeft = calculateDaysLeft(deadline);
+    
+    const deadlineElement = document.createElement('span');
+    deadlineElement.classList.add('days-left', daysLeft.class);
+    deadlineElement.textContent = daysLeft.text;
+    
+    return deadlineElement;
+}
+
+// Function to refresh all deadline displays on the page
+function refreshAllDeadlineDisplays() {
+    console.log('[DEADLINES] Refreshing all deadline displays');
+    
+    // Refresh deadline displays in the main goals section
+    const goalItems = document.querySelectorAll('.goal-item');
+    goalItems.forEach(item => {
+        const deadlineElement = item.querySelector('.days-left');
+        if (deadlineElement) {
+            // Extract deadline from the goal text
+            const goalText = item.querySelector('label').textContent;
+            const deadlineRegex = /\[Due: (\d{4}-\d{2}-\d{2})\]/;
+            const deadlineMatch = goalText.match(deadlineRegex);
+            
+            if (deadlineMatch && deadlineMatch[1]) {
+                const deadline = deadlineMatch[1];
+                const newDeadlineElement = createDeadlineElement(deadline);
+                if (newDeadlineElement) {
+                    item.replaceChild(newDeadlineElement, deadlineElement);
+                }
+            }
+        }
+    });
+    
+    // Refresh deadline displays in progress panel
+    const checklistItems = document.querySelectorAll('.panel-checklist li');
+    checklistItems.forEach(item => {
+        const deadlineElement = item.querySelector('.days-left');
+        if (deadlineElement && item.dataset.deadline) {
+            const newDeadlineElement = createDeadlineElement(item.dataset.deadline);
+            if (newDeadlineElement) {
+                item.replaceChild(newDeadlineElement, deadlineElement);
+            }
+        }
+    });
+    
+    console.log('[DEADLINES] Deadline displays refreshed');
+}
