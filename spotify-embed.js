@@ -11,10 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // ========== Spotify API Configuration ==========
-    // NOTE: You must register your app at https://developer.spotify.com/dashboard/
-    // and replace these values with your own client ID and redirect URI
-    const clientId = 'YOUR_SPOTIFY_CLIENT_ID'; // Replace with your Spotify Client ID
-    const redirectUri = window.location.origin; // The URL to redirect back to after authentication
+    const clientId = '82f6edcd7d0648eba0f0a297c8c2c197'; // Your Spotify Client ID
+    const redirectUri = 'https://abraham77967.github.io/Calendar-test/'; // Your redirect URI
     
     // Scopes define the permissions your app is requesting
     const scopes = [
