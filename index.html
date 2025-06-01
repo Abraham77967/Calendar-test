@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>May 2025 Calendar</title>
+    <title>Planora - Plan your day. Own your time.</title>
     <link rel="stylesheet" href="style.css">
+    <script src="spotify-embed.js"></script>
 </head>
 <body>
     <div class="main-container">
+        <div class="site-header">
+            <div class="site-branding">
+                <h1 class="site-title">Planora</h1>
+                <p class="site-tagline">Plan your day. Own your time.</p>
+            </div>
+        </div>
+        
         <div class="calendar-controls">
-            <button id="prev-month">&laquo;</button>
             <h2 id="month-year-display">April & May 2025</h2>
-            <button id="next-month">&raquo;</button>
-            <button id="today-button" class="today-button">Today</button>
-            <button id="toggle-view-button">Month View</button>
             
             <div class="header-auth">
                 <div id="login-form">
@@ -38,7 +42,7 @@
                 </div>
                 <div class="weather-content">
                     <div class="weather-icon">
-                        <img id="weather-icon-img" src="" alt="Weather Icon">
+                        <!-- SVG will be inserted here by JavaScript -->
                     </div>
                     <div class="weather-details">
                         <div class="weather-temp">
@@ -56,16 +60,32 @@
                     <div class="weather-extra">
                         <div class="weather-item">
                             <span class="weather-label">Humidity</span>
-                            <span id="weather-humidity">--</span>%
+                            <div class="weather-value">
+                                <span id="weather-humidity">--</span>
+                                <span class="weather-unit">%</span>
+                            </div>
                         </div>
                         <div class="weather-item">
                             <span class="weather-label">Wind</span>
-                            <span id="weather-wind">--</span> mph
+                            <div class="weather-value">
+                                <span id="weather-wind">--</span>
+                                <span class="weather-unit">mph</span>
+                            </div>
                         </div>
-                    </div>
                 </div>
             </div>
-            
+        </div>
+        
+        <!-- Spotify Widget -->
+        <div id="spotify-widget" class="spotify-widget">
+            <div class="spotify-header">
+                <h3>Music</h3>
+            </div>
+            <div class="spotify-content">
+                <div id="spotify-embed-container"></div>
+            </div>
+        </div>
+        
         <!-- Main Goals Section -->
         <div id="main-goals-section" class="main-goals-section">
             <h3>Things To Do Today</h3>
@@ -74,13 +94,36 @@
             </div>
             <button id="edit-goals-button" class="edit-goals-button">Edit List</button>
             </div>
+            
+            <!-- News Widget -->
+            <div id="news-widget" class="news-widget">
+                <div class="news-header">
+                    <h3>Daily News</h3>
+                    <button id="refresh-news-button" class="refresh-button" title="Refresh news">↻</button>
+                </div>
+                <div class="news-tabs">
+                    <button class="news-tab active" data-category="technology">Technology</button>
+                    <button class="news-tab" data-category="education">Education</button>
+                    <button class="news-tab" data-category="economics">Economics</button>
+                </div>
+                <div class="news-content">
+                    <ul id="news-list" class="news-list">
+                        <li class="news-loading">Loading latest news...</li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <div class="content-area">
             <div class="calendars-wrapper">
                 <div class="calendar-container" id="calendar-1">
                     <div class="calendar-header">
+                        <div class="month-navigation">
+                            <button id="prev-month" class="month-nav-button">&laquo;</button>
                         <h3 id="month-year-1">April 2025</h3>
+                            <button id="next-month" class="month-nav-button">&raquo;</button>
+                        </div>
+                        <button id="today-button" class="today-button">Today</button>
                     </div>
                     <div class="calendar-grid" id="calendar-grid-1">
                         <div class="day-header">Sun</div>

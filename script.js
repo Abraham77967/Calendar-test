@@ -55,6 +55,172 @@ document.addEventListener('DOMContentLoaded', () => {
         return goal; // Already an object, or will be filtered if invalid
     }).filter(goal => goal && typeof goal.text === 'string'); // Ensure valid structure
     
+    // --- News Integration ---
+    const refreshNewsButton = document.getElementById('refresh-news-button');
+    let currentNewsCategory = 'technology'; // Default category
+
+    // RSS Feed URLs by category
+    const newsFeedsByCategory = {
+        technology: {
+            primary: 'https://feeds.bbci.co.uk/news/technology/rss.xml',
+            fallback: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
+            sourceName: 'BBC Technology'
+        },
+        education: {
+            primary: 'https://rss.nytimes.com/services/xml/rss/nyt/Education.xml',
+            fallback: 'https://feeds.bbci.co.uk/news/education/rss.xml',
+            sourceName: 'NY Times Education'
+        },
+        economics: {
+            primary: 'https://feeds.bbci.co.uk/news/business/economy/rss.xml',
+            fallback: 'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml',
+            sourceName: 'BBC Economy'
+        }
+    };
+
+    // Initialize news tabs
+    function initializeNewsTabs() {
+        const newsTabs = document.querySelectorAll('.news-tab');
+        if (!newsTabs || newsTabs.length === 0) return;
+        
+        newsTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                // Update active tab
+                newsTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Get category and fetch news
+                const category = tab.dataset.category;
+                if (category && newsFeedsByCategory[category]) {
+                    currentNewsCategory = category;
+                    fetchNews(category);
+                }
+            });
+        });
+    }
+
+    // Function to fetch and display news using RSS feeds
+    function fetchNews(category = currentNewsCategory) {
+        const newsList = document.getElementById('news-list');
+        if (!newsList) return;
+        
+        newsList.innerHTML = '<li class="news-loading">Loading latest news...</li>'; // Loading indicator
+        
+        const feedData = newsFeedsByCategory[category] || newsFeedsByCategory.technology;
+        const rssFeedUrl = feedData.primary;
+        const rssToJsonServiceUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssFeedUrl)}`;
+
+        fetch(rssToJsonServiceUrl)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log(`[NEWS] Fetched ${category} news data:`, data);
+                
+                if (data.status !== 'ok' || !data.items || data.items.length === 0) {
+                    throw new Error('No articles found or API error');
+                }
+                
+                newsList.innerHTML = ''; // Clear previous items
+                
+                // Process articles (limit to 5)
+                data.items.slice(0, 5).forEach(article => {
+                    const li = document.createElement('li');
+                    
+                    // Create and format date
+                    const publishDate = new Date(article.pubDate);
+                    const formattedDate = publishDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    
+                    // HTML structure with title, source, and date
+                    li.innerHTML = `
+                        <a href="${article.link}" target="_blank">${article.title}</a>
+                        <span class="news-source">${feedData.sourceName}</span>
+                        <span class="news-date">${formattedDate}</span>
+                    `;
+                    
+                    newsList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error(`[NEWS] Error fetching ${category} news:`, error);
+                
+                // If that fails, try fallback feed
+                fetchNewsFallback(newsList, category);
+            });
+    }
+    
+    // Fallback function using another news source
+    function fetchNewsFallback(newsList, category = currentNewsCategory) {
+        const feedData = newsFeedsByCategory[category] || newsFeedsByCategory.technology;
+        const fallbackFeedUrl = feedData.fallback;
+        const fallbackServiceUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(fallbackFeedUrl)}`;
+        const fallbackSourceName = feedData.sourceName.includes('BBC') ? 'NY Times' : 'BBC News';
+        
+        fetch(fallbackServiceUrl)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'ok' || !data.items || data.items.length === 0) {
+                    throw new Error('No articles found in fallback feed');
+                }
+                
+                newsList.innerHTML = ''; // Clear loading indicator
+                
+                // Process articles (limit to 5)
+                data.items.slice(0, 5).forEach(article => {
+                    const li = document.createElement('li');
+                    
+                    // Create and format date
+                    const publishDate = new Date(article.pubDate);
+                    const formattedDate = publishDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    
+                    li.innerHTML = `
+                        <a href="${article.link}" target="_blank">${article.title}</a>
+                        <span class="news-source">${fallbackSourceName} ${category.charAt(0).toUpperCase() + category.slice(1)}</span>
+                        <span class="news-date">${formattedDate}</span>
+                    `;
+                    
+                    newsList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error(`[NEWS] Error fetching fallback ${category} news:`, error);
+                newsList.innerHTML = `
+                    <li class="news-loading">
+                        Unable to load ${category} news. Please check your internet connection and try again.
+                    </li>`;
+            });
+    }
+    
+    // Add event listener for refresh button
+    if (refreshNewsButton) {
+        refreshNewsButton.addEventListener('click', () => {
+            refreshNewsButton.style.transform = 'rotate(360deg)';
+            fetchNews(currentNewsCategory); // Refresh current category
+            setTimeout(() => {
+                refreshNewsButton.style.transform = 'rotate(0deg)';
+            }, 600);
+        });
+    }
+    
+    // Initialize news tabs
+    initializeNewsTabs();
+    
+    // Fetch news on initial load
+    fetchNews();
+    
+    // --- End News Integration ---
+
     // Function to standardize all delete buttons to use × character
     function standardizeDeleteButtons() {
         // Find all functions that create delete buttons and update them
@@ -131,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const userEmail = document.getElementById('user-email');
     const googleSignInButton = document.getElementById('google-signin-button');
     const logoutButton = document.getElementById('logout-button');
-    const toggleViewButton = document.getElementById('toggle-view-button');
 
     // Main Goals elements
     const goalsContainer = document.getElementById('goals-container');
@@ -822,21 +987,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`[NEW RENDER] Appended all day cells for ${month + 1}/${year}. Total children in grid: ${gridElement.children.length}`);
     }
 
-    // Renders two adjacent months for desktop
+    // Renders single month for desktop view (replacing two-month view)
     function renderDesktopView() {
-        const firstMonthDate = new Date(desktopMonthDate);
-        const secondMonthDate = new Date(desktopMonthDate);
-        secondMonthDate.setMonth(secondMonthDate.getMonth() + 1);
+        const monthDate = new Date(desktopMonthDate);
 
-        renderCalendar(firstMonthDate, calendarGrid1, monthYearElement1);
-        renderCalendar(secondMonthDate, calendarGrid2, monthYearElement2);
+        renderCalendar(monthDate, calendarGrid1, monthYearElement1);
 
         // Update the main control header for desktop view
-        const month1Name = firstMonthDate.toLocaleString('default', { month: 'long' });
-        const month2Name = secondMonthDate.toLocaleString('default', { month: 'long' });
-        const year1 = firstMonthDate.getFullYear();
-        const year2 = secondMonthDate.getFullYear();
-        monthYearDisplayElement.textContent = year1 === year2 ? `${month1Name} & ${month2Name} ${year1}` : `${month1Name} ${year1} & ${month2Name} ${year2}`;
+        const monthName = monthDate.toLocaleString('default', { month: 'long' });
+        const year = monthDate.getFullYear();
+        monthYearDisplayElement.textContent = `${monthName} ${year}`;
     }
     
     // Renders the mobile month view (uses renderCalendar)
@@ -912,16 +1072,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isToday) {
                 dayCell.classList.add('today');
                 console.log(`[NEW MOBILE RENDER] Marked as TODAY: ${dateString}.`);
-                // ---- TEMPORARY DEV STYLES FOR TODAY - REMOVED ----
-                // dayCell.style.backgroundColor = 'lime';
-                // dayCell.style.border = '3px solid red';
-                // dayCell.style.color = 'black';
-                // dayCell.style.fontWeight = '900';
-                // dayCell.style.setProperty('outline', '3px dashed blue', 'important');
-                // dayCell.style.setProperty('z-index', '9999', 'important');
-                // dayCell.style.setProperty('opacity', '1', 'important');
-                // dayCell.style.setProperty('transform', 'scale(1.1)', 'important');
-                // ------------------------------------------
             }
 
             // --- Display Events ---
@@ -994,22 +1144,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isDesktop = window.innerWidth > 1200;
         
-        // Show/Hide second calendar and toggle button based on screen size
-        calendar2Container.style.display = isDesktop ? 'block' : 'none';
-        toggleViewButton.style.display = isDesktop ? 'none' : 'inline-block'; // Hide toggle on desktop
+        // Always hide second calendar since we're only showing one month
+        calendar2Container.style.display = 'none';
         
         if (isDesktop) {
-            console.log('[CALENDAR VIEW] Rendering desktop view');
+            console.log('[CALENDAR VIEW] Rendering desktop view (single month)');
             renderDesktopView();
         } else { // Mobile view
             if (currentView === 'week') {
                 console.log('[CALENDAR VIEW] Rendering mobile week view');
                 renderMobileTwoWeekView();
-                toggleViewButton.textContent = 'Month View';
             } else {
                 console.log('[CALENDAR VIEW] Rendering mobile month view');
                 renderMobileMonthView();
-                toggleViewButton.textContent = 'Week View';
             }
         }
         
@@ -1018,6 +1165,35 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('[CALENDAR VIEW] Calendar render complete');
     }
+    
+    // --- Event Listeners ---
+    prevButton.addEventListener('click', () => {
+        const isDesktop = window.innerWidth > 1200;
+        if (isDesktop) {
+            desktopMonthDate.setMonth(desktopMonthDate.getMonth() - 1);
+        } else {
+            if (currentView === 'week') {
+                mobileWeekStartDate.setDate(mobileWeekStartDate.getDate() - 7);
+            } else {
+                mobileMonthDate.setMonth(mobileMonthDate.getMonth() - 1);
+            }
+        }
+        renderCalendarView();
+    });
+
+    nextButton.addEventListener('click', () => {
+        const isDesktop = window.innerWidth > 1200;
+        if (isDesktop) {
+            desktopMonthDate.setMonth(desktopMonthDate.getMonth() + 1);
+        } else {
+            if (currentView === 'week') {
+                mobileWeekStartDate.setDate(mobileWeekStartDate.getDate() + 7);
+            } else {
+                mobileMonthDate.setMonth(mobileMonthDate.getMonth() + 1);
+            }
+        }
+        renderCalendarView();
+    });
 
     // --- Event Progress Panel for Multiple Events ---
     function renderEventProgressPanel() {
@@ -2098,21 +2274,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendarView();
     });
 
-    // Toggle view only affects mobile
-    toggleViewButton.addEventListener('click', () => {
-        currentView = (currentView === 'week') ? 'month' : 'week';
-        if (currentView === 'month') {
-             // When switching to month view, set month based on current week view start date
-            mobileMonthDate = new Date(mobileWeekStartDate);
-            mobileMonthDate.setDate(1);
-        } else {
-            // When switching back to week view, reset to today
-             mobileWeekStartDate = new Date(); 
-             mobileWeekStartDate.setHours(0, 0, 0, 0);
-        }
-        renderCalendarView(); // Re-render mobile view
-    });
-
     // Modal event listeners
     noteCloseButton.addEventListener('click', closeNoteModal);
     
@@ -2448,6 +2609,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getWeatherSVG(condition, isDay) {
+        // Normalize condition
+        const cond = condition.toLowerCase();
+        if (cond.includes('clear')) {
+            // Simplistic elegant sun
+            return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="15" fill="#FFD93B"/>
+                <g stroke="#FFD93B" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="40" y1="15" x2="40" y2="10"/>
+                    <line x1="40" y1="70" x2="40" y2="65"/>
+                    <line x1="15" y1="40" x2="10" y2="40"/>
+                    <line x1="70" y1="40" x2="65" y2="40"/>
+                    <line x1="23" y1="23" x2="19" y2="19"/>
+                    <line x1="61" y1="61" x2="57" y2="57"/>
+                    <line x1="23" y1="57" x2="19" y2="61"/>
+                    <line x1="61" y1="19" x2="57" y2="23"/>
+                </g>
+            </svg>`;
+        } else if (cond.includes('cloud')) {
+            // Simplistic elegant cloud
+            return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60,46 C66.6,46 72,51.4 72,58 C72,64.6 66.6,70 60,70 L25,70 C18.4,70 13,64.6 13,58 C13,51.4 18.4,46 25,46 C25,36.1 33.1,28 43,28 C51.6,28 58.9,34.1 60.8,42.4" fill="none" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+        } else if (cond.includes('rain')) {
+            // Simplistic elegant rain
+            return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60,40 C66.6,40 72,45.4 72,52 C72,58.6 66.6,64 60,64 L25,64 C18.4,64 13,58.6 13,52 C13,45.4 18.4,40 25,40 C25,30.1 33.1,22 43,22 C51.6,22 58.9,28.1 60.8,36.4" fill="none" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="30" y1="70" x2="28" y2="76" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round"/>
+                <line x1="40" y1="70" x2="38" y2="76" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round"/>
+                <line x1="50" y1="70" x2="48" y2="76" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round"/>
+            </svg>`;
+        } else if (cond.includes('snow')) {
+            // Simplistic elegant snow
+            return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60,40 C66.6,40 72,45.4 72,52 C72,58.6 66.6,64 60,64 L25,64 C18.4,64 13,58.6 13,52 C13,45.4 18.4,40 25,40 C25,30.1 33.1,22 43,22 C51.6,22 58.9,28.1 60.8,36.4" fill="none" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="30" cy="72" r="2" fill="#90CAF9"/>
+                <circle cx="40" cy="72" r="2" fill="#90CAF9"/>
+                <circle cx="50" cy="72" r="2" fill="#90CAF9"/>
+            </svg>`;
+        } else if (cond.includes('thunder')) {
+            // Simplistic elegant thunderstorm
+            return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60,40 C66.6,40 72,45.4 72,52 C72,58.6 66.6,64 60,64 L25,64 C18.4,64 13,58.6 13,52 C13,45.4 18.4,40 25,40 C25,30.1 33.1,22 43,22 C51.6,22 58.9,28.1 60.8,36.4" fill="none" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M43,64 L48,72 L40,72 L45,80" stroke="#FFD93B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+        } else if (cond.includes('fog') || cond.includes('mist') || cond.includes('haze')) {
+            // Simplistic elegant fog
+            return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60,40 C66.6,40 72,45.4 72,52 C72,58.6 66.6,64 60,64 L25,64 C18.4,64 13,58.6 13,52 C13,45.4 18.4,40 25,40 C25,30.1 33.1,22 43,22 C51.6,22 58.9,28.1 60.8,36.4" fill="none" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="20" y1="70" x2="60" y2="70" stroke="#B0BEC5" stroke-width="2" stroke-linecap="round"/>
+                <line x1="25" y1="76" x2="55" y2="76" stroke="#B0BEC5" stroke-width="2" stroke-linecap="round"/>
+            </svg>`;
+        }
+        // Default: partly cloudy (sun and cloud)
+        return `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="35" cy="34" r="10" fill="#FFD93B"/>
+            <g stroke="#FFD93B" stroke-width="2" stroke-linecap="round">
+                <line x1="35" y1="18" x2="35" y2="14"/>
+                <line x1="35" y1="54" x2="35" y2="50"/>
+                <line x1="18" y1="34" x2="14" y2="34"/>
+                <line x1="56" y1="34" x2="52" y2="34"/>
+                <line x1="23" y1="22" x2="20" y2="19"/>
+                <line x1="50" y1="49" x2="47" y2="46"/>
+                <line x1="23" y1="46" x2="20" y2="49"/>
+                <line x1="50" y1="19" x2="47" y2="22"/>
+            </g>
+            <path d="M60,46 C66.6,46 72,51.4 72,58 C72,64.6 66.6,70 60,70 L30,70 C23.4,70 18,64.6 18,58 C18,51.4 23.4,46 30,46 C30,41 34.1,36 40,36" fill="none" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    }
+
     function updateWeatherWidget(data) {
         // Extract weather information
         const temp = Math.round(data.main.temp);
@@ -2463,10 +2694,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('weather-location').textContent = locationName;
         document.getElementById('weather-humidity').textContent = humidity;
         document.getElementById('weather-wind').textContent = windSpeed;
-        
-        // Update weather icon
-        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
-        document.getElementById('weather-icon-img').src = iconUrl;
+
+        // Use SVG icon
+        const isDay = data.weather[0].icon && data.weather[0].icon.includes('d');
+        document.querySelector('.weather-icon').innerHTML = getWeatherSVG(condition, isDay);
         
         // Update date
         const today = new Date();
@@ -2662,4 +2893,4 @@ function refreshAllDeadlineDisplays() {
     });
     
     console.log('[DEADLINES] Deadline displays refreshed');
-}
+} 
