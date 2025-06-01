@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // ========== Spotify API Configuration ==========
     const clientId = '82f6edcd7d0648eba0f0a297c8c2c197'; // Your Spotify Client ID
-    const redirectUri = 'https://abraham77967.github.io/Calendar-test/'; // Your redirect URI
+    const redirectUri = 'https://abraham77967.github.io/Calendar-test'; // Your redirect URI - removed trailing slash
+    
+    // Debug message to verify configuration
+    console.log('Spotify Configuration:', { clientId, redirectUri });
     
     // Scopes define the permissions your app is requesting
     const scopes = [
@@ -41,6 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const hash = window.location.hash.substring(1);
         const params = hash.split('&');
         
+        // Debug message to check hash parameters
+        console.log('URL Hash:', hash);
+        
         for (let i = 0; i < params.length; i++) {
             const pair = params[i].split('=');
             hashParams[pair[0]] = decodeURIComponent(pair[1]);
@@ -53,6 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = getHashParams();
     const accessToken = params.access_token;
     const receivedState = params.state;
+    const errorParam = params.error;
+    
+    // Debug message to check authentication parameters
+    console.log('Auth Params:', { accessToken: accessToken ? 'Present' : 'Not found', 
+                                  receivedState: receivedState || 'Not found',
+                                  error: errorParam || 'None' });
     
     // Clear the hash fragment from the URL
     if (accessToken) {
@@ -62,9 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the widget based on authentication status
     if (accessToken && receivedState === localStorage.getItem('spotify_auth_state')) {
         // User is authenticated with Spotify
+        console.log('Spotify authentication successful');
         initializeAuthenticatedView(accessToken);
     } else {
         // User is not authenticated, show login button
+        console.log('Spotify not authenticated, showing login view');
+        if (errorParam) {
+            console.error('Spotify auth error:', errorParam);
+        }
         initializeLoginView();
     }
     
@@ -98,16 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('spotify-login-button').addEventListener('click', () => {
             // Save state in localStorage to verify when we return
             localStorage.setItem('spotify_auth_state', state);
+            console.log('State saved to localStorage:', state);
             
-            // Redirect to Spotify authorization page
-            const authorizeUrl = 'https://accounts.spotify.com/authorize?' +
-                'client_id=' + clientId +
-                '&response_type=token' +
-                '&redirect_uri=' + encodeURIComponent(redirectUri) +
-                '&scope=' + encodeURIComponent(scopes.join(' ')) +
-                '&state=' + state +
-                '&show_dialog=true';
+            // Redirect to Spotify authorization page - using cleaner parameter assembly
+            const authEndpoint = 'https://accounts.spotify.com/authorize';
+            const authParams = new URLSearchParams({
+                client_id: clientId,
+                response_type: 'token',
+                redirect_uri: redirectUri,
+                scope: scopes.join(' '),
+                state: state,
+                show_dialog: 'true'
+            });
             
+            const authorizeUrl = `${authEndpoint}?${authParams.toString()}`;
+            
+            console.log('Redirecting to Spotify auth URL:', authorizeUrl);
             window.location.href = authorizeUrl;
         });
     }
@@ -160,6 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} token - The Spotify access token
      */
     function fetchUserPlaylists(token) {
+        console.log('Fetching user playlists with token:', token.substring(0, 5) + '...');
+        
         // First, get the user's Spotify ID
         fetch('https://api.spotify.com/v1/me', {
             headers: {
@@ -167,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .then(response => {
+            console.log('User data response status:', response.status);
             if (!response.ok) {
                 // If the token is expired or invalid, go back to login view
                 if (response.status === 401) {
@@ -177,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(userData => {
+            console.log('User data received:', userData.display_name);
             const userId = userData.id;
             
             // Now fetch the user's playlists
@@ -187,12 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .then(response => {
+            console.log('Playlists response status:', response.status);
             if (!response.ok) {
                 throw new Error('Failed to fetch playlists');
             }
             return response.json();
         })
         .then(playlistData => {
+            console.log(`Loaded ${playlistData.items.length} playlists`);
             // Update the playlist selector with the user's playlists
             updatePlaylistSelector(playlistData.items, token);
         })
@@ -251,6 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const playlistId = e.target.value;
             const selectedOption = playlistSelector.options[playlistSelector.selectedIndex];
             const playlistUri = selectedOption.dataset.uri;
+            
+            console.log('Selected playlist:', selectedOption.textContent, playlistUri);
             
             // Load the selected playlist
             loadPlaylist(playlistUri);
