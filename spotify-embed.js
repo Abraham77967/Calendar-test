@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'playlist-read-collaborative'
     ];
 
-    // Generate a random state value for security
+    // PKCE Auth Code Flow - Generate a code verifier and challenge
     const generateRandomString = length => {
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let text = '';
@@ -35,47 +35,63 @@ document.addEventListener('DOMContentLoaded', () => {
         return text;
     };
     
+    // Generate SHA-256 hash for the code challenge
+    const generateCodeChallenge = async (codeVerifier) => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(codeVerifier);
+        const digest = await window.crypto.subtle.digest('SHA-256', data);
+        
+        return btoa(String.fromCharCode(...new Uint8Array(digest)))
+            .replace(/=/g, '')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_');
+    };
+    
     // State is used to prevent CSRF attacks
     const state = generateRandomString(16);
+    const codeVerifier = generateRandomString(64);
     
-    // Get access token from URL if present (after redirect from Spotify)
-    const getHashParams = () => {
-        const hashParams = {};
-        const hash = window.location.hash.substring(1);
-        const params = hash.split('&');
+    // Store the code verifier and state in localStorage
+    localStorage.setItem('spotify_auth_state', state);
+    localStorage.setItem('spotify_code_verifier', codeVerifier);
+    
+    // Get URL query parameters
+    const getQueryParams = () => {
+        const queryParams = {};
+        const query = window.location.search.substring(1);
+        const pairs = query.split('&');
         
-        // Debug message to check hash parameters
-        console.log('URL Hash:', hash);
+        console.log('URL Query:', query);
         
-        for (let i = 0; i < params.length; i++) {
-            const pair = params[i].split('=');
-            hashParams[pair[0]] = decodeURIComponent(pair[1]);
+        for (let i = 0; i < pairs.length; i++) {
+            if (!pairs[i]) continue;
+            const pair = pairs[i].split('=');
+            queryParams[pair[0]] = decodeURIComponent(pair[1] || '');
         }
         
-        return hashParams;
+        return queryParams;
     };
     
     // Check if we're returning from Spotify authentication
-    const params = getHashParams();
-    const accessToken = params.access_token;
-    const receivedState = params.state;
-    const errorParam = params.error;
+    const queryParams = getQueryParams();
+    
+    // Check for authorization code and errors in query params
+    const authCode = queryParams.code;
+    const receivedState = queryParams.state;
+    const errorParam = queryParams.error;
     
     // Debug message to check authentication parameters
-    console.log('Auth Params:', { accessToken: accessToken ? 'Present' : 'Not found', 
-                                  receivedState: receivedState || 'Not found',
-                                  error: errorParam || 'None' });
-    
-    // Clear the hash fragment from the URL
-    if (accessToken) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    console.log('Auth Params:', { 
+        authCode: authCode ? 'Present' : 'Not found', 
+        receivedState: receivedState || 'Not found',
+        error: errorParam || 'None' 
+    });
     
     // Initialize the widget based on authentication status
-    if (accessToken && receivedState === localStorage.getItem('spotify_auth_state')) {
-        // User is authenticated with Spotify
-        console.log('Spotify authentication successful');
-        initializeAuthenticatedView(accessToken);
+    if (authCode && receivedState === localStorage.getItem('spotify_auth_state')) {
+        // We have an authorization code, need to exchange for token
+        console.log('Authorization code received, exchanging for token');
+        exchangeCodeForToken(authCode);
     } else {
         // User is not authenticated, show login button
         console.log('Spotify not authenticated, showing login view');
@@ -83,6 +99,58 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Spotify auth error:', errorParam);
         }
         initializeLoginView();
+    }
+    
+    /**
+     * Exchanges the authorization code for an access token
+     * @param {string} code - The authorization code from Spotify
+     */
+    async function exchangeCodeForToken(code) {
+        const codeVerifier = localStorage.getItem('spotify_code_verifier');
+        
+        if (!codeVerifier) {
+            console.error('No code verifier found in localStorage');
+            initializeLoginView();
+            return;
+        }
+        
+        try {
+            const result = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    client_id: clientId,
+                    grant_type: 'authorization_code',
+                    code: code,
+                    redirect_uri: redirectUri,
+                    code_verifier: codeVerifier
+                })
+            });
+            
+            const data = await result.json();
+            
+            if (data.access_token) {
+                // Store tokens in localStorage
+                localStorage.setItem('spotify_access_token', data.access_token);
+                if (data.refresh_token) {
+                    localStorage.setItem('spotify_refresh_token', data.refresh_token);
+                }
+                
+                // Clear the URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Initialize the authenticated view with the access token
+                initializeAuthenticatedView(data.access_token);
+            } else {
+                console.error('Error exchanging code for token:', data);
+                initializeLoginView();
+            }
+        } catch (error) {
+            console.error('Error exchanging code for token:', error);
+            initializeLoginView();
+        }
     }
     
     /**
@@ -112,17 +180,28 @@ document.addEventListener('DOMContentLoaded', () => {
         spotifyContainer.appendChild(loginContainer);
         
         // Add event listener to login button
-        document.getElementById('spotify-login-button').addEventListener('click', () => {
-            // Save state in localStorage to verify when we return
-            localStorage.setItem('spotify_auth_state', state);
-            console.log('State saved to localStorage:', state);
+        document.getElementById('spotify-login-button').addEventListener('click', async () => {
+            // Generate and store code challenge
+            const codeChallenge = await generateCodeChallenge(codeVerifier);
             
-            // Redirect to Spotify authorization page - using cleaner parameter assembly
+            // Save state and code verifier in localStorage
+            localStorage.setItem('spotify_auth_state', state);
+            localStorage.setItem('spotify_code_verifier', codeVerifier);
+            
+            console.log('Auth state saved to localStorage:', state);
+            console.log('Code verifier saved, challenge generated:', { 
+                verifier: codeVerifier.substring(0, 5) + '...',
+                challenge: codeChallenge.substring(0, 5) + '...' 
+            });
+            
+            // Redirect to Spotify authorization page with PKCE parameters
             const authEndpoint = 'https://accounts.spotify.com/authorize';
             const authParams = new URLSearchParams({
                 client_id: clientId,
-                response_type: 'token',
+                response_type: 'code',
                 redirect_uri: redirectUri,
+                code_challenge_method: 'S256',
+                code_challenge: codeChallenge,
                 scope: scopes.join(' '),
                 state: state,
                 show_dialog: 'true'
@@ -130,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const authorizeUrl = `${authEndpoint}?${authParams.toString()}`;
             
-            console.log('Redirecting to Spotify auth URL:', authorizeUrl);
+            console.log('Redirecting to Spotify auth URL with PKCE flow:', authorizeUrl);
             window.location.href = authorizeUrl;
         });
     }
@@ -154,7 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('spotify-logout-button').addEventListener('click', () => {
             // Clear spotify auth data
             localStorage.removeItem('spotify_auth_state');
+            localStorage.removeItem('spotify_code_verifier');
             localStorage.removeItem('spotify_access_token');
+            localStorage.removeItem('spotify_refresh_token');
             
             // Reset to login view
             initializeLoginView();
