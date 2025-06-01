@@ -117,67 +117,180 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            console.log('Making token exchange request to Spotify API');
+            console.log('Making token exchange request to serverless function');
             
-            // Unfortunately, direct token exchange from client-side JavaScript often fails due to CORS restrictions
-            // This is why many applications implement a small server-side proxy for this step
+            // Call our serverless function to exchange the code for a token
+            const response = await fetch('/api/spotify-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    codeVerifier: codeVerifier,
+                    redirectUri: redirectUri
+                })
+            });
             
-            // For demonstration purposes, show a success message instead
-            // In a production app, you would need a server-side component to securely exchange the code
-            console.log('Note: Token exchange would normally require a server component');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to exchange code for token');
+            }
             
-            // Create a "demo mode" interface showing the user that authentication worked
-            spotifyContainer.innerHTML = '';
+            const data = await response.json();
+            console.log('Token exchange successful');
             
-            const demoContent = document.createElement('div');
-            demoContent.className = 'spotify-auth-success';
-            demoContent.innerHTML = `
-                <div class="spotify-success-message">
-                    <h4>Authentication Successful!</h4>
-                    <p>Your Spotify authorization code was received successfully.</p>
-                    <p>Code: ${code.substring(0, 10)}...</p>
-                    <p class="note">Note: For security reasons, exchanging this code for an access token requires a server-side component.</p>
-                    <p class="note">In a production application, your server would securely perform this exchange.</p>
-                    <div class="demo-player">
-                        <h4>Demo Player</h4>
-                        <iframe 
-                            src="https://embed.spotify.com/?uri=spotify:playlist:37i9dQZEVXcIroVdJc5khI&theme=light" 
-                            width="100%" 
-                            height="352" 
-                            frameborder="0" 
-                            allowtransparency="true" 
-                            allow="encrypted-media"
-                            style="border-radius: 12px;">
-                        </iframe>
-                    </div>
-                    <button id="spotify-retry-button" class="spotify-btn">Sign out</button>
+            // Store tokens in localStorage
+            localStorage.setItem('spotify_access_token', data.access_token);
+            if (data.refresh_token) {
+                localStorage.setItem('spotify_refresh_token', data.refresh_token);
+            }
+            
+            // Store expiration time (current time + expires_in seconds)
+            const expiresAt = Date.now() + (data.expires_in * 1000);
+            localStorage.setItem('spotify_token_expires_at', expiresAt);
+            
+            // Clear the URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Initialize the authenticated view with the access token
+            initializeAuthenticatedView(data.access_token);
+        } catch (error) {
+            console.error('Error exchanging code for token:', error);
+            
+            // Show error to user
+            spotifyContainer.innerHTML = `
+                <div class="spotify-error-message">
+                    <h4>Authentication Error</h4>
+                    <p>There was a problem connecting to Spotify: ${error.message}</p>
+                    <button id="spotify-retry-button" class="spotify-btn">Try Again</button>
                 </div>
             `;
             
-            spotifyContainer.appendChild(demoContent);
-            
-            // Add event listener for the retry button
             document.getElementById('spotify-retry-button').addEventListener('click', () => {
-                // Clear spotify auth data
-                localStorage.removeItem('spotify_auth_state');
-                localStorage.removeItem('spotify_code_verifier');
-                localStorage.removeItem('spotify_access_token');
-                localStorage.removeItem('spotify_refresh_token');
-                
-                // Reset to login view
                 initializeLoginView();
             });
+        }
+    }
+    
+    /**
+     * Refreshes the access token using the refresh token
+     * @returns {Promise<string>} A promise that resolves to the new access token
+     */
+    async function refreshAccessToken() {
+        const refreshToken = localStorage.getItem('spotify_refresh_token');
+        
+        if (!refreshToken) {
+            throw new Error('No refresh token available');
+        }
+        
+        try {
+            // Call our serverless function to refresh the token
+            const response = await fetch('/api/spotify-refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    refresh_token: refreshToken
+                })
+            });
             
-            // Add a note in the header area
-            if (spotifyHeader) {
-                spotifyHeader.innerHTML = `
-                    <h3>Music</h3>
-                    <div class="spotify-connected-indicator">Connected ✓</div>
-                `;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to refresh token');
             }
+            
+            const data = await response.json();
+            
+            // Update the stored access token and expiration time
+            localStorage.setItem('spotify_access_token', data.access_token);
+            const expiresAt = Date.now() + (data.expires_in * 1000);
+            localStorage.setItem('spotify_token_expires_at', expiresAt);
+            
+            return data.access_token;
         } catch (error) {
-            console.error('Error exchanging code for token:', error);
+            console.error('Error refreshing token:', error);
+            // If refresh fails, redirect to login
             initializeLoginView();
+            throw error;
+        }
+    }
+    
+    /**
+     * Gets a valid access token, refreshing if necessary
+     * @returns {Promise<string>} A promise that resolves to a valid access token
+     */
+    async function getValidAccessToken() {
+        const accessToken = localStorage.getItem('spotify_access_token');
+        const expiresAt = localStorage.getItem('spotify_token_expires_at');
+        
+        // If token is expired or will expire in the next 5 minutes
+        if (!accessToken || !expiresAt || Date.now() > (expiresAt - 300000)) {
+            console.log('Token expired or about to expire, refreshing...');
+            return refreshAccessToken();
+        }
+        
+        return accessToken;
+    }
+    
+    /**
+     * Makes an authenticated request to the Spotify API
+     * @param {string} endpoint - The API endpoint (without the base URL)
+     * @param {Object} options - Fetch options
+     * @returns {Promise<Object>} - The response JSON
+     */
+    async function spotifyApiRequest(endpoint, options = {}) {
+        const token = await getValidAccessToken();
+        
+        const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || 'API request failed');
+        }
+        
+        return response.json();
+    }
+    
+    /**
+     * Fetches the user's playlists from Spotify API
+     * @param {string} token - The Spotify access token
+     */
+    async function fetchUserPlaylists(token) {
+        console.log('Fetching user playlists...');
+        
+        try {
+            // First, get the user's Spotify ID
+            const userData = await spotifyApiRequest('/me');
+            console.log('User data received:', userData.display_name);
+            
+            // Now fetch the user's playlists
+            const playlistData = await spotifyApiRequest(`/users/${userData.id}/playlists?limit=50`);
+            console.log(`Loaded ${playlistData.items.length} playlists`);
+            
+            // Update the playlist selector with the user's playlists
+            updatePlaylistSelector(playlistData.items, token);
+        } catch (error) {
+            console.error('Error fetching playlists:', error);
+            
+            // Show error in the container
+            spotifyContainer.innerHTML = `
+                <div class="spotify-error">
+                    <p>Failed to load playlists: ${error.message}</p>
+                    <button id="spotify-retry-button" class="spotify-btn">Retry</button>
+                </div>
+            `;
+            
+            document.getElementById('spotify-retry-button').addEventListener('click', () => {
+                fetchUserPlaylists(token);
+            });
         }
     }
     
@@ -288,81 +401,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     /**
-     * Fetches the user's playlists from Spotify API
-     * @param {string} token - The Spotify access token
-     */
-    function fetchUserPlaylists(token) {
-        console.log('Fetching user playlists with token:', token.substring(0, 5) + '...');
-        
-        // First, get the user's Spotify ID
-        fetch('https://api.spotify.com/v1/me', {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        })
-        .then(response => {
-            console.log('User data response status:', response.status);
-            if (!response.ok) {
-                // If the token is expired or invalid, go back to login view
-                if (response.status === 401) {
-                    throw new Error('Spotify authentication expired');
-                }
-                throw new Error('Failed to fetch user data');
-            }
-            return response.json();
-        })
-        .then(userData => {
-            console.log('User data received:', userData.display_name);
-            const userId = userData.id;
-            
-            // Now fetch the user's playlists
-            return fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            });
-        })
-        .then(response => {
-            console.log('Playlists response status:', response.status);
-            if (!response.ok) {
-                throw new Error('Failed to fetch playlists');
-            }
-            return response.json();
-        })
-        .then(playlistData => {
-            console.log(`Loaded ${playlistData.items.length} playlists`);
-            // Update the playlist selector with the user's playlists
-            updatePlaylistSelector(playlistData.items, token);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            if (error.message === 'Spotify authentication expired') {
-                // If auth expired, reset to login view
-                initializeLoginView();
-            } else {
-                // Show error in the container
-                spotifyContainer.innerHTML = `
-                    <div class="spotify-error">
-                        <p>Failed to load playlists. Please try again.</p>
-                        <button id="spotify-retry-button" class="spotify-btn">Retry</button>
-                    </div>
-                `;
-                
-                document.getElementById('spotify-retry-button').addEventListener('click', () => {
-                    fetchUserPlaylists(token);
-                });
-            }
-        });
-    }
-    
-    /**
      * Updates the playlist selector with user's playlists
      * @param {Array} playlists - The user's playlists from Spotify API
      * @param {string} token - The Spotify access token
      */
     function updatePlaylistSelector(playlists, token) {
+        console.log('Updating playlist selector with', playlists.length, 'playlists');
+        
         const playlistSelector = document.getElementById('playlist-selector');
-        if (!playlistSelector) return;
+        if (!playlistSelector) {
+            console.error('Playlist selector element not found!');
+            return;
+        }
         
         // Clear existing options
         playlistSelector.innerHTML = '';
@@ -377,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add user playlists as options
         playlists.forEach(playlist => {
+            console.log('Adding playlist:', playlist.name);
             const option = document.createElement('option');
             option.value = playlist.id;
             option.textContent = playlist.name;
@@ -405,8 +456,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} playlistUri - Spotify playlist URI
      */
     function loadPlaylist(playlistUri) {
+        console.log('Loading playlist with URI:', playlistUri);
         try {
-            spotifyContainer.innerHTML = renderSpotifyEmbed(playlistUri);
+            const embedHtml = renderSpotifyEmbed(playlistUri);
+            console.log('Generated embed HTML');
+            spotifyContainer.innerHTML = embedHtml;
         } catch (error) {
             console.error('Error creating Spotify embed:', error);
             spotifyContainer.innerHTML = '<p>Unable to load Spotify player</p>';

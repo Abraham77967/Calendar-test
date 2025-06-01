@@ -1,0 +1,14 @@
+{
+  "name": "planora-spotify-integration",
+  "version": "1.0.0",
+  "description": "Spotify integration for Planora calendar app",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "netlify-cli": "^12.0.0"
+  }
+} 
